@@ -3,5 +3,5 @@ POST http://127.0.0.1:5000/generate_code
 Content-Type: application/json
 
 {
-    "order_id": "123456"
+    "order_id": "abcdef"
 }

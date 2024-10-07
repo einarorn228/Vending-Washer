@@ -43,6 +43,6 @@ while True:
     print(serData)
     # Checks if serial data is the same as the code of the day
     if searchTable("validCodes", serData):
-
+        #function that starts machine
     elif not searchTable("validCodes", serData) and serData != "":
-        
+        #code not valid
