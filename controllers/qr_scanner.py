@@ -1,5 +1,5 @@
 import serial
-from models import session, Code
+from models.models import session, Code
 from controllers.machine_control import start_machine
 
 # Serial setup for QR scanner

@@ -1,4 +1,4 @@
-from Project_Files.models import session, Code
+from models.models import session, Code
 
 # Query all records in the codes table
 codes = session.query(Code).all()
