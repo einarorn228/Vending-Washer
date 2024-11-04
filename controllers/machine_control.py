@@ -1,69 +1,93 @@
 import requests
-import RPi.GPIO as GPIO
 import time
+from utils.shelly_config import shelly_uni_devices, shelly_x_mod1
 
-# Define Shelly UNI IP addresses and button/LED GPIO pins
-shelly_devices = {
-    "washer_1": {"ip": "192.168.1.101", "button_pin": 17, "led_pin": 23},
-    "washer_2": {"ip": "192.168.1.102", "button_pin": 18, "led_pin": 24},
-    "dryer_1": {"ip": "192.168.1.103", "button_pin": 27, "led_pin": 25},
-    "dryer_2": {"ip": "192.168.1.104", "button_pin": 22, "led_pin": 26}
-}
-
-# Setup GPIO mode and pins
-GPIO.setmode(GPIO.BCM)
-for machine, config in shelly_devices.items():
-    GPIO.setup(config["button_pin"], GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Setup button with pull-up resistor
-    GPIO.setup(config["led_pin"], GPIO.OUT)  # Setup LED pin as output
-
-def is_machine_in_use(machine_name):
-    """Check if the machine is currently in use by reading the Shelly input status."""
-    shelly_ip = shelly_devices[machine_name]["ip"]
-    url = f"http://{shelly_ip}/status"
+def start_machine(machine_name, duration):
+    """Start the washer or dryer by sending a 12V signal for a set duration."""
+    shelly_ip = shelly_uni_devices[machine_name]["ip"]
+    relay_url = f"http://{shelly_ip}{shelly_uni_devices[machine_name]['relay_control']}/on"
 
     try:
-        response = requests.get(url)
+        response = requests.get(relay_url)
+        if response.status_code == 200:
+            print(f"{machine_name} started for {duration} seconds.")
+            time.sleep(duration)  # Hold the 12V signal for the specified duration
+            stop_machine(machine_name)
+        else:
+            print(f"Error: Unable to start {machine_name}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error: Could not reach {machine_name}. Details: {e}")
+
+def stop_machine(machine_name):
+    """Stop the washer or dryer by turning off the 12V signal."""
+    shelly_ip = shelly_uni_devices[machine_name]["ip"]
+    relay_url = f"http://{shelly_ip}{shelly_uni_devices[machine_name]['relay_control']}/off"
+    try:
+        requests.get(relay_url)
+        print(f"{machine_name} stopped.")
+    except Exception as e:
+        print(f"Error: Unable to stop {machine_name}. Details: {e}")
+
+def is_machine_in_use(machine_name):
+    """Check if the machine is currently running by reading the Shelly UNI input status."""
+    shelly_ip = shelly_uni_devices[machine_name]["ip"]
+    status_url = f"http://{shelly_ip}{shelly_uni_devices[machine_name]['input_status']}"
+
+    try:
+        response = requests.get(status_url)
         if response.status_code == 200:
             data = response.json()
-            # Check the input status; assume `data["inputs"][0]["input"]` represents the in-use status
-            in_use = data["inputs"][0]["input"] == 1
-            return in_use
+            return data["inputs"][0]["input"] == 1  # Assume input 1 means the machine is in use
         else:
             print(f"Error: Unable to check status for {machine_name}. Status code: {response.status_code}")
             return False
     except Exception as e:
         print(f"Error: Could not reach {machine_name}. Details: {e}")
         return False
-
-def control_machine(machine_name, action):
-    """Control the machine by sending an on/off command via REST API."""
-    shelly_ip = shelly_devices[machine_name]["ip"]
-    url = f"http://{shelly_ip}/relay/0/{action}"
+    
+def is_button_pressed(machine_name):
+    """Check if a button is pressed using Shelly X MOD1 input."""
+    shelly_ip = shelly_x_mod1["ip"]
+    button_url = f"http://{shelly_ip}{shelly_x_mod1['button_endpoints'][machine_name]}"
 
     try:
-        response = requests.get(url)
+        response = requests.get(button_url)
         if response.status_code == 200:
-            print(f"Success: {machine_name} turned {action}.")
+            data = response.json()
+            return data["inputs"][0]["input"] == 0  # Assume 0 indicates button pressed
         else:
-            print(f"Error: Failed to send {action} command to {machine_name}.")
+            print(f"Error: Unable to read button for {machine_name}. Status code: {response.status_code}")
+            return False
     except Exception as e:
-        print(f"Error: Unable to reach {machine_name}. Details: {e}")
+        print(f"Error: Could not reach {machine_name} button. Details: {e}")
+        return False
+
+def set_led(machine_name, status):
+    """Turn LED on or off using Shelly X MOD1 relay output."""
+    shelly_ip = shelly_x_mod1["ip"]
+    action = "on" if status else "off"
+    led_url = f"http://{shelly_ip}{shelly_x_mod1['led_endpoints'][machine_name]}/{action}"
+
+    try:
+        response = requests.get(led_url)
+        if response.status_code == 200:
+            print(f"LED for {machine_name} set to {action}.")
+        else:
+            print(f"Error: Unable to set LED for {machine_name}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error: Could not reach {machine_name} LED. Details: {e}")
 
 def monitor_buttons():
-    """Monitor buttons and control machines with LED indicators."""
+    """Monitor buttons on Shelly X MOD1 to control Shelly UNI machines and LED indicators."""
     while True:
-        for machine, config in shelly_devices.items():
-            button_pin = config["button_pin"]
-            led_pin = config["led_pin"]
+        for machine_name in shelly_uni_devices:
+            # Check machine status
+            in_use = is_machine_in_use(machine_name)
+            set_led(machine_name, in_use)  # Turn on LED if in use
 
-            # Check if the machine is currently in use
-            if is_machine_in_use(machine):
-                GPIO.output(led_pin, GPIO.HIGH)  # Turn on LED to indicate the machine is in use
-                print(f"{machine} is currently in use.")
-            else:
-                GPIO.output(led_pin, GPIO.LOW)   # Turn off LED when the machine is available
-                if GPIO.input(button_pin) == GPIO.LOW:  # Button pressed
-                    control_machine(machine, "on")
-                    time.sleep(0.5)  # Debounce to avoid multiple presses
+            # Only process button press if machine is not in use
+            if not in_use and is_button_pressed(machine_name):
+                start_machine(machine_name, duration=5)  # Start for 5 seconds
+                time.sleep(0.5)  # Debounce to avoid multiple presses
 
-            time.sleep(1)  # Add a small delay to prevent excessive API requests
+            time.sleep(1)  # Delay to prevent excessive requests
