@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import requests
 import time
 from utils.shelly_config import shelly_uni_devices, shelly_x_mod1
@@ -91,3 +92,17 @@ def monitor_buttons():
                 time.sleep(0.5)  # Debounce to avoid multiple presses
 
             time.sleep(1)  # Delay to prevent excessive requests
+=======
+def start_machine():
+    """Logic to start the washing machine."""
+    print("Starting the washing machine...")
+
+def stop_machine():
+    """Logic to stop the washing machine."""
+    print("Stopping the washing machine...")
+
+def check_machine_status():
+    """Logic to check the status of the washing machine."""
+    # You could send a request to the washing machine to get its current status
+    return "Idle"
+>>>>>>> 18712c10707d4f90789e158f42e4eb9880f3771e

@@ -1,4 +1,25 @@
+<<<<<<< HEAD
 Flask==3.0.3
 SQLAlchemy==2.0.35
 pyserial==3.5
 requests==2.32.3
+=======
+blinker==1.8.2
+certifi==2024.8.30
+charset-normalizer==3.3.2
+click==8.1.7
+Flask==3.0.3
+greenlet==3.1.1
+idna==3.10
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+pillow==10.4.0
+pyserial==3.5
+qrcode==8.0
+requests==2.32.3
+SQLAlchemy==2.0.35
+typing_extensions==4.12.2
+urllib3==2.2.3
+Werkzeug==3.0.4
+>>>>>>> 18712c10707d4f90789e158f42e4eb9880f3771e
