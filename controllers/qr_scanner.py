@@ -1,7 +1,15 @@
-#import serial
+import serial
 from models import session
 from models.code_model import Code
+from models.setting_model import get_setting_value
 from utils.shelly_control import send_shelly_pulse
+
+# Configuration values pulled from the settings table
+SERIAL_PORT = get_setting_value(session, "serial_port", default="/dev/ttyUSB0")
+SERIAL_BAUDRATE = int(get_setting_value(session, "serial_baudrate", default=9600))
+SCAN_TIMEOUT = int(get_setting_value(session, "scan_timeout", default=1))
+SHELLY_IP = get_setting_value(session, "shelly_ip", default="192.168.1.100")
+PULSE_DURATION = int(get_setting_value(session, "pulse_duration", default=1))
 
 """
 def process_qr_code(scanned_code):
@@ -24,19 +32,16 @@ def listen_for_scans():
 """
 
 """
-# Serial setup for QR scanner
+# Serial setup for QR scanner using configured values
 ser = serial.Serial(
-    port='/dev/ttyACM0',  # Change if your device uses a different port
-    baudrate=9600,
+    port=SERIAL_PORT,
+    baudrate=SERIAL_BAUDRATE,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
-    timeout=1  # Timeout in seconds
+    timeout=SCAN_TIMEOUT  # Timeout in seconds
 )
 """
-# Shelly configuration
-SHELLY_IP = "192.168.10.229"  # Change this to match your Shelly device IP
-PULSE_DURATION = 1  # seconds
 
 def read_qr_code():
     """Reads a single line from the QR scanner."""
