@@ -1,6 +1,7 @@
 from datetime import datetime
 from models import session, Code
 from models.setting_model import get_setting_value
+from utils.logger import logger
 
 def cleanup_expired_codes():
     """Remove fully used codes from the database based on the expiration date."""
@@ -9,8 +10,8 @@ def cleanup_expired_codes():
     
     if expired_codes:
         for code in expired_codes:
-            print(f"Removing expired code: {code.code}")
+            logger.info("Removing expired code: %s", code.code)
             session.delete(code)
         session.commit()
     else:
-        print("No expired codes to clean up.")
+        logger.info("No expired codes to clean up.")
