@@ -1,7 +1,12 @@
+import logging
+import threading
+# import RPi.GPIO as GPIO
 from controllers.qr_scanner import listen_for_scans
 from models import init_db
-import threading
-#import RPi.GPIO as GPIO
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
 
 
 def start_flask():
@@ -10,19 +15,21 @@ def start_flask():
     flask_app.run(debug=True, use_reloader=False)
 
 if __name__ == "__main__":
-    try:    
+    try:
         # Start the Flask server in a separate thread
-        flask_thread = threading.Thread(target=start_flask, daemon=True).start()
+        threading.Thread(target=start_flask, daemon=True).start()
+        logger.info("Flask server started")
 
         # Initialize the database (create all tables)
         init_db()
+        logger.info("Database initialized")
     
         # Start the QR code scanning process
         listen_for_scans()
 
     except KeyboardInterrupt:
         # Clean up GPIO resources on program exit
-        print("Exiting program. Cleaning up GPIO...")
+        logger.info("Exiting program. Cleaning up GPIO...")
         #GPIO.cleanup()
 
 

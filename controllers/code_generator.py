@@ -1,7 +1,13 @@
-from models import session
-from models.code_model import Code
+import logging
 import random
 import string
+
+from models import session
+from models.code_model import Code
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
 
 def generate_random_code(length=8):
     """Generate a random alphanumeric code."""
@@ -17,6 +23,7 @@ def generate_unique_code(length=8):
     """Generate a unique QR code that doesn't already exist in the database."""
     while True:
         random_code = generate_random_code(length)
+        logger.debug("Generated candidate code", extra={"code": random_code})
         if is_code_unique(random_code):
             return random_code
 
@@ -26,6 +33,7 @@ def generate_new_code(order_id, usage_limit):
     # Check if the order ID already exists
     existing_code = session.query(Code).filter_by(order_id=order_id).first()
     if existing_code:
+        logger.warning("Order ID already exists", extra={"order_id": order_id})
         return {
             "error": "Order ID already exists",
             "code": existing_code.code,
@@ -41,6 +49,7 @@ def generate_new_code(order_id, usage_limit):
     new_code = Code(code=random_code, order_id=order_id, usage_limit=usage_limit, current_usage=0)
     session.add(new_code)
     session.commit()
+    logger.info("Generated new code", extra={"order_id": order_id, "code": random_code})
 
     return {
         "message": "QR code generated successfully.",
