@@ -1,5 +1,10 @@
+import logging
 from flask import Flask, jsonify, request
 from controllers.code_generator import generate_new_code
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -20,7 +25,9 @@ def generate_code():
         
         # Generate the code using the refactored logic
         response = generate_new_code(order_id, usage_limit)
+        logger.info("Generated code for order %s", order_id)
         return jsonify(response), response['status_code']
 
-    except Exception as e:
-        return jsonify({"error": "Failed to process request", "details": str(e)}), 400
+    except Exception:
+        logger.exception("Failed to process /generate_code request")
+        return jsonify({"error": "Failed to process request"}), 400

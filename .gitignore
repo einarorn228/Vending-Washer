@@ -6,3 +6,4 @@ venv/
 
 # Ignore SQLite database files
 *.db
+logs/app.log
