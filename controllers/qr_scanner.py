@@ -10,6 +10,7 @@ from utils.logger import configure_logger
 configure_logger()
 logger = logging.getLogger(__name__)
 
+
 # ----- SETTINGS from DB -----
 SERIAL_PORT     = get_setting_value(session, "serial_port",    default="/dev/ttyUSB0")
 SERIAL_BAUDRATE = int(get_setting_value(session, "serial_baudrate", default=9600))
@@ -29,7 +30,9 @@ try:
         timeout=SCAN_TIMEOUT
     )
     SERIAL_AVAILABLE = True
+    
     logger.debug("Serial scanner available on %s", SERIAL_PORT)
+
 except Exception as e:
     SERIAL_AVAILABLE = False
     logger.warning("Serial scanner not available: %s", e)

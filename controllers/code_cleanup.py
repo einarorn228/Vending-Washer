@@ -1,12 +1,12 @@
 from datetime import datetime
 import logging
-
 from models import session, Code
 from models.setting_model import get_setting_value
 from utils.logger import configure_logger
 
 configure_logger()
 logger = logging.getLogger(__name__)
+
 
 def cleanup_expired_codes():
     """Remove fully used codes from the database based on the expiration date."""
