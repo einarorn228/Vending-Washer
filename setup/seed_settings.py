@@ -16,7 +16,7 @@ DEFAULT_SETTINGS = {
     "machine_types": "washer,dryer",
     "default_machine_type": "washer",
     "max_retry_attempts": "3",
-    "log_level": "INFO",
+    "log_level": "DEBUG",
     "shelly_ip": "192.168.1.100",
     "pulse_duration": "1",
     "usage_limit_default": "1",

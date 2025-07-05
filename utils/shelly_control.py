@@ -1,9 +1,8 @@
 import logging
 import requests
 import time
-from utils.logger import configure_logger
+import logging
 
-configure_logger()
 logger = logging.getLogger(__name__)
 
 def send_shelly_pulse(ip, relay=0, duration=1):

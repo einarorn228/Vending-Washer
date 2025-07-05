@@ -1,13 +1,10 @@
-import logging
 import serial
-
 from models import session
 from models.code_model import Code
 from models.setting_model import get_setting_value
 from utils.shelly_control import send_shelly_pulse, send_shelly_on
-from utils.logger import configure_logger
+import logging
 
-configure_logger()
 logger = logging.getLogger(__name__)
 
 

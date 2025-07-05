@@ -5,7 +5,11 @@ from models import init_db
 from utils.logger import configure_logger
 
 configure_logger()
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("vending_washer")
+logger.info("===== APP STARTED =====")
+print("===== PRINT STATEMENT FOR DEBUGGING =====")
 
 def start_flask():
     from flask_server import app as flask_app

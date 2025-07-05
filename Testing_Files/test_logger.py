@@ -1,9 +1,7 @@
 import os
 import unittest
 import logging
-from utils.logger import configure_logger, LOG_FILE
 
-configure_logger()
 logger = logging.getLogger(__name__)
 
 
