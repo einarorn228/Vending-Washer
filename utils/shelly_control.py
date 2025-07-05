@@ -1,6 +1,10 @@
+import logging
 import requests
 import time
-from utils.logger import logger
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
 
 def send_shelly_pulse(ip, relay=0, duration=1):
     """
@@ -24,23 +28,23 @@ def send_shelly_pulse(ip, relay=0, duration=1):
         # Turn on relay
         on_response = requests.get(on_url, timeout=3)
         if on_response.status_code != 200:
-            logger.error("Failed to turn ON relay at %s. Status: %s", ip, on_response.status_code)
+            logger.error("Failed to turn ON relay", extra={"ip": ip, "status": on_response.status_code})
             return False
 
-        logger.info("Pulse started on Shelly at %s", ip)
+        logger.info("Pulse started", extra={"ip": ip})
         time.sleep(duration)
 
         # Turn off relay
         off_response = requests.get(off_url, timeout=3)
         if off_response.status_code != 200:
-            logger.error("Failed to turn OFF relay at %s. Status: %s", ip, off_response.status_code)
+            logger.error("Failed to turn OFF relay", extra={"ip": ip, "status": off_response.status_code})
             return False
 
-        logger.info("Pulse completed successfully on Shelly at %s", ip)
+        logger.info("Pulse completed successfully", extra={"ip": ip})
         return True
 
     except Exception:
-        logger.exception("Error communicating with Shelly device at %s", ip)
+        logger.exception("Error communicating with Shelly device", extra={"ip": ip})
         return False
     
 def send_shelly_on(ip, relay=0):
@@ -52,11 +56,11 @@ def send_shelly_on(ip, relay=0):
     try:
         resp = requests.get(url, timeout=3)
         if resp.status_code == 200:
-            logger.info("Shelly ON succeeded at %s", ip)
+            logger.info("Shelly ON succeeded", extra={"ip": ip})
             return True
         else:
-            logger.error("Shelly ON failed at %s. Status: %s", ip, resp.status_code)
+            logger.error("Shelly ON failed", extra={"ip": ip, "status": resp.status_code})
             return False
     except Exception:
-        logger.exception("Could not reach Shelly at %s", ip)
+        logger.exception("Could not reach Shelly", extra={"ip": ip})
         return False

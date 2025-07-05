@@ -1,6 +1,10 @@
+import logging
 from flask import Flask, jsonify, request
 from controllers.code_generator import generate_new_code
-from utils.logger import logger
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 

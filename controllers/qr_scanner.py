@@ -1,9 +1,15 @@
+import logging
 import serial
+
 from models import session
 from models.code_model import Code
 from models.setting_model import get_setting_value
 from utils.shelly_control import send_shelly_pulse, send_shelly_on
-from utils.logger import logger
+from utils.logger import configure_logger
+
+configure_logger()
+logger = logging.getLogger(__name__)
+
 
 # ----- SETTINGS from DB -----
 SERIAL_PORT     = get_setting_value(session, "serial_port",    default="/dev/ttyUSB0")
@@ -24,7 +30,9 @@ try:
         timeout=SCAN_TIMEOUT
     )
     SERIAL_AVAILABLE = True
-    logger.info("Serial scanner available on %s", SERIAL_PORT)
+    
+    logger.debug("Serial scanner available on %s", SERIAL_PORT)
+
 except Exception as e:
     SERIAL_AVAILABLE = False
     logger.warning("Serial scanner not available: %s", e)
@@ -36,10 +44,10 @@ def read_qr_code():
         try:
             data = ser.readline().decode("utf-8").strip()
             if data:
-                logger.info("Received QR Code: %s", data)
+                logger.info("Received QR Code", extra={"code": data})
                 return data
-        except Exception as e:
-            logger.error("Serial read error: %s", e)
+        except Exception:
+            logger.exception("Serial read error")
     # Fallback to manual typing
     return input("Enter code manually: ")
 
@@ -58,15 +66,15 @@ def process_qr_code(scanned_code):
     """Validate code, then trigger Shelly according to mode."""
     is_valid, code_info = search_table(scanned_code)
     if not is_valid:
-        logger.warning("Invalid code: %s", code_info)
+        logger.warning("Invalid code", extra={"code": scanned_code, "reason": code_info})
         return
 
     logger.info("Code accepted")
     if RELAY_MODE == "pulse":
-        logger.info("Pulse mode: ON\u2192wait\u2192OFF")
+        logger.debug("Pulse mode: ON\u2192wait\u2192OFF")
         success = send_shelly_pulse(SHELLY_IP, duration=PULSE_DURATION)
     elif RELAY_MODE == "on":
-        logger.info("ON-only mode")
+        logger.debug("ON-only mode")
         success = send_shelly_on(SHELLY_IP)
     else:
         logger.error("Unknown relay mode: %s", RELAY_MODE)
@@ -75,14 +83,15 @@ def process_qr_code(scanned_code):
     if success:
         code_info.current_usage += 1
         session.commit()
-        logger.info("Shelly command succeeded. Code marked as used.")
+        logger.info("Shelly command succeeded", extra={"code": code_info.code})
     else:
-        logger.error("Shelly command failed. Code not marked.")
+        logger.error("Shelly command failed", extra={"code": code_info.code})
 
 def listen_for_scans():
     """Continuously get codes from scanner or input."""
     while True:
         scanned_code = read_qr_code()
+        logger.debug("Scanned code received", extra={"code": scanned_code})
         process_qr_code(scanned_code)
 
 

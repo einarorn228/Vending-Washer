@@ -1,9 +1,11 @@
+import logging
+import threading
 from controllers.qr_scanner import listen_for_scans
 from models import init_db
-import threading
-#import RPi.GPIO as GPIO
-from utils.logger import logger
+from utils.logger import configure_logger
 
+configure_logger()
+logger = logging.getLogger(__name__)
 
 def start_flask():
     from flask_server import app as flask_app
