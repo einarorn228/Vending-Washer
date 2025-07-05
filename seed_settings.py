@@ -1,11 +1,13 @@
-from models import Session
+from models import Session, init_db
 from models.setting_model import Settings, update_setting_value
 import hashlib
+
+init_db()
 
 DEFAULT_SETTINGS = {
     "serial_port": "/dev/ttyUSB0",
     "serial_baudrate": "9600",
-    "notification_email": "admin@yourdomain.is",
+    "notification_email": "einarorn864@gmail.com",
     "admin_username": "admin",
     "admin_password_hash": hashlib.sha256(b"admin").hexdigest(),
     "api_rate_limit": "60",
@@ -22,6 +24,7 @@ DEFAULT_SETTINGS = {
     "scan_timeout": "1",
     "max_usage_limit": "3",
     "cleanup_interval": "7",
+    "relay_mode": "on",  # Options: "on", "pulse"
 }
 
 def seed_settings():

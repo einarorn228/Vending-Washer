@@ -41,3 +41,21 @@ def send_shelly_pulse(ip, relay=0, duration=1):
     except Exception as e:
         print(f"[EXCEPTION] Error communicating with Shelly device at {ip}: {e}")
         return False
+    
+def send_shelly_on(ip, relay=0):
+    """
+    Turn a Shelly relay ON via HTTP.
+    Returns True if the request succeeds (HTTP 200), False otherwise.
+    """
+    url = f"http://{ip}/relay/{relay}?turn=on"
+    try:
+        resp = requests.get(url, timeout=3)
+        if resp.status_code == 200:
+            print(f"[INFO] Shelly ON succeeded at {ip}")
+            return True
+        else:
+            print(f"[ERROR] Shelly ON failed at {ip}. Status: {resp.status_code}")
+            return False
+    except Exception as e:
+        print(f"[EXCEPTION] Could not reach Shelly at {ip}: {e}")
+        return False
