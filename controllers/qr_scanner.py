@@ -1,8 +1,10 @@
 import serial
 from models import session
 from models.code_model import Code
+from models.scan_log_model import ScanLog
 from models.setting_model import get_setting_value
 from utils.shelly_control import send_shelly_pulse, send_shelly_on
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -59,30 +61,67 @@ def search_table(scanned_code):
         return False, "Invalid code"
 
 
+def log_scan_event(code_value, result, details=None):
+    """Persist a scan attempt to the database."""
+    try:
+        code_entry = session.query(Code).filter_by(code=code_value).first()
+        order_id = code_entry.order_id if code_entry else None
+
+        usage_left_msg = None
+        if code_entry:
+            usage_left = code_entry.usage_limit - code_entry.current_usage
+            usage_left_msg = f"usage_left={usage_left}"
+
+        if usage_left_msg:
+            details = f"{details}; {usage_left_msg}" if details else usage_left_msg
+
+        log_entry = ScanLog(
+            code=code_value,
+            order_id=order_id,
+            timestamp=datetime.utcnow(),
+            result=result,
+            details=details,
+        )
+        session.add(log_entry)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        logger.exception("Failed to log scan event: %s", e)
+
+
 def process_qr_code(scanned_code):
     """Validate code, then trigger Shelly according to mode."""
-    is_valid, code_info = search_table(scanned_code)
-    if not is_valid:
-        logger.warning("Invalid code", extra={"code": scanned_code, "reason": code_info})
-        return
+    try:
+        is_valid, code_info = search_table(scanned_code)
+        if not is_valid:
+            result = "expired" if code_info == "Usage limit exceeded" else "invalid"
+            logger.warning("Invalid code", extra={"code": scanned_code, "reason": code_info})
+            log_scan_event(scanned_code, result, code_info)
+            return
 
-    logger.info("Code accepted")
-    if RELAY_MODE == "pulse":
-        logger.debug("Pulse mode: ON\u2192wait\u2192OFF")
-        success = send_shelly_pulse(SHELLY_IP, duration=PULSE_DURATION)
-    elif RELAY_MODE == "on":
-        logger.debug("ON-only mode")
-        success = send_shelly_on(SHELLY_IP)
-    else:
-        logger.error("Unknown relay mode: %s", RELAY_MODE)
-        return
+        logger.info("Code accepted")
+        if RELAY_MODE == "pulse":
+            logger.debug("Pulse mode: ON\u2192wait\u2192OFF")
+            success = send_shelly_pulse(SHELLY_IP, duration=PULSE_DURATION)
+        elif RELAY_MODE == "on":
+            logger.debug("ON-only mode")
+            success = send_shelly_on(SHELLY_IP)
+        else:
+            logger.error("Unknown relay mode: %s", RELAY_MODE)
+            log_scan_event(scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}")
+            return
 
-    if success:
-        code_info.current_usage += 1
-        session.commit()
-        logger.info("Shelly command succeeded", extra={"code": code_info.code})
-    else:
-        logger.error("Shelly command failed", extra={"code": code_info.code})
+        if success:
+            code_info.current_usage += 1
+            session.commit()
+            logger.info("Shelly command succeeded", extra={"code": code_info.code})
+            log_scan_event(scanned_code, "success")
+        else:
+            logger.error("Shelly command failed", extra={"code": code_info.code})
+            log_scan_event(scanned_code, "fail", "Shelly command failed")
+    except Exception as e:
+        logger.exception("Error processing QR code")
+        log_scan_event(scanned_code, "error", str(e))
 
 def listen_for_scans():
     """Continuously get codes from scanner or input."""
