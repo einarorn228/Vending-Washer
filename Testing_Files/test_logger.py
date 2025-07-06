@@ -2,8 +2,11 @@ import os
 import unittest
 import logging
 
-logger = logging.getLogger(__name__)
+# Copy the log path from your logger setup
+LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "logs", "app.log")
+LOG_FILE = os.path.abspath(LOG_FILE)
 
+logger = logging.getLogger(__name__)
 
 class LoggerTest(unittest.TestCase):
     def test_log_file_creation(self):
