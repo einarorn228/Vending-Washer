@@ -1,3 +1,7 @@
+# app.py
+from utils.logger import configure_logger
+configure_logger()
+
 import logging
 import threading
 from controllers.qr_scanner import listen_for_scans

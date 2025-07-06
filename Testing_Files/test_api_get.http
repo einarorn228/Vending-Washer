@@ -1,1 +1,42 @@
-GET http://127.0.0.1:5000/get_code_by_order/123456
+# Get all codes in the database
+GET http://127.0.0.1:5000/admin/codes
+
+# Get all codes for each order ID
+GET http://127.0.0.1:5000/admin/codes/by_order_id/abcdef1
+
+GET http://127.0.0.1:5000/admin/codes/by_order_id/abcdef12
+
+GET http://127.0.0.1:5000/admin/codes/by_order_id/123
+
+GET http://127.0.0.1:5000/admin/codes/by_order_id/1234
+
+# Get info about a specific code
+GET http://127.0.0.1:5000/admin/codes/u4ipLzoN
+
+# Get the last N codes (examples)
+GET http://127.0.0.1:5000/admin/codes/last/2
+
+GET http://127.0.0.1:5000/admin/codes/last/4
+
+# Get usage logs for each code
+GET http://127.0.0.1:5000/admin/usage/by_code/u4ipLzoN
+
+GET http://127.0.0.1:5000/admin/usage/by_code/9JzzryL2
+
+GET http://127.0.0.1:5000/admin/usage/by_code/2idnyvzY
+
+GET http://127.0.0.1:5000/admin/usage/by_code/Zoa1APib
+
+# Get usage logs for each order ID
+GET http://127.0.0.1:5000/admin/usage/by_order_id/abcdef1
+
+GET http://127.0.0.1:5000/admin/usage/by_order_id/abcdef12
+
+GET http://127.0.0.1:5000/admin/usage/by_order_id/123
+
+GET http://127.0.0.1:5000/admin/usage/by_order_id/1234567
+
+# Get the last N scan logs
+GET http://127.0.0.1:5000/admin/scan_logs/last/5
+
+GET http://127.0.0.1:5000/admin/scan_logs/last/10

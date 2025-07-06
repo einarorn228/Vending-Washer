@@ -46,6 +46,13 @@ def get_usage_by_order_id(order_id):
         .order_by(ScanLog.timestamp.desc())
         .all()
     )
+    if not logs:
+        # Check if the order_id exists in codes
+        order_exists = session.query(Code).filter(Code.order_id == order_id).first()
+        if order_exists is None:
+            return jsonify({"message": f"No scan logs found for order_id '{order_id}'. Order ID does not exist."}), 404
+        else:
+            return jsonify({"message": f"Order ID '{order_id}' has not been scanned yet."}), 404
     result = [
         {
             "id": log.id,
@@ -69,6 +76,13 @@ def get_usage_by_code(code):
         .order_by(ScanLog.timestamp.desc())
         .all()
     )
+    if not logs:
+        # Check if the code exists in codes
+        code_exists = session.query(Code).filter(Code.code == code).first()
+        if code_exists is None:
+            return jsonify({"message": f"No scan logs found for code '{code}'. Code does not exist."}), 404
+        else:
+            return jsonify({"message": f"Code '{code}' has not been scanned yet."}), 404
     result = [
         {
             "id": log.id,
@@ -82,6 +96,24 @@ def get_usage_by_code(code):
     ]
     return jsonify(result)
 
+@app.route('/admin/scan_logs/last/<int:count>', methods=['GET'])
+def get_last_scan_logs(count):
+    """Return the last `count` scan log entries."""
+    logs = session.query(ScanLog).order_by(ScanLog.timestamp.desc()).limit(count).all()
+    if not logs:
+        return jsonify({"message": "No scan logs found."}), 404
+    result = [
+        {
+            "id": log.id,
+            "code": log.code,
+            "order_id": log.order_id,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "result": log.result,
+            "details": log.details,
+        }
+        for log in logs
+    ]
+    return jsonify(result)
 
 def serialize_code(code_obj):
     """Serialize a Code row with usage information."""
@@ -106,17 +138,16 @@ def serialize_code(code_obj):
         data["status"] = "expired"
     return data
 
-
 # ----- QR Code Admin/Debug Endpoints -----
 # These endpoints are meant for debugging and admin use.
-
 
 @app.route('/admin/codes', methods=['GET'])
 def get_all_codes():
     """Return all QR codes in the database."""
     codes = session.query(Code).order_by(Code.code).all()
+    if not codes:
+        return jsonify({"message": "No codes found."}), 404
     return jsonify([serialize_code(c) for c in codes])
-
 
 @app.route('/admin/codes/last/<int:count>', methods=['GET'])
 def get_last_codes(count):
@@ -127,12 +158,27 @@ def get_last_codes(count):
     else:
         query = query.order_by(Code.code.desc())
     codes = query.limit(count).all()
+    if not codes:
+        return jsonify({"message": "No codes found."}), 404
     return jsonify([serialize_code(c) for c in codes])
-
 
 @app.route('/admin/codes/by_order_id/<order_id>', methods=['GET'])
 def get_codes_by_order_id(order_id):
     """Return all codes associated with the given order ID."""
     codes = session.query(Code).filter(Code.order_id == order_id).order_by(Code.code).all()
+    if not codes:
+        # Check if the order_id exists at all
+        order_exists = session.query(Code).filter(Code.order_id == order_id).first()
+        if order_exists is None:
+            return jsonify({"message": f"No codes found for order_id '{order_id}'. Order ID does not exist."}), 404
+        else:
+            return jsonify({"message": f"No codes found for order_id '{order_id}'."}), 404
     return jsonify([serialize_code(c) for c in codes])
 
+@app.route('/admin/codes/<code>', methods=['GET'])
+def get_code_info(code):
+    """Return info about a specific code."""
+    code_obj = session.query(Code).filter(Code.code == code).first()
+    if not code_obj:
+        return jsonify({"message": f"Code '{code}' does not exist."}), 404
+    return jsonify(serialize_code(code_obj))

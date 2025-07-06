@@ -132,6 +132,12 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   ```
   Returns all codes associated with the given order ID.
 
+- **Get info about a specific code:**  
+  ```
+  GET /admin/codes/<code>
+  ```
+  Returns info about a specific code.
+
 - **Get all scan log entries for an order ID:**  
   ```
   GET /admin/usage/by_order_id/<order_id>
@@ -143,6 +149,12 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   GET /admin/usage/by_code/<code>
   ```
   Returns all scan log entries for the given code, including timestamp, result, and details.
+
+- **Get the last N scan log entries:**  
+  ```
+  GET /admin/scan_logs/last/<count>
+  ```
+  Returns the last `<count>` scan log entries.
 
 ### Example Usage with curl
 
@@ -161,6 +173,11 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   curl http://127.0.0.1:5000/admin/codes/by_order_id/12345
   ```
 
+- Get info about code ABC123:
+  ```bash
+  curl http://127.0.0.1:5000/admin/codes/ABC123
+  ```
+
 - Get all scan logs for order ID 12345:
   ```bash
   curl http://127.0.0.1:5000/admin/usage/by_order_id/12345
@@ -169,6 +186,11 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
 - Get all scan logs for code ABC123:
   ```bash
   curl http://127.0.0.1:5000/admin/usage/by_code/ABC123
+  ```
+
+- Get the last 5 scan logs:
+  ```bash
+  curl http://127.0.0.1:5000/admin/scan_logs/last/5
   ```
 
 ---
