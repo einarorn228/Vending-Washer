@@ -106,3 +106,73 @@ python Testing_Files/view_db.py [--table TABLE] [--limit N] [--code CODE] [--ord
   ```
 
 ---
+
+## Admin & Debug API Endpoints
+
+The Flask server provides several admin/debug endpoints for monitoring and managing codes and usage.  
+**Note:** These endpoints are for admin/debug use only and should be protected before use in production.
+
+### List of Admin Endpoints
+
+- **Get all codes:**  
+  ```
+  GET /admin/codes
+  ```
+  Returns all QR codes in the database.
+
+- **Get last N created codes:**  
+  ```
+  GET /admin/codes/last/<count>
+  ```
+  Returns the last `<count>` created codes.
+
+- **Get all codes by order ID:**  
+  ```
+  GET /admin/codes/by_order_id/<order_id>
+  ```
+  Returns all codes associated with the given order ID.
+
+- **Get all scan log entries for an order ID:**  
+  ```
+  GET /admin/usage/by_order_id/<order_id>
+  ```
+  Returns all scan log entries for the given order ID, including timestamp, result, and details.
+
+- **Get all scan log entries for a code:**  
+  ```
+  GET /admin/usage/by_code/<code>
+  ```
+  Returns all scan log entries for the given code, including timestamp, result, and details.
+
+### Example Usage with curl
+
+- Get all codes:
+  ```bash
+  curl http://127.0.0.1:5000/admin/codes
+  ```
+
+- Get last 10 codes:
+  ```bash
+  curl http://127.0.0.1:5000/admin/codes/last/10
+  ```
+
+- Get all codes for order ID 12345:
+  ```bash
+  curl http://127.0.0.1:5000/admin/codes/by_order_id/12345
+  ```
+
+- Get all scan logs for order ID 12345:
+  ```bash
+  curl http://127.0.0.1:5000/admin/usage/by_order_id/12345
+  ```
+
+- Get all scan logs for code ABC123:
+  ```bash
+  curl http://127.0.0.1:5000/admin/usage/by_code/ABC123
+  ```
+
+---
+
+**Remember:**  
+These endpoints are powerful for debugging and admin tasks.  
+**Always add authentication before exposing them in production!**
