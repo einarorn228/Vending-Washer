@@ -76,7 +76,7 @@ def log_scan_event(code_value, result, details=None):
                 else:
                     usage_left_msg = "Code has now expired."
             elif result == "expired":
-                usage_left_msg = "Code has now expired."
+                usage_left_msg = "Code has already expired."
             # You can add more result cases here if needed
 
         if usage_left_msg:

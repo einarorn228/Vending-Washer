@@ -3,6 +3,6 @@ POST http://127.0.0.1:5000/generate_code
 Content-Type: application/json
 
 {
-    "order_id": "abcdef12",
-    "usage_limit": 10
+    "order_id": "1234",
+    "usage_limit": 6
 }

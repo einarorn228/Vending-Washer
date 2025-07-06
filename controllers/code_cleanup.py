@@ -2,9 +2,8 @@ from datetime import datetime
 import logging
 from models import session, Code
 from models.setting_model import get_setting_value
-from utils.logger import configure_logger
+import logging
 
-configure_logger()
 logger = logging.getLogger(__name__)
 
 

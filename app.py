@@ -2,12 +2,9 @@ import logging
 import threading
 from controllers.qr_scanner import listen_for_scans
 from models import init_db
-from utils.logger import configure_logger
+import logging
 
-configure_logger()
-#logger = logging.getLogger(__name__)
-
-logger = logging.getLogger("vending_washer")
+logger = logging.getLogger(__name__)
 logger.info("===== APP STARTED =====")
 print("===== PRINT STATEMENT FOR DEBUGGING =====")
 
