@@ -198,3 +198,19 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
 **Remember:**  
 These endpoints are powerful for debugging and admin tasks.  
 **Always add authentication before exposing them in production!**
+
+## Code Expiration and Cleanup
+
+Generated QR codes may automatically expire based on values in the `settings` table.
+
+- `code_expiration_days` – Number of days after creation that an unused code will expire. Set to `0` to disable.
+- `expired_code_cleanup_days` – When a code has reached its usage limit it is marked for deletion this many days later. Set to `0` to remove immediately.
+
+If a code's `expiration_date` is `None`, it will never expire while unused.
+
+Expired codes are removed by `controllers.code_cleanup.cleanup_expired_codes`. `app.py` starts a background thread that runs this cleanup every 24 hours.
+
+Example lifecycle:
+1. `/generate_code` creates a code with an expiration date in UTC if `code_expiration_days` > 0.
+2. When the code is scanned and reaches its usage limit, a new expiration date is set according to `expired_code_cleanup_days`.
+3. The cleanup job deletes codes whose `expiration_date` has passed.
