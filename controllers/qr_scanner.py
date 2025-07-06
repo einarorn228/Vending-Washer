@@ -4,7 +4,7 @@ from models.code_model import Code
 from models.scan_log_model import ScanLog
 from models.setting_model import get_setting_value
 from utils.shelly_control import send_shelly_pulse, send_shelly_on
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,12 +53,17 @@ def read_qr_code():
 
 def search_table(scanned_code):
     code_entry = session.query(Code).filter_by(code=scanned_code).first()
-    if code_entry and code_entry.current_usage < code_entry.usage_limit:
-        return True, code_entry
-    if code_entry:
-        return False, "Usage limit exceeded"
-    else:
+    if not code_entry:
         return False, "Invalid code"
+
+    # Check expiration date if present
+    if code_entry.expiration_date and code_entry.expiration_date <= datetime.utcnow():
+        return False, "Expired code"
+
+    if code_entry.current_usage < code_entry.usage_limit:
+        return True, code_entry
+
+    return False, "Usage limit exceeded"
 
 
 def log_scan_event(code_value, result, details=None):
@@ -101,8 +106,10 @@ def process_qr_code(scanned_code):
     try:
         is_valid, code_info = search_table(scanned_code)
         if not is_valid:
-            result = "expired" if code_info == "Usage limit exceeded" else "invalid"
-            logger.warning("Invalid code", extra={"code": scanned_code, "reason": code_info})
+            result = "expired" if code_info != "Invalid code" else "invalid"
+            logger.warning(
+                "Invalid code", extra={"code": scanned_code, "reason": code_info}
+            )
             log_scan_event(scanned_code, result, code_info)
             return
 
@@ -120,6 +127,19 @@ def process_qr_code(scanned_code):
 
         if success:
             code_info.current_usage += 1
+            if code_info.current_usage >= code_info.usage_limit:
+                # Mark code for cleanup after retention period
+                try:
+                    days = int(
+                        get_setting_value(session, "expired_code_cleanup_days", default=30)
+                    )
+                except (TypeError, ValueError):
+                    days = 30
+                expire_at = datetime.utcnow()
+                if days and days > 0:
+                    expire_at = expire_at + timedelta(days=days)
+                code_info.expiration_date = expire_at
+
             session.commit()
             logger.info("Shelly command succeeded", extra={"code": code_info.code})
             log_scan_event(scanned_code, "success")

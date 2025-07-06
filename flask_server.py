@@ -27,7 +27,16 @@ def generate_code():
         # Generate the code using the refactored logic
         response = generate_new_code(order_id, usage_limit)
         logger.info("Generated code for order %s", order_id)
-        return jsonify(response), response['status_code']
+
+        # Provide human friendly expiration info
+        exp = response.get("expiration_date")
+        if exp is None:
+            exp_msg = "Code does not expire while unused."
+        else:
+            exp_msg = f"Code expires on {exp}."
+        response["expiration_message"] = exp_msg
+
+        return jsonify(response), response["status_code"]
 
     except Exception:
         logger.exception("Failed to process /generate_code request")

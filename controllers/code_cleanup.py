@@ -1,17 +1,19 @@
 from datetime import datetime
 import logging
 from models import session, Code
-from models.setting_model import get_setting_value
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 def cleanup_expired_codes():
-    """Remove fully used codes from the database based on the expiration date."""
-    expiration_days = int(get_setting_value(session, "code_expiration_days", default=30))
-    logger.debug("Expiration threshold: %s days", expiration_days)
-    expired_codes = session.query(Code).filter(Code.expiration_date <= datetime.now()).all()
+    """Remove codes whose expiration_date has passed."""
+    expired_codes = (
+        session.query(Code)
+        .filter(Code.expiration_date.isnot(None))
+        .filter(Code.expiration_date <= datetime.utcnow())
+        .all()
+    )
     
     if expired_codes:
         for code in expired_codes:

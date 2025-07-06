@@ -20,7 +20,10 @@ DEFAULT_SETTINGS = {
     "shelly_ip": "192.168.1.100",
     "pulse_duration": "1",
     "usage_limit_default": "1",
-    "code_expiration_days": "30",
+    # Codes do not expire while unused by default
+    "code_expiration_days": "0",
+    # How long to keep expired/used codes before deletion
+    "expired_code_cleanup_days": "30",
     "scan_timeout": "1",
     "max_usage_limit": "3",
     "cleanup_interval": "7",

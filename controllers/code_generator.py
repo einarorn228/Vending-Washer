@@ -2,8 +2,10 @@ import logging
 import random
 import string
 
+from datetime import datetime, timedelta
 from models import session
 from models.code_model import Code
+from models.setting_model import get_setting_value
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,8 +29,7 @@ def generate_unique_code(length=8):
             return random_code
 
 def generate_new_code(order_id, usage_limit):
-    
-    """Main logic for generating a new QR code."""
+    """Generate a new QR code respecting expiration settings."""
     # Check if the order ID already exists
     existing_code = session.query(Code).filter_by(order_id=order_id).first()
     if existing_code:
@@ -44,11 +45,29 @@ def generate_new_code(order_id, usage_limit):
     # Generate a new unique QR code
     random_code = generate_unique_code()
 
+    # Determine expiration policy from settings
+    try:
+        days = int(get_setting_value(session, "code_expiration_days", default=0))
+    except (TypeError, ValueError):
+        days = 0
+    expiration_date = None
+    if days > 0:
+        expiration_date = datetime.utcnow() + timedelta(days=days)
+
     # Save the new QR code and usage info to the database
-    new_code = Code(code=random_code, order_id=order_id, usage_limit=usage_limit, current_usage=0)
+    new_code = Code(
+        code=random_code,
+        order_id=order_id,
+        usage_limit=usage_limit,
+        current_usage=0,
+        expiration_date=expiration_date,
+    )
     session.add(new_code)
     session.commit()
-    logger.info("Generated new code", extra={"order_id": order_id, "code": random_code})
+    logger.info(
+        "Generated new code",
+        extra={"order_id": order_id, "code": random_code, "expiration_date": expiration_date},
+    )
 
     return {
         "message": "QR code generated successfully.",
@@ -58,5 +77,6 @@ def generate_new_code(order_id, usage_limit):
             "usage_limit": usage_limit,
             "current_usage": 0
         },
-        "status_code": 201
+        "status_code": 201,
+        "expiration_date": expiration_date.isoformat() if expiration_date else None,
     }
