@@ -4,9 +4,8 @@ import string
 
 from models import session
 from models.code_model import Code
-from utils.logger import configure_logger
+import logging
 
-configure_logger()
 logger = logging.getLogger(__name__)
 
 def generate_random_code(length=8):
