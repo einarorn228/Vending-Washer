@@ -70,7 +70,14 @@ def log_scan_event(code_value, result, details=None):
         usage_left_msg = None
         if code_entry:
             usage_left = code_entry.usage_limit - code_entry.current_usage
-            usage_left_msg = f"usage_left={usage_left}"
+            if result == "success":
+                if usage_left > 0:
+                    usage_left_msg = f"Code now has {usage_left} uses left."
+                else:
+                    usage_left_msg = "Code has now expired."
+            elif result == "expired":
+                usage_left_msg = "Code has now expired."
+            # You can add more result cases here if needed
 
         if usage_left_msg:
             details = f"{details}; {usage_left_msg}" if details else usage_left_msg
