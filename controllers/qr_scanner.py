@@ -114,16 +114,23 @@ def process_qr_code(scanned_code):
             return
 
         logger.info("Code accepted")
-        if RELAY_MODE == "pulse":
-            logger.debug("Pulse mode: ON\u2192wait\u2192OFF")
-            success = send_shelly_pulse(SHELLY_IP, duration=PULSE_DURATION)
-        elif RELAY_MODE == "on":
-            logger.debug("ON-only mode")
-            success = send_shelly_on(SHELLY_IP)
+
+        # Simulate Shelly success if SHELLY_IP is 0 or None and debug mode is on
+        debug_mode = logger.isEnabledFor(logging.DEBUG)
+        if (not SHELLY_IP or SHELLY_IP == "0") and debug_mode:
+            logger.debug("Simulating Shelly success (debug mode, no SHELLY_IP)")
+            success = 1
         else:
-            logger.error("Unknown relay mode: %s", RELAY_MODE)
-            log_scan_event(scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}")
-            return
+            if RELAY_MODE == "pulse":
+                logger.debug("Pulse mode: ON\u2192wait\u2192OFF")
+                success = send_shelly_pulse(SHELLY_IP, duration=PULSE_DURATION)
+            elif RELAY_MODE == "on":
+                logger.debug("ON-only mode")
+                success = send_shelly_on(SHELLY_IP)
+            else:
+                logger.error("Unknown relay mode: %s", RELAY_MODE)
+                log_scan_event(scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}")
+                return
 
         if success:
             code_info.current_usage += 1

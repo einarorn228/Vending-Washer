@@ -17,7 +17,7 @@ DEFAULT_SETTINGS = {
     "default_machine_type": "washer",
     "max_retry_attempts": "3",
     "log_level": "DEBUG",
-    "shelly_ip": "192.168.1.100",
+    "shelly_ip": "0",
     "pulse_duration": "1",
     "usage_limit_default": "1",
     # Codes do not expire while unused by default
