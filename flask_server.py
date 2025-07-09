@@ -14,12 +14,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configure dynamic CORS based on allowed origins stored in the DB
-def cors_origin_validator(origin):
-    allowed = get_setting_value(session, "cors_allowed_origins", "")
-    origins = [o.strip() for o in allowed.split(",") if o.strip()]
-    return origin in origins
-
-CORS(app, origins=cors_origin_validator)
+allowed_origins = get_setting_value(session, "cors_allowed_origins", "")
+origins_list = [o.strip() for o in allowed_origins.split(",") if o.strip()]
+CORS(app, origins=origins_list)
 
 
 def check_admin_auth(auth_header):

@@ -1,8 +1,14 @@
 import sqlite3
 from models import session
-from models.setting_model import update_setting_value
+from models.setting_model import update_setting_value, Settings
 
-update_setting_value(session, "expired_code_cleanup_days", "0",)
+#api_key_setting = session.query(Settings).filter_by(key="api_key").first()
+#if api_key_setting:
+#    print("Current API key:", api_key_setting.value)
+#else:
+#    print("API key not found.")
+
+update_setting_value(session, "cors_allowed_origins", "http://localhost, http://173.25.200.254",)
 session.commit()
 
 #conn = sqlite3.connect('codes.db')  # Use your actual DB path
