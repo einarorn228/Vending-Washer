@@ -1,6 +1,7 @@
 from models import Session, init_db
 from models.setting_model import Settings, update_setting_value
 import hashlib
+import secrets
 
 init_db()
 
@@ -25,6 +26,7 @@ DEFAULT_SETTINGS = {
     "max_usage_limit": "3",
     "cleanup_interval": "7",
     "relay_mode": "on",  # Options: "on", "pulse"
+    "cors_allowed_origins": "http://localhost",
 }
 
 def seed_settings():
@@ -34,6 +36,11 @@ def seed_settings():
             exists = session.query(Settings).filter_by(key=key).first()
             if not exists:
                 update_setting_value(session, key, value)
+
+        # Generate API key if not present
+        api_key_setting = session.query(Settings).filter_by(key="api_key").first()
+        if not api_key_setting:
+            update_setting_value(session, "api_key", secrets.token_hex(32))
     finally:
         session.close()
 

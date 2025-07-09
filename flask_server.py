@@ -1,15 +1,73 @@
 import logging
+import base64
+import hashlib
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from controllers.code_generator import generate_new_code
 from models import session
 from models.scan_log_model import ScanLog
 from models.code_model import Code
+from models.setting_model import get_setting_value, update_setting_value
 
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Configure dynamic CORS based on allowed origins stored in the DB
+def cors_origin_validator(origin):
+    allowed = get_setting_value(session, "cors_allowed_origins", "")
+    origins = [o.strip() for o in allowed.split(",") if o.strip()]
+    return origin in origins
+
+CORS(app, origins=cors_origin_validator)
+
+
+def check_admin_auth(auth_header):
+    if not auth_header or not auth_header.startswith("Basic "):
+        return False
+    try:
+        b64 = auth_header.split(" ", 1)[1]
+        userpass = base64.b64decode(b64).decode("utf-8")
+        username, password = userpass.split(":", 1)
+    except Exception:
+        return False
+    db_user = get_setting_value(session, "admin_username")
+    db_pass_hash = get_setting_value(session, "admin_password_hash")
+    if db_user is None or db_pass_hash is None:
+        return False
+    pass_hash = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return username == db_user and pass_hash == db_pass_hash
+
+
+def require_admin_auth(view_function):
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not check_admin_auth(auth_header):
+            resp = jsonify({"error": "Admin authentication required"})
+            resp.status_code = 401
+            resp.headers["WWW-Authenticate"] = 'Basic realm="Admin Area"'
+            return resp
+        return view_function(*args, **kwargs)
+
+    decorated_function.__name__ = view_function.__name__
+    return decorated_function
+
+
+def require_api_key(view_function):
+    def decorated_function(*args, **kwargs):
+        header_key = request.headers.get("X-API-KEY")
+        db_key = get_setting_value(session, "api_key")
+        if not header_key or header_key != db_key:
+            resp = jsonify({"error": "Invalid or missing API key"})
+            resp.status_code = 401
+            return resp
+        return view_function(*args, **kwargs)
+
+    decorated_function.__name__ = view_function.__name__
+    return decorated_function
+
 @app.route('/generate_code', methods=['POST'])
+@require_api_key
 def generate_code():
     """Endpoint to generate a new QR code based on an order ID."""
     try:
@@ -38,6 +96,7 @@ def generate_code():
 # TODO: Add authentication before exposing in production
 
 @app.route('/admin/usage/by_order_id/<order_id>', methods=['GET'])
+@require_admin_auth
 def get_usage_by_order_id(order_id):
     """Return all scan log entries for the given order ID."""
     logs = (
@@ -68,6 +127,7 @@ def get_usage_by_order_id(order_id):
 
 
 @app.route('/admin/usage/by_code/<code>', methods=['GET'])
+@require_admin_auth
 def get_usage_by_code(code):
     """Return all scan log entries for the given code."""
     logs = (
@@ -97,6 +157,7 @@ def get_usage_by_code(code):
     return jsonify(result)
 
 @app.route('/admin/scan_logs/last/<int:count>', methods=['GET'])
+@require_admin_auth
 def get_last_scan_logs(count):
     """Return the last `count` scan log entries."""
     logs = session.query(ScanLog).order_by(ScanLog.timestamp.desc()).limit(count).all()
@@ -142,6 +203,7 @@ def serialize_code(code_obj):
 # These endpoints are meant for debugging and admin use.
 
 @app.route('/admin/codes', methods=['GET'])
+@require_admin_auth
 def get_all_codes():
     """Return all QR codes in the database."""
     codes = session.query(Code).order_by(Code.code).all()
@@ -150,6 +212,7 @@ def get_all_codes():
     return jsonify([serialize_code(c) for c in codes])
 
 @app.route('/admin/codes/last/<int:count>', methods=['GET'])
+@require_admin_auth
 def get_last_codes(count):
     """Return the last ``count`` created codes."""
     query = session.query(Code)
@@ -163,6 +226,7 @@ def get_last_codes(count):
     return jsonify([serialize_code(c) for c in codes])
 
 @app.route('/admin/codes/by_order_id/<order_id>', methods=['GET'])
+@require_admin_auth
 def get_codes_by_order_id(order_id):
     """Return all codes associated with the given order ID."""
     codes = session.query(Code).filter(Code.order_id == order_id).order_by(Code.code).all()
@@ -176,9 +240,43 @@ def get_codes_by_order_id(order_id):
     return jsonify([serialize_code(c) for c in codes])
 
 @app.route('/admin/codes/<code>', methods=['GET'])
+@require_admin_auth
 def get_code_info(code):
     """Return info about a specific code."""
     code_obj = session.query(Code).filter(Code.code == code).first()
     if not code_obj:
         return jsonify({"message": f"Code '{code}' does not exist."}), 404
     return jsonify(serialize_code(code_obj))
+
+
+@app.route('/admin/settings/cors', methods=['PUT'])
+@require_admin_auth
+def update_cors():
+    """Update allowed CORS origins."""
+    data = request.get_json(force=True)
+    origins = data.get("origins")
+    if origins is None:
+        return jsonify({"error": "Missing origins"}), 400
+    if isinstance(origins, list):
+        origins = ",".join(origins)
+    update_setting_value(session, "cors_allowed_origins", origins)
+    return jsonify({"message": "CORS origins updated"})
+
+
+@app.route('/admin/settings/<key>', methods=['GET', 'PUT'])
+@require_admin_auth
+def manage_setting(key):
+    """Retrieve or update an arbitrary setting."""
+    if request.method == 'GET':
+        value = get_setting_value(session, key)
+        if value is None:
+            return jsonify({"error": "Setting not found"}), 404
+        return jsonify({"key": key, "value": value})
+
+    data = request.get_json(force=True)
+    value = data.get("value")
+    if value is None:
+        return jsonify({"error": "Missing value"}), 400
+    update_setting_value(session, key, value)
+    return jsonify({"message": "Setting updated", "key": key, "value": value})
+
