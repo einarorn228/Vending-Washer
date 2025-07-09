@@ -1,42 +1,43 @@
-# Get all codes in the database
+### Generate a new code
+POST http://127.0.0.1:5000/generate_code
+Content-Type: application/json
+
+{
+  "order_id": "einar12",
+  "usage_limit": 3
+}
+
+### Get all codes in the database
 GET http://127.0.0.1:5000/admin/codes
 
-# Get all codes for each order ID
-GET http://127.0.0.1:5000/admin/codes/by_order_id/abcdef1
+### Get the last N created codes
+GET http://127.0.0.1:5000/admin/codes/last/<COUNT>
 
-GET http://127.0.0.1:5000/admin/codes/by_order_id/abcdef12
+### Get all codes for a specific order ID
+GET http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
 
-GET http://127.0.0.1:5000/admin/codes/by_order_id/123
+### Get info about a specific code
+GET http://127.0.0.1:5000/admin/codes/<CODE>
 
-GET http://127.0.0.1:5000/admin/codes/by_order_id/1234
+### Delete a code by code
+DELETE http://127.0.0.1:5000/admin/codes/<CODE>
 
-# Get info about a specific code
-GET http://127.0.0.1:5000/admin/codes/u4ipLzoN
+### Delete all codes for an order ID
+DELETE http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
 
-# Get the last N codes (examples)
-GET http://127.0.0.1:5000/admin/codes/last/2
+### Update a setting
+PUT http://127.0.0.1:5000/admin/settings/<SETTING_KEY>
+Content-Type: application/json
 
-GET http://127.0.0.1:5000/admin/codes/last/4
+{
+  "value": "<NEW_VALUE>"
+}
 
-# Get usage logs for each code
-GET http://127.0.0.1:5000/admin/usage/by_code/u4ipLzoN
+### Get all scan log entries for an order ID
+GET http://127.0.0.1:5000/admin/usage/by_order_id/<ORDER_ID>
 
-GET http://127.0.0.1:5000/admin/usage/by_code/9JzzryL2
+### Get all scan log entries for a code
+GET http://127.0.0.1:5000/admin/usage/by_code/<CODE>
 
-GET http://127.0.0.1:5000/admin/usage/by_code/2idnyvzY
-
-GET http://127.0.0.1:5000/admin/usage/by_code/Zoa1APib
-
-# Get usage logs for each order ID
-GET http://127.0.0.1:5000/admin/usage/by_order_id/abcdef1
-
-GET http://127.0.0.1:5000/admin/usage/by_order_id/abcdef12
-
-GET http://127.0.0.1:5000/admin/usage/by_order_id/123
-
-GET http://127.0.0.1:5000/admin/usage/by_order_id/1234567
-
-# Get the last N scan logs
-GET http://127.0.0.1:5000/admin/scan_logs/last/5
-
-GET http://127.0.0.1:5000/admin/scan_logs/last/10
+### Get the last N scan log entries
+GET http://127.0.0.1:5000/admin/scan_logs/last/<COUNT>

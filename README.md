@@ -138,6 +138,28 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   ```
   Returns info about a specific code.
 
+- **Delete a code by code:**  
+  ```
+  DELETE /admin/codes/<code>
+  ```
+  Deletes a specific code.
+
+- **Delete all codes for an order ID:**  
+  ```
+  DELETE /admin/codes/by_order_id/<order_id>
+  ```
+  Deletes all codes associated with the given order ID.
+
+- **Update a setting:**  
+  ```
+  PUT /admin/settings/<key>
+  ```
+  Updates a setting value.  
+  Example body:
+  ```json
+  { "value": "new_value" }
+  ```
+
 - **Get all scan log entries for an order ID:**  
   ```
   GET /admin/usage/by_order_id/<order_id>
@@ -178,6 +200,23 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   curl http://127.0.0.1:5000/admin/codes/ABC123
   ```
 
+- Delete code ABC123:
+  ```bash
+  curl -X DELETE http://127.0.0.1:5000/admin/codes/ABC123
+  ```
+
+- Delete all codes for order ID 12345:
+  ```bash
+  curl -X DELETE http://127.0.0.1:5000/admin/codes/by_order_id/12345
+  ```
+
+- Update a setting (e.g. set cleanup days to 7):
+  ```bash
+  curl -X PUT http://127.0.0.1:5000/admin/settings/expired_code_cleanup_days \
+    -H "Content-Type: application/json" \
+    -d '{"value": "7"}'
+  ```
+
 - Get all scan logs for order ID 12345:
   ```bash
   curl http://127.0.0.1:5000/admin/usage/by_order_id/12345
@@ -198,3 +237,21 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
 **Remember:**  
 These endpoints are powerful for debugging and admin tasks.  
 **Always add authentication before exposing them in production!**
+
+---
+
+## Code Expiration and Cleanup
+
+Generated QR codes may automatically expire based on values in the `settings` table.
+
+- `code_expiration_days` – Number of days after creation that an unused code will expire. Set to `0` to disable.
+- `expired_code_cleanup_days` – When a code has reached its usage limit it is marked for deletion this many days later. Set to `0` to remove immediately.
+
+If a code's `expiration_date` is `None`, it will never expire while unused.
+
+Expired codes are removed by `controllers.code_cleanup.cleanup_expired_codes`. `app.py` starts a background thread that runs this cleanup every 24 hours.
+
+Example lifecycle:
+1. `/generate_code` creates a code with an expiration date in UTC if `code_expiration_days` > 0.
+2. When the code is scanned and reaches its usage limit, a new expiration date is set according to `expired_code_cleanup_days`.
+3. The cleanup job deletes codes whose `expiration_date` has
