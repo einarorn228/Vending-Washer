@@ -19,7 +19,14 @@ def print_codes(limit=None, code=None, order_id=None):
     codes = query.all()
     if codes:
         for code_obj in codes:
-            print(f"Code: {code_obj.code}, Order ID: {code_obj.order_id}, Usage Limit: {code_obj.usage_limit}, Current Usage: {code_obj.current_usage}")
+            print(
+                f"Code: {code_obj.code}, "
+                f"Order ID: {code_obj.order_id}, "
+                f"Usage Limit: {code_obj.usage_limit}, "
+                f"Current Usage: {code_obj.current_usage}, "
+                f"Expiration Date: {code_obj.expiration_date}, "
+                f"Created At: {code_obj.created_at}"
+            )
     else:
         print("No codes found.")
 

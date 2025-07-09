@@ -85,7 +85,16 @@ def generate_code():
         # Generate the code using the refactored logic
         response = generate_new_code(order_id, usage_limit)
         logger.info("Generated code for order %s", order_id)
-        return jsonify(response), response['status_code']
+
+        # Provide human friendly expiration info
+        exp = response.get("expiration_date")
+        if exp is None:
+            exp_msg = "Code does not expire while unused."
+        else:
+            exp_msg = f"Code expires on {exp}."
+        response["expiration_message"] = exp_msg
+
+        return jsonify(response), response["status_code"]
 
     except Exception:
         logger.exception("Failed to process /generate_code request")
@@ -248,6 +257,27 @@ def get_code_info(code):
         return jsonify({"message": f"Code '{code}' does not exist."}), 404
     return jsonify(serialize_code(code_obj))
 
+@app.route('/admin/codes/<code>', methods=['DELETE'])
+def delete_code_by_code(code):
+    """Delete a code by its code value."""
+    code_obj = session.query(Code).filter(Code.code == code).first()
+    if not code_obj:
+        return jsonify({"message": f"Code '{code}' does not exist."}), 404
+    session.delete(code_obj)
+    session.commit()
+    return jsonify({"message": f"Code '{code}' deleted."}), 200
+
+@app.route('/admin/codes/by_order_id/<order_id>', methods=['DELETE'])
+def delete_codes_by_order_id(order_id):
+    """Delete all codes associated with a given order ID."""
+    codes = session.query(Code).filter(Code.order_id == order_id).all()
+    if not codes:
+        return jsonify({"message": f"No codes found for order_id '{order_id}'."}), 404
+    count = len(codes)
+    for code in codes:
+        session.delete(code)
+    session.commit()
+    return jsonify({"message": f"Deleted {count} code(s) for order_id '{order_id}'."}), 200
 
 @app.route('/admin/settings/cors', methods=['PUT'])
 @require_admin_auth
