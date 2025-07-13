@@ -28,7 +28,7 @@ from controllers.code_cleanup import cleanup_expired_codes
 
 def start_flask():
     from flask_server import app as flask_app
-    flask_app.run(debug=True, use_reloader=False)
+    flask_app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
 def cleanup_scheduler():
     time.sleep(5)

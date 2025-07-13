@@ -172,11 +172,24 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   ```
   Returns all scan log entries for the given code, including timestamp, result, and details.
 
-- **Get the last N scan log entries:**  
+- **Get the last N scan log entries:**
   ```
   GET /admin/scan_logs/last/<count>
   ```
   Returns the last `<count>` scan log entries.
+
+- **Update allowed CORS origins:**
+  ```
+  PUT /admin/settings/cors
+  ```
+  Update the comma-separated list of allowed origins.
+
+- **Get or update any setting:**
+  ```
+  GET /admin/settings/<key>
+  PUT /admin/settings/<key>
+  ```
+  Retrieve or change a setting value.
 
 ### Example Usage with curl
 
@@ -233,6 +246,24 @@ The Flask server provides several admin/debug endpoints for monitoring and manag
   ```
 
 ---
+**Remember:**
+These endpoints are powerful for debugging and admin tasks.
+**Always add authentication before exposing them in production!**
+
+## API Key and Admin Operations
+
+The server requires an API key for non-admin endpoints. Run the seeding script
+once to generate the key if it does not exist:
+
+```bash
+python setup/seed_settings.py
+```
+
+Retrieve the key locally with:
+
+```bash
+python scripts/get_api_key.py
+```
 
 **Remember:**  
 These endpoints are powerful for debugging and admin tasks.  
@@ -255,3 +286,40 @@ Example lifecycle:
 1. `/generate_code` creates a code with an expiration date in UTC if `code_expiration_days` > 0.
 2. When the code is scanned and reaches its usage limit, a new expiration date is set according to `expired_code_cleanup_days`.
 3. The cleanup job deletes codes whose `expiration_date` has
+
+Include this value in the `X-API-KEY` header when calling general API
+endpoints.
+
+Allowed CORS origins are stored in the `cors_allowed_origins` setting as a
+comma-separated list. Admins can update it with:
+
+```bash
+curl -X PUT -u admin:yourpassword \
+  -H "Content-Type: application/json" \
+  -d '{"origins": ["http://localhost"]}' \
+  http://127.0.0.1:5000/admin/settings/cors
+```
+
+### Rotating the API key or changing the admin password
+
+Use the generic settings endpoint to modify values in the `settings` table. For
+example, to rotate the API key:
+
+```bash
+curl -X PUT -u admin:currentpassword \
+  -H "Content-Type: application/json" \
+  -d '{"value": "<new api key>"}' \
+  http://127.0.0.1:5000/admin/settings/api_key
+```
+
+After rotating, retrieve the new key with `python scripts/get_api_key.py`.
+
+To change the admin password, first compute the SHA-256 hash of the new
+password and update `admin_password_hash` in the same way:
+
+```bash
+curl -X PUT -u admin:currentpassword \
+  -H "Content-Type: application/json" \
+  -d '{"value": "<sha256 hash>"}' \
+  http://127.0.0.1:5000/admin/settings/admin_password_hash
+```
