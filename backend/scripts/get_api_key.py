@@ -7,4 +7,3 @@ if __name__ == "__main__":
         print(key)
     else:
         print("API key not found. Run seed_settings.py first.")
-

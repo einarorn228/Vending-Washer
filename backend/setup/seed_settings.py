@@ -32,6 +32,7 @@ DEFAULT_SETTINGS = {
     "cors_allowed_origins": "http://localhost, http://173.25.200.254",
 }
 
+
 def seed_settings():
     session = Session()
     try:
@@ -46,6 +47,7 @@ def seed_settings():
             update_setting_value(session, "api_key", secrets.token_hex(32))
     finally:
         session.close()
+
 
 if __name__ == "__main__":
     seed_settings()

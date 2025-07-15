@@ -19,6 +19,7 @@ if not os.path.exists(LOG_FILE):
     except Exception:
         pass
 
+
 def configure_logger():
     """
     Configures the ROOT logger so ALL logs from ALL modules appear in the log file and console.
@@ -32,8 +33,9 @@ def configure_logger():
     level_name = os.getenv("LOG_LEVEL")
     if level_name is None:
         try:
-            from models import session
-            from models.setting_model import get_setting_value
+            from ..models import session
+            from ..models.setting_model import get_setting_value
+
             level_name = get_setting_value(session, "log_level", default="INFO")
         except Exception:
             level_name = "INFO"
@@ -56,8 +58,8 @@ def configure_logger():
 
     return root_logger
 
+
 # Call this ONCE at import. All modules should use logging.getLogger(__name__)
 configure_logger()
 
 __all__ = ["configure_logger", "LOG_FILE"]
-

@@ -1,11 +1,12 @@
-#code_model.py
+# code_model.py
 
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime
-from models import Base
+from . import Base
+
 
 class Code(Base):
-    __tablename__ = 'codes'
+    __tablename__ = "codes"
 
     # Fields to store the QR code, order ID, usage info, and expiration date
     code = Column(String, primary_key=True)  # Unique QR code
