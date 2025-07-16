@@ -1,9 +1,10 @@
 import os
 import unittest
 import logging
+import backend.utils.logger  # configure logger and ensure file exists
 
 # Copy the log path from your logger setup
-LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "logs", "app.log")
+LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", "logs", "app.log")
 LOG_FILE = os.path.abspath(LOG_FILE)
 
 logger = logging.getLogger(__name__)

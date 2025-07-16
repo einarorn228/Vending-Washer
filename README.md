@@ -2,6 +2,55 @@
 
 This project powers a simple QR-code based vending washer prototype.
 
+## Project Structure
+
+```
+backend/   - Flask API and machine logic
+frontend/  - React touchscreen UI
+```
+
+The backend exposes API endpoints that the touchscreen UI polls.
+
+## Build and Run
+
+### Backend
+
+```bash
+cd backend
+python3 -m venv venv && . venv/bin/activate
+pip install -r requirements.txt
+python setup/seed_settings.py  # create API key and default settings
+python app.py
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs on port 3000 by default and communicates with the backend on port 5000.
+
+## UI API Endpoints
+
+- `POST /api/scan_code` – validate a code
+- `POST /api/start_machine` – start a machine using a valid code
+- `GET /api/ui_state` – poll current UI state
+
+All requests require the `X-API-KEY` header matching the value stored in the database.
+
+## Kiosk Mode
+
+On Linux you can launch the frontend fullscreen with:
+
+```bash
+npm run dev -- --open
+```
+
+Press F11 to toggle kiosk mode in most browsers. On Windows use Chrome's `--kiosk` flag when starting the browser.
+
 ## Logging
 
 Logging is configured centrally in `utils/logger.py`. A rotating log file is stored in `logs/app.log` and messages are also printed to the console.

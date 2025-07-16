@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch
 
-from models import session, init_db
-from models.code_model import Code
-from models.scan_log_model import ScanLog
-from models.setting_model import Settings
+from backend.models import session, init_db
+from backend.models.code_model import Code
+from backend.models.scan_log_model import ScanLog
+from backend.models.setting_model import Settings
 
 # Initialize DB before importing qr_scanner so settings table exists
 init_db()
-from controllers.qr_scanner import process_qr_code
+from backend.controllers.qr_scanner import process_qr_code
 
 class ScanLogTests(unittest.TestCase):
     def setUp(self):
@@ -24,10 +24,10 @@ class ScanLogTests(unittest.TestCase):
         session.close()
 
     def test_scan_events(self):
-        with patch('controllers.qr_scanner.send_shelly_on', return_value=True):
+        with patch('backend.controllers.qr_scanner.send_shelly_on', return_value=True):
             process_qr_code('VALID1')
         process_qr_code('INVALID')
-        with patch('controllers.qr_scanner.send_shelly_on', side_effect=Exception('boom')):
+        with patch('backend.controllers.qr_scanner.send_shelly_on', side_effect=Exception('boom')):
             process_qr_code('VALID1')
 
         logs = session.query(ScanLog).order_by(ScanLog.id).all()

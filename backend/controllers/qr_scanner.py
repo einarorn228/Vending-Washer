@@ -1,9 +1,9 @@
 import serial
-from models import session
-from models.code_model import Code
-from models.scan_log_model import ScanLog
-from models.setting_model import get_setting_value
-from utils.shelly_control import send_shelly_pulse, send_shelly_on
+from ..models import session
+from ..models.code_model import Code
+from ..models.scan_log_model import ScanLog
+from ..models.setting_model import get_setting_value
+from ..utils.shelly_control import send_shelly_pulse, send_shelly_on
 from datetime import datetime, timedelta
 import logging
 
@@ -11,12 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 # ----- SETTINGS from DB -----
-SERIAL_PORT     = get_setting_value(session, "serial_port",    default="/dev/ttyUSB0")
+SERIAL_PORT = get_setting_value(session, "serial_port", default="/dev/ttyUSB0")
 SERIAL_BAUDRATE = int(get_setting_value(session, "serial_baudrate", default=9600))
-SCAN_TIMEOUT    = int(get_setting_value(session, "scan_timeout",    default=1))
-SHELLY_IP       = get_setting_value(session, "shelly_ip",       default="192.168.1.100")
-PULSE_DURATION  = int(get_setting_value(session, "pulse_duration", default=1))
-RELAY_MODE = get_setting_value(session, "relay_mode", default="on").lower()  # "on" or "pulse"
+SCAN_TIMEOUT = int(get_setting_value(session, "scan_timeout", default=1))
+SHELLY_IP = get_setting_value(session, "shelly_ip", default="192.168.1.100")
+PULSE_DURATION = int(get_setting_value(session, "pulse_duration", default=1))
+RELAY_MODE = get_setting_value(
+    session, "relay_mode", default="on"
+).lower()  # "on" or "pulse"
 
 # ----- Initialize serial scanner if available -----
 try:
@@ -26,10 +28,10 @@ try:
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
-        timeout=SCAN_TIMEOUT
+        timeout=SCAN_TIMEOUT,
     )
     SERIAL_AVAILABLE = True
-    
+
     logger.debug("Serial scanner available on %s", SERIAL_PORT)
 
 except Exception as e:
@@ -129,7 +131,9 @@ def process_qr_code(scanned_code):
                 success = send_shelly_on(SHELLY_IP)
             else:
                 logger.error("Unknown relay mode: %s", RELAY_MODE)
-                log_scan_event(scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}")
+                log_scan_event(
+                    scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}"
+                )
                 return
 
         if success:
@@ -138,7 +142,9 @@ def process_qr_code(scanned_code):
                 # Mark code for cleanup after retention period
                 try:
                     days = int(
-                        get_setting_value(session, "expired_code_cleanup_days", default=30)
+                        get_setting_value(
+                            session, "expired_code_cleanup_days", default=30
+                        )
                     )
                 except (TypeError, ValueError):
                     days = 30
@@ -156,6 +162,7 @@ def process_qr_code(scanned_code):
     except Exception as e:
         logger.exception("Error processing QR code")
         log_scan_event(scanned_code, "error", str(e))
+
 
 def listen_for_scans():
     """Continuously get codes from scanner or input."""

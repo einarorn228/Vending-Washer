@@ -3,11 +3,12 @@ import base64
 import hashlib
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from controllers.code_generator import generate_new_code
-from models import session
-from models.scan_log_model import ScanLog
-from models.code_model import Code
-from models.setting_model import get_setting_value, update_setting_value
+from .controllers.code_generator import generate_new_code
+from .controllers.ui_api import ui_api
+from .models import session
+from .models.scan_log_model import ScanLog
+from .models.code_model import Code
+from .models.setting_model import get_setting_value, update_setting_value
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,8 @@ app = Flask(__name__)
 allowed_origins = get_setting_value(session, "cors_allowed_origins", "")
 origins_list = [o.strip() for o in allowed_origins.split(",") if o.strip()]
 CORS(app, origins=origins_list)
+
+app.register_blueprint(ui_api, url_prefix="/api")
 
 
 def check_admin_auth(auth_header):
@@ -63,7 +66,8 @@ def require_api_key(view_function):
     decorated_function.__name__ = view_function.__name__
     return decorated_function
 
-@app.route('/generate_code', methods=['POST'])
+
+@app.route("/generate_code", methods=["POST"])
 @require_api_key
 def generate_code():
     """Endpoint to generate a new QR code based on an order ID."""
@@ -74,11 +78,11 @@ def generate_code():
         # Get data from body
         order_id = data.get("order_id")
         usage_limit = data.get("usage_limit")
-        
+
         # Error handling
         if not order_id or usage_limit is None:
             return jsonify({"error": "Missing order_id or usage_limit"}), 400
-        
+
         # Generate the code using the refactored logic
         response = generate_new_code(order_id, usage_limit)
         logger.info("Generated code for order %s", order_id)
@@ -101,7 +105,8 @@ def generate_code():
 # ----- Admin/Debug Endpoints -----
 # TODO: Add authentication before exposing in production
 
-@app.route('/admin/usage/by_order_id/<order_id>', methods=['GET'])
+
+@app.route("/admin/usage/by_order_id/<order_id>", methods=["GET"])
 @require_admin_auth
 def get_usage_by_order_id(order_id):
     """Return all scan log entries for the given order ID."""
@@ -115,9 +120,21 @@ def get_usage_by_order_id(order_id):
         # Check if the order_id exists in codes
         order_exists = session.query(Code).filter(Code.order_id == order_id).first()
         if order_exists is None:
-            return jsonify({"message": f"No scan logs found for order_id '{order_id}'. Order ID does not exist."}), 404
+            return (
+                jsonify(
+                    {
+                        "message": f"No scan logs found for order_id '{order_id}'. Order ID does not exist."
+                    }
+                ),
+                404,
+            )
         else:
-            return jsonify({"message": f"Order ID '{order_id}' has not been scanned yet."}), 404
+            return (
+                jsonify(
+                    {"message": f"Order ID '{order_id}' has not been scanned yet."}
+                ),
+                404,
+            )
     result = [
         {
             "id": log.id,
@@ -132,7 +149,7 @@ def get_usage_by_order_id(order_id):
     return jsonify(result)
 
 
-@app.route('/admin/usage/by_code/<code>', methods=['GET'])
+@app.route("/admin/usage/by_code/<code>", methods=["GET"])
 @require_admin_auth
 def get_usage_by_code(code):
     """Return all scan log entries for the given code."""
@@ -146,7 +163,14 @@ def get_usage_by_code(code):
         # Check if the code exists in codes
         code_exists = session.query(Code).filter(Code.code == code).first()
         if code_exists is None:
-            return jsonify({"message": f"No scan logs found for code '{code}'. Code does not exist."}), 404
+            return (
+                jsonify(
+                    {
+                        "message": f"No scan logs found for code '{code}'. Code does not exist."
+                    }
+                ),
+                404,
+            )
         else:
             return jsonify({"message": f"Code '{code}' has not been scanned yet."}), 404
     result = [
@@ -162,7 +186,8 @@ def get_usage_by_code(code):
     ]
     return jsonify(result)
 
-@app.route('/admin/scan_logs/last/<int:count>', methods=['GET'])
+
+@app.route("/admin/scan_logs/last/<int:count>", methods=["GET"])
 @require_admin_auth
 def get_last_scan_logs(count):
     """Return the last `count` scan log entries."""
@@ -181,6 +206,7 @@ def get_last_scan_logs(count):
         for log in logs
     ]
     return jsonify(result)
+
 
 def serialize_code(code_obj):
     """Serialize a Code row with usage information."""
@@ -205,10 +231,12 @@ def serialize_code(code_obj):
         data["status"] = "expired"
     return data
 
+
 # ----- QR Code Admin/Debug Endpoints -----
 # These endpoints are meant for debugging and admin use.
 
-@app.route('/admin/codes', methods=['GET'])
+
+@app.route("/admin/codes", methods=["GET"])
 @require_admin_auth
 def get_all_codes():
     """Return all QR codes in the database."""
@@ -217,12 +245,13 @@ def get_all_codes():
         return jsonify({"message": "No codes found."}), 404
     return jsonify([serialize_code(c) for c in codes])
 
-@app.route('/admin/codes/last/<int:count>', methods=['GET'])
+
+@app.route("/admin/codes/last/<int:count>", methods=["GET"])
 @require_admin_auth
 def get_last_codes(count):
     """Return the last ``count`` created codes."""
     query = session.query(Code)
-    if hasattr(Code, 'created_at'):
+    if hasattr(Code, "created_at"):
         query = query.order_by(Code.created_at.desc())
     else:
         query = query.order_by(Code.code.desc())
@@ -231,21 +260,35 @@ def get_last_codes(count):
         return jsonify({"message": "No codes found."}), 404
     return jsonify([serialize_code(c) for c in codes])
 
-@app.route('/admin/codes/by_order_id/<order_id>', methods=['GET'])
+
+@app.route("/admin/codes/by_order_id/<order_id>", methods=["GET"])
 @require_admin_auth
 def get_codes_by_order_id(order_id):
     """Return all codes associated with the given order ID."""
-    codes = session.query(Code).filter(Code.order_id == order_id).order_by(Code.code).all()
+    codes = (
+        session.query(Code).filter(Code.order_id == order_id).order_by(Code.code).all()
+    )
     if not codes:
         # Check if the order_id exists at all
         order_exists = session.query(Code).filter(Code.order_id == order_id).first()
         if order_exists is None:
-            return jsonify({"message": f"No codes found for order_id '{order_id}'. Order ID does not exist."}), 404
+            return (
+                jsonify(
+                    {
+                        "message": f"No codes found for order_id '{order_id}'. Order ID does not exist."
+                    }
+                ),
+                404,
+            )
         else:
-            return jsonify({"message": f"No codes found for order_id '{order_id}'."}), 404
+            return (
+                jsonify({"message": f"No codes found for order_id '{order_id}'."}),
+                404,
+            )
     return jsonify([serialize_code(c) for c in codes])
 
-@app.route('/admin/codes/<code>', methods=['GET'])
+
+@app.route("/admin/codes/<code>", methods=["GET"])
 @require_admin_auth
 def get_code_info(code):
     """Return info about a specific code."""
@@ -254,7 +297,8 @@ def get_code_info(code):
         return jsonify({"message": f"Code '{code}' does not exist."}), 404
     return jsonify(serialize_code(code_obj))
 
-@app.route('/admin/codes/<code>', methods=['DELETE'])
+
+@app.route("/admin/codes/<code>", methods=["DELETE"])
 def delete_code_by_code(code):
     """Delete a code by its code value."""
     code_obj = session.query(Code).filter(Code.code == code).first()
@@ -264,7 +308,8 @@ def delete_code_by_code(code):
     session.commit()
     return jsonify({"message": f"Code '{code}' deleted."}), 200
 
-@app.route('/admin/codes/by_order_id/<order_id>', methods=['DELETE'])
+
+@app.route("/admin/codes/by_order_id/<order_id>", methods=["DELETE"])
 def delete_codes_by_order_id(order_id):
     """Delete all codes associated with a given order ID."""
     codes = session.query(Code).filter(Code.order_id == order_id).all()
@@ -274,9 +319,13 @@ def delete_codes_by_order_id(order_id):
     for code in codes:
         session.delete(code)
     session.commit()
-    return jsonify({"message": f"Deleted {count} code(s) for order_id '{order_id}'."}), 200
+    return (
+        jsonify({"message": f"Deleted {count} code(s) for order_id '{order_id}'."}),
+        200,
+    )
 
-@app.route('/admin/settings/cors', methods=['PUT'])
+
+@app.route("/admin/settings/cors", methods=["PUT"])
 @require_admin_auth
 def update_cors():
     """Update allowed CORS origins."""
@@ -290,11 +339,11 @@ def update_cors():
     return jsonify({"message": "CORS origins updated"})
 
 
-@app.route('/admin/settings/<key>', methods=['GET', 'PUT'])
+@app.route("/admin/settings/<key>", methods=["GET", "PUT"])
 @require_admin_auth
 def manage_setting(key):
     """Retrieve or update an arbitrary setting."""
-    if request.method == 'GET':
+    if request.method == "GET":
         value = get_setting_value(session, key)
         if value is None:
             return jsonify({"error": "Setting not found"}), 404
@@ -306,4 +355,3 @@ def manage_setting(key):
         return jsonify({"error": "Missing value"}), 400
     update_setting_value(session, key, value)
     return jsonify({"message": "Setting updated", "key": key, "value": value})
-

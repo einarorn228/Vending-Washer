@@ -1,0 +1,390 @@
+2025-07-15 19:28:03,707 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,708 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:03,708 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,708 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:03,709 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,709 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:03,709 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,710 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,826 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,826 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1313s ago] ('serial_port', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,827 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,828 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1325s ago] ('serial_baudrate', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,828 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,829 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1334s ago] ('scan_timeout', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,829 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,830 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1344s ago] ('shelly_ip', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,830 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,830 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1353s ago] ('pulse_duration', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,831 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,831 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1362s ago] ('relay_mode', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,832 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Serial scanner not available: [Errno 2] could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0' (qr_scanner.py:37)
+2025-07-15 19:28:03,833 - MainProcess - MainThread - INFO - test_logger - test message (test_logger.py:14)
+2025-07-15 19:28:03,834 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,834 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:03,834 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,835 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:03,835 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,835 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:03,835 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:03,836 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,839 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM scan_logs (base.py:1846)
+2025-07-15 19:28:03,839 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00024s] () (base.py:1846)
+2025-07-15 19:28:03,840 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM codes (base.py:1846)
+2025-07-15 19:28:03,840 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00027s] () (base.py:1846)
+2025-07-15 19:28:03,841 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,844 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,849 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO codes (code, order_id, usage_limit, current_usage, expiration_date, created_at) VALUES (?, ?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:03,849 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00305s] ('VALID1', 'ORD1', 2, 0, None, '2025-07-15 19:28:03.849607') (base.py:1846)
+2025-07-15 19:28:03,850 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,854 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,856 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,856 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00026s] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,857 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:116)
+2025-07-15 19:28:03,859 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - UPDATE codes SET current_usage=? WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:03,859 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00025s] (1, 'VALID1') (base.py:1846)
+2025-07-15 19:28:03,860 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,865 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,866 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:03,866 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00027s] ('VALID1',) (base.py:1846)
+2025-07-15 19:28:03,867 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Shelly command succeeded (qr_scanner.py:151)
+2025-07-15 19:28:03,867 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,868 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01201s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,870 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:03,870 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00028s] ('VALID1', 'ORD1', '2025-07-15 19:28:03.868881', 'success', 'Code now has 1 uses left.') (base.py:1846)
+2025-07-15 19:28:03,871 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,875 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,876 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,876 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02039s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,876 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Invalid code (qr_scanner.py:110)
+2025-07-15 19:28:03,877 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,877 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02164s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,878 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:03,878 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.008333s ago] ('INVALID', None, '2025-07-15 19:28:03.878091', 'invalid', 'Invalid code') (base.py:1846)
+2025-07-15 19:28:03,879 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,882 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,882 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,883 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02702s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,883 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:116)
+2025-07-15 19:28:03,883 - MainProcess - MainThread - ERROR - backend.controllers.qr_scanner - Error processing QR code (qr_scanner.py:157)
+Traceback (most recent call last):
+  File "/workspace/Vending-Washer/backend/controllers/qr_scanner.py", line 129, in process_qr_code
+    success = send_shelly_on(SHELLY_IP)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+Exception: boom
+2025-07-15 19:28:03,886 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:03,886 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.03053s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:03,887 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:03,887 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01758s ago] ('VALID1', 'ORD1', '2025-07-15 19:28:03.887375', 'error', 'boom') (base.py:1846)
+2025-07-15 19:28:03,888 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:03,891 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:03,892 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT scan_logs.id AS scan_logs_id, scan_logs.code AS scan_logs_code, scan_logs.order_id AS scan_logs_order_id, scan_logs.timestamp AS scan_logs_timestamp, scan_logs.result AS scan_logs_result, scan_logs.details AS scan_logs_details 
+FROM scan_logs ORDER BY scan_logs.id (base.py:1846)
+2025-07-15 19:28:03,892 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00025s] () (base.py:1846)
+2025-07-15 19:28:03,893 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - ROLLBACK (base.py:2704)
+2025-07-15 19:28:30,347 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,347 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:30,348 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,348 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:30,349 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,349 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:30,349 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,349 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,464 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,464 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1279s ago] ('serial_port', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,465 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,465 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1292s ago] ('serial_baudrate', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,466 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,466 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1302s ago] ('scan_timeout', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,467 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,467 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1311s ago] ('shelly_ip', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,468 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,468 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.132s ago] ('pulse_duration', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,469 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,469 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.133s ago] ('relay_mode', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,470 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Serial scanner not available: [Errno 2] could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0' (qr_scanner.py:37)
+2025-07-15 19:28:30,471 - MainProcess - MainThread - INFO - test_logger - test message (test_logger.py:14)
+2025-07-15 19:28:30,471 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,472 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:30,472 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,472 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:30,472 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,473 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:30,473 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:30,473 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,477 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM scan_logs (base.py:1846)
+2025-07-15 19:28:30,477 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00028s] () (base.py:1846)
+2025-07-15 19:28:30,478 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM codes (base.py:1846)
+2025-07-15 19:28:30,478 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00028s] () (base.py:1846)
+2025-07-15 19:28:30,478 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,482 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,487 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO codes (code, order_id, usage_limit, current_usage, expiration_date, created_at) VALUES (?, ?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:30,487 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00311s] ('VALID1', 'ORD1', 2, 0, None, '2025-07-15 19:28:30.486986') (base.py:1846)
+2025-07-15 19:28:30,488 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,491 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,493 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,493 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00030s] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,494 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:116)
+2025-07-15 19:28:30,496 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - UPDATE codes SET current_usage=? WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:30,496 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00024s] (1, 'VALID1') (base.py:1846)
+2025-07-15 19:28:30,497 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,500 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,501 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:30,501 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00024s] ('VALID1',) (base.py:1846)
+2025-07-15 19:28:30,502 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Shelly command succeeded (qr_scanner.py:151)
+2025-07-15 19:28:30,502 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,503 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.00965s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,505 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:30,505 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00030s] ('VALID1', 'ORD1', '2025-07-15 19:28:30.503880', 'success', 'Code now has 1 uses left.') (base.py:1846)
+2025-07-15 19:28:30,506 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,509 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,509 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,509 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01614s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,509 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Invalid code (qr_scanner.py:110)
+2025-07-15 19:28:30,510 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,510 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01731s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,511 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:30,511 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.006506s ago] ('INVALID', None, '2025-07-15 19:28:30.511123', 'invalid', 'Invalid code') (base.py:1846)
+2025-07-15 19:28:30,512 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,516 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,516 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,516 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.0232s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,517 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:116)
+2025-07-15 19:28:30,517 - MainProcess - MainThread - ERROR - backend.controllers.qr_scanner - Error processing QR code (qr_scanner.py:157)
+Traceback (most recent call last):
+  File "/workspace/Vending-Washer/backend/controllers/qr_scanner.py", line 129, in process_qr_code
+    success = send_shelly_on(SHELLY_IP)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+Exception: boom
+2025-07-15 19:28:30,519 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:30,520 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.0266s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:30,521 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:30,521 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.0161s ago] ('VALID1', 'ORD1', '2025-07-15 19:28:30.520720', 'error', 'boom') (base.py:1846)
+2025-07-15 19:28:30,521 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:30,526 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:30,527 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT scan_logs.id AS scan_logs_id, scan_logs.code AS scan_logs_code, scan_logs.order_id AS scan_logs_order_id, scan_logs.timestamp AS scan_logs_timestamp, scan_logs.result AS scan_logs_result, scan_logs.details AS scan_logs_details 
+FROM scan_logs ORDER BY scan_logs.id (base.py:1846)
+2025-07-15 19:28:30,527 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00023s] () (base.py:1846)
+2025-07-15 19:28:30,528 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - ROLLBACK (base.py:2704)
+2025-07-15 19:28:55,530 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,530 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:55,530 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,531 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:55,531 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,531 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:55,531 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,532 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,650 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,650 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1325s ago] ('serial_port', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,651 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,651 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1337s ago] ('serial_baudrate', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,652 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,652 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1346s ago] ('scan_timeout', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,653 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,653 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1356s ago] ('shelly_ip', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,654 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,654 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1366s ago] ('pulse_duration', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,655 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT settings.id AS settings_id, settings."key" AS settings_key, settings.value AS settings_value 
+FROM settings 
+WHERE settings."key" = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,655 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.1375s ago] ('relay_mode', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,656 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Serial scanner not available: [Errno 2] could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0' (qr_scanner.py:39)
+2025-07-15 19:28:55,657 - MainProcess - MainThread - INFO - test_logger - test message (test_logger.py:14)
+2025-07-15 19:28:55,657 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,658 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("settings") (base.py:1846)
+2025-07-15 19:28:55,658 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,658 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("codes") (base.py:1846)
+2025-07-15 19:28:55,658 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,659 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - PRAGMA main.table_info("scan_logs") (base.py:1846)
+2025-07-15 19:28:55,659 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [raw sql] () (base.py:1846)
+2025-07-15 19:28:55,659 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,662 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM scan_logs (base.py:1846)
+2025-07-15 19:28:55,663 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00029s] () (base.py:1846)
+2025-07-15 19:28:55,664 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - DELETE FROM codes (base.py:1846)
+2025-07-15 19:28:55,664 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00023s] () (base.py:1846)
+2025-07-15 19:28:55,664 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,668 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,673 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO codes (code, order_id, usage_limit, current_usage, expiration_date, created_at) VALUES (?, ?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:55,673 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00299s] ('VALID1', 'ORD1', 2, 0, None, '2025-07-15 19:28:55.673550') (base.py:1846)
+2025-07-15 19:28:55,674 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,678 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,679 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,679 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00025s] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,680 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:118)
+2025-07-15 19:28:55,682 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - UPDATE codes SET current_usage=? WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:55,682 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00028s] (1, 'VALID1') (base.py:1846)
+2025-07-15 19:28:55,683 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,689 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,690 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ? (base.py:1846)
+2025-07-15 19:28:55,690 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00033s] ('VALID1',) (base.py:1846)
+2025-07-15 19:28:55,691 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Shelly command succeeded (qr_scanner.py:157)
+2025-07-15 19:28:55,692 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,692 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01248s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,694 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:55,694 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00028s] ('VALID1', 'ORD1', '2025-07-15 19:28:55.693010', 'success', 'Code now has 1 uses left.') (base.py:1846)
+2025-07-15 19:28:55,695 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,700 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,700 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,700 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02115s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,701 - MainProcess - MainThread - WARNING - backend.controllers.qr_scanner - Invalid code (qr_scanner.py:112)
+2025-07-15 19:28:55,701 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,701 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02194s ago] ('INVALID', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,702 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:55,702 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.008081s ago] ('INVALID', None, '2025-07-15 19:28:55.701919', 'invalid', 'Invalid code') (base.py:1846)
+2025-07-15 19:28:55,702 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,706 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,706 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,706 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.02717s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,707 - MainProcess - MainThread - INFO - backend.controllers.qr_scanner - Code accepted (qr_scanner.py:118)
+2025-07-15 19:28:55,707 - MainProcess - MainThread - ERROR - backend.controllers.qr_scanner - Error processing QR code (qr_scanner.py:163)
+Traceback (most recent call last):
+  File "/workspace/Vending-Washer/backend/controllers/qr_scanner.py", line 131, in process_qr_code
+    success = send_shelly_on(SHELLY_IP)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.10/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+Exception: boom
+2025-07-15 19:28:55,709 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT codes.code AS codes_code, codes.order_id AS codes_order_id, codes.usage_limit AS codes_usage_limit, codes.current_usage AS codes_current_usage, codes.expiration_date AS codes_expiration_date, codes.created_at AS codes_created_at 
+FROM codes 
+WHERE codes.code = ?
+ LIMIT ? OFFSET ? (base.py:1846)
+2025-07-15 19:28:55,709 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.03018s ago] ('VALID1', 1, 0) (base.py:1846)
+2025-07-15 19:28:55,710 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - INSERT INTO scan_logs (code, order_id, timestamp, result, details) VALUES (?, ?, ?, ?, ?) (base.py:1846)
+2025-07-15 19:28:55,710 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [cached since 0.01657s ago] ('VALID1', 'ORD1', '2025-07-15 19:28:55.710246', 'error', 'boom') (base.py:1846)
+2025-07-15 19:28:55,711 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - COMMIT (base.py:2707)
+2025-07-15 19:28:55,714 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - BEGIN (implicit) (base.py:2701)
+2025-07-15 19:28:55,715 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - SELECT scan_logs.id AS scan_logs_id, scan_logs.code AS scan_logs_code, scan_logs.order_id AS scan_logs_order_id, scan_logs.timestamp AS scan_logs_timestamp, scan_logs.result AS scan_logs_result, scan_logs.details AS scan_logs_details 
+FROM scan_logs ORDER BY scan_logs.id (base.py:1846)
+2025-07-15 19:28:55,715 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - [generated in 0.00024s] () (base.py:1846)
+2025-07-15 19:28:55,716 - MainProcess - MainThread - INFO - sqlalchemy.engine.Engine - ROLLBACK (base.py:2704)
