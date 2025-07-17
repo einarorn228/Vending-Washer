@@ -11,20 +11,6 @@ async function request(path, options = {}) {
   }
 }
 
-export function scanCode(code) {
-  return request("/api/scan_code", {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  });
-}
-
-export function startMachine(code, machine_id) {
-  return request("/api/start_machine", {
-    method: "POST",
-    body: JSON.stringify({ code, machine_id }),
-  });
-}
-
 export function pollState() {
   return request("/api/ui_state");
 }
