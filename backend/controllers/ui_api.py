@@ -3,7 +3,7 @@
 from flask import Blueprint, request, jsonify
 from models import session
 from models.code_model import Code
-from .machine_control import MACHINES, UI_STATE, validate_code, start_machine
+from controllers.machine_control import MACHINES, UI_STATE, validate_code, start_machine
 from models.setting_model import get_setting_value
 
 ui_api = Blueprint("ui_api", __name__)

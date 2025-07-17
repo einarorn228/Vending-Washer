@@ -4,9 +4,9 @@ import logging
 import threading
 from typing import Dict
 
-from ..models import session
-from ..models.code_model import Code
-from ..utils.shelly_control import send_shelly_pulse
+from models import session
+from models.code_model import Code
+from utils.shelly_control import send_shelly_pulse
 
 logger = logging.getLogger(__name__)
 

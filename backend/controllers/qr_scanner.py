@@ -1,9 +1,9 @@
 import serial
-from ..models import session
-from ..models.code_model import Code
-from ..models.scan_log_model import ScanLog
-from ..models.setting_model import get_setting_value
-from ..utils.shelly_control import send_shelly_pulse, send_shelly_on
+from models import session
+from models.code_model import Code
+from models.scan_log_model import ScanLog
+from models.setting_model import get_setting_value
+from utils.shelly_control import send_shelly_pulse, send_shelly_on
 from datetime import datetime, timedelta
 import logging
 

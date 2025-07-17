@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime
-from . import Base
+from models import Base
 
 
 class Code(Base):
