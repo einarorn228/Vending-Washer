@@ -33,11 +33,19 @@ npm run dev
 
 The frontend runs on port 3000 by default and communicates with the backend on port 5000.
 
-## UI API Endpoints
+## Display-only UI
 
-- `POST /api/scan_code` – validate a code
+The React frontend does **not** accept any input. It simply polls
+`GET /api/ui_state` every second and renders the state returned by the backend.
+External triggers such as barcode scanners or physical buttons should call
+`POST /api/scan_code` and `POST /api/start_machine` directly to update the
+backend. The screen then updates automatically.
+
+### UI API Endpoints
+
+- `POST /api/scan_code` – validate a code (used by external devices)
 - `POST /api/start_machine` – start a machine using a valid code
-- `GET /api/ui_state` – poll current UI state
+- `GET /api/ui_state` – poll current UI state (used by the frontend)
 
 All requests require the `X-API-KEY` header matching the value stored in the database.
 

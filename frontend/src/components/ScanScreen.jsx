@@ -1,23 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 
-export default function ScanScreen({ onScan }) {
-  const [value, setValue] = useState("");
-
-  const submit = () => {
-    if (value) onScan(value);
-  };
-
+export default function ScanScreen({ message }) {
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h1>Scan your code</h1>
-      <input
-        style={{ fontSize: "2rem" }}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
-      <button style={{ fontSize: "2rem" }} onClick={submit}>
-        Submit
-      </button>
+      <h1>{message || "Scan your code to begin"}</h1>
     </div>
   );
 }
