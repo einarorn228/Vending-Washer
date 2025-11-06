@@ -1,9 +1,63 @@
-# Ignore Python cache
+# ============================
+# Backend (Python / Flask)
+# ============================
+
+# Python cache & compiled files
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
 
-# Ignore the virtual environment
+# Virtual environments
 venv/
+.venv/
 
-# Ignore SQLite database files
+# Local configuration & environment files
+.env
+*.env
+
+# SQLite database files
 *.db
-logs/app.log
+*.sqlite3
+
+# Logs & runtime data
+logs/
+*.log
+
+# Coverage / testing
+.coverage
+htmlcov/
+pytest_cache/
+
+# ============================
+# Frontend (Node / Vite / React)
+# ============================
+
+# Dependency directories
+frontend/node_modules/
+node_modules/
+
+# Build and cache artifacts
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.cache/
+dist/
+build/
+.vite/
+
+# Editor / system files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ============================
+# Misc
+# ============================
+
+# OS / temporary files
+*.bak
+*.swp
+*.tmp
+*.lock
