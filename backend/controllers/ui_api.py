@@ -1,10 +1,10 @@
 """Flask routes for touchscreen UI."""
 
 from flask import Blueprint, request, jsonify
-from models import session
-from models.code_model import Code
-from controllers.machine_control import MACHINES, UI_STATE, validate_code, start_machine
-from models.setting_model import get_setting_value
+from backend.models import session
+from backend.models.code_model import Code
+from backend.controllers.machine_control import MACHINES, UI_STATE, validate_code, start_machine
+from backend.models.setting_model import get_setting_value
 
 ui_api = Blueprint("ui_api", __name__)
 

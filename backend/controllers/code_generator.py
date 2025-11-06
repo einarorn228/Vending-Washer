@@ -3,9 +3,9 @@ import random
 import string
 
 from datetime import datetime, timedelta
-from models import session
-from models.code_model import Code
-from models.setting_model import get_setting_value
+from backend.models import session
+from backend.models.code_model import Code
+from backend.models.setting_model import get_setting_value
 import logging
 
 logger = logging.getLogger(__name__)

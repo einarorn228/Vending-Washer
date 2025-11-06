@@ -1,6 +1,5 @@
 from sqlalchemy import Column, String, Integer
-from models import Base
-
+from backend.models import Base
 
 class Settings(Base):
     __tablename__ = "settings"

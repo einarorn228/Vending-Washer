@@ -3,12 +3,12 @@ import base64
 import hashlib
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from controllers.code_generator import generate_new_code
-from controllers.ui_api import ui_api
-from models import session
-from models.scan_log_model import ScanLog
-from models.code_model import Code
-from models.setting_model import get_setting_value, update_setting_value
+from backend.controllers.code_generator import generate_new_code
+from backend.controllers.ui_api import ui_api
+from backend.models import session
+from backend.models.scan_log_model import ScanLog
+from backend.models.code_model import Code
+from backend.models.setting_model import get_setting_value, update_setting_value
 
 logger = logging.getLogger(__name__)
 

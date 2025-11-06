@@ -1,8 +1,8 @@
 from datetime import datetime
 import logging
-from models import session
-from models.code_model import Code
-from models.scan_log_model import ScanLog
+from ..models import session
+from ..models.code_model import Code
+from ..models.scan_log_model import ScanLog
 
 logger = logging.getLogger(__name__)
 

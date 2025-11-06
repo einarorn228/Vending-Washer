@@ -5,7 +5,7 @@ import time
 import logging
 import sys
 
-from utils.logger import configure_logger
+from backend.utils.logger import configure_logger
 
 configure_logger()
 
@@ -14,24 +14,23 @@ configure_logger()
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "app.log")
 if not os.path.exists(LOG_FILE):
-    subprocess.run([sys.executable, "-m", "setup.seed_settings"], check=True)
+    subprocess.run([sys.executable, "-m", "backend.setup.seed_settings"], check=True)
 
-from models import init_db
+from backend.models import init_db
 
 init_db()
-subprocess.run([sys.executable, "-m", "setup.seed_settings"], check=True)
+subprocess.run([sys.executable, "-m", "backend.setup.seed_settings"], check=True)
 
 logger = logging.getLogger(__name__)
 logger.info("===== APP STARTED =====")
 
 # Now import modules that use the DB
-from controllers.qr_scanner import listen_for_scans
-from controllers.code_cleanup import cleanup_expired_codes
+from backend.controllers.qr_scanner import listen_for_scans
+from backend.controllers.code_cleanup import cleanup_expired_codes
 
 
 def start_flask():
-    from flask_server import app as flask_app
-
+    from backend.flask_server import app as flask_app
     flask_app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
 

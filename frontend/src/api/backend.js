@@ -1,12 +1,49 @@
-const API_KEY = localStorage.getItem("API_KEY") || ""; // set via config
+const STORAGE_KEY = "API_KEY";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+function getApiKey() {
+  if (typeof window !== "undefined") {
+    const storedKey = window.localStorage.getItem(STORAGE_KEY);
+    if (storedKey) {
+      return storedKey;
+    }
+  }
+
+  const envKey = import.meta.env.VITE_API_KEY;
+  if (envKey) {
+    return envKey;
+  }
+
+  console.warn(
+    "No API key configured. Set localStorage API_KEY or VITE_API_KEY before using the kiosk UI."
+  );
+  return null;
+}
 
 async function request(path, options = {}) {
-  const headers = { "Content-Type": "application/json", "X-API-KEY": API_KEY };
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return null;
+  }
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+    "X-API-KEY": apiKey,
+  };
+
   try {
-    const res = await fetch(path, { ...options, headers });
-    return await res.json();
-  } catch (e) {
-    console.error("Request failed", e);
+    const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({}));
+      console.error("Request failed", response.status, errorPayload);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Request failed", error);
     return null;
   }
 }

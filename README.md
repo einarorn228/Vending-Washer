@@ -1,382 +1,134 @@
 # Vending Washer
 
-This project powers a simple QR-code based vending washer prototype.
+Touch-first washer vending prototype consisting of a Flask backend, a React touchscreen UI, and hardware integrations for QR scanners and Shelly relays.
 
-## Project Structure
+## Overview
+- QR codes are generated per order and stored in SQLite (`codes.db`).
+- A background listener accepts scans from a USB serial scanner (or manual input fallback).
+- Successful scans trigger Shelly smart relays to start the configured washer and update the shared UI state.
+- A touchscreen frontend polls the backend every second to guide the user through scan, selection, and progress states.
+- Administrative endpoints enable code management, audit logs, and configuration tweaks.
 
-```
-backend/   - Flask API and machine logic
-frontend/  - React touchscreen UI
-```
+## Repository Layout
+- `backend/` Flask application, controllers, models, setup scripts, and logging utilities.
+- `frontend/` Vite + React kiosk application.
+- `scripts/` Utility helpers (currently empty in repo root).
+- `Testing_Files/` Ad hoc test scripts, HTTP collections, and database viewers.
+- `requirements.txt` Backend Python dependencies.
 
-The backend exposes API endpoints that the touchscreen UI polls.
+## Quick Start
+All commands assume the repository root as the working directory.
 
-## Build and Run
-
-### Backend
-
-```bash
-cd backend
-python3 -m venv venv && . venv/bin/activate
+### Backend (Flask API + hardware listeners)
+```powershell
+# Windows PowerShell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python setup/seed_settings.py  # create API key and default settings
-python app.py
+python -m backend.setup.seed_settings
+python -m backend.app
 ```
+```bash
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m backend.setup.seed_settings
+python -m backend.app
+```
+The backend starts on port 5000, launches the touchscreen API, schedules code cleanup, and begins listening for QR scans.
 
-### Frontend
-
+### Frontend (React kiosk)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+The Vite dev server runs on port 3000 and proxies `/api` requests to the backend.
 
-The frontend runs on port 3000 by default and communicates with the backend on port 5000.
-
-## Display-only UI
-
-The React frontend does **not** accept any input. It simply polls
-`GET /api/ui_state` every second and renders the state returned by the backend.
-External triggers such as barcode scanners or physical buttons should call
-`POST /api/scan_code` and `POST /api/start_machine` directly to update the
-backend. The screen then updates automatically.
-
-### UI API Endpoints
-
-- `POST /api/scan_code` – validate a code (used by external devices)
-- `POST /api/start_machine` – start a machine using a valid code
-- `GET /api/ui_state` – poll current UI state (used by the frontend)
-
-All requests require the `X-API-KEY` header matching the value stored in the database.
-
-## Kiosk Mode
-
-On Linux you can launch the frontend fullscreen with:
-
+### Retrieve the API key
+The kiosk and external devices must send the `X-API-KEY` header. Generate or fetch the key with:
 ```bash
-npm run dev -- --open
+python -m backend.setup.seed_settings   # only needed the first time
+python backend/scripts/get_api_key.py
 ```
+Configure the touchscreen UI by storing the key in `localStorage` (press F12 in the kiosk browser and run `localStorage.setItem("API_KEY", "<value>")`).
+Alternatively, create a `.env` file under `frontend/` with `VITE_API_KEY=<value>` so the build injects the header automatically.
+
+## Configuration & Settings
+Defaults live in `backend/setup/seed_settings.py` and are persisted in the `settings` table. Key entries:
+
+| Key | Purpose | Default |
+| --- | --- | --- |
+| `serial_port` | USB device for barcode/QR scanner | `/dev/ttyUSB0` |
+| `serial_baudrate` | Baud rate for scanner | `9600` |
+| `scan_timeout` | Serial read timeout (seconds) | `1` |
+| `shelly_ip` | Default Shelly relay IP used by the scanner listener | `0` (simulate when debug logging enabled) |
+| `relay_mode` | `on` or `pulse` mode for Shelly control | `on` |
+| `pulse_duration` | Pulse length in seconds (when `relay_mode` is `pulse`) | `1` |
+| `code_expiration_days` | Days unused codes remain valid | `0` (no expiry) |
+| `expired_code_cleanup_days` | Days after final use before code deletion | `30` |
+| `cors_allowed_origins` | Comma-separated list for browser access | `http://localhost, http://173.25.200.254` |
+| `admin_username` / `admin_password_hash` | Credentials for admin endpoints | `admin` / SHA-256(`admin`) |
+| `log_level` | Global log level (overridden by `LOG_LEVEL` env) | `DEBUG` |
+
+Use `backend/models/setting_model.py:update_setting_value` or the admin REST endpoints to modify values.
+
+## API Surface
+Public endpoints require `X-API-KEY` unless noted otherwise.
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/generate_code` | POST | Create a new QR code for an order. Body: `order_id`, `usage_limit`. |
+| `/api/scan_code` | POST | Touchscreen flow: validate a scanned code and show machine choices. |
+| `/api/start_machine` | POST | Start the selected machine and decrement usage. |
+| `/api/ui_state` | GET | Poll current UI state for the kiosk. |
+| `/admin/codes` | GET | List all codes (admin auth required). |
+| `/admin/codes/<code>` | GET/DELETE | Inspect or delete a single code. |
+| `/admin/codes/by_order_id/<order_id>` | GET/DELETE | Manage codes tied to an order. |
+| `/admin/usage/...` | GET | Inspect scan logs by order, code, or most recent. |
+| `/admin/settings/<key>` | GET/PUT | Retrieve or update settings. |
+| `/admin/settings/cors` | PUT | Overwrite allowed CORS origins (JSON body `{ "origins": [...] }`). |
+| `/admin/scan_logs/last/<N>` | GET | Inspect recent scan attempts. |
+
+Admin routes enforce HTTP Basic auth using the credentials stored in the `settings` table. Always rotate the default password before exposing the service.
+
+## Touchscreen UI Flow
+The kiosk is display-only. External hardware triggers API calls; the kiosk mirrors state returned from `/api/ui_state`.
+
+1. `waiting_for_code` - Idle screen instructing the user to scan.
+2. `choose_machine` - Displays configured machines and availability.
+3. `machine_in_use` - Confirms the washer has started and shows remaining uses.
+4. `error` - Signals invalid codes or hardware failures.
+
+`MACHINES` are currently defined in `backend/controllers/machine_control.py` with placeholder IP addresses. Update this mapping to match your deployment.
+
+## Background Jobs & Hardware
+- **Scanner loop** (`backend/controllers/qr_scanner.listen_for_scans`) continuously consumes serial data. When the scanner is unavailable the loop falls back to manual console input.
+- **Shelly integration** (`backend/utils/shelly_control.py`) turns relays on or issues a configurable pulse. Production deployments should consider per-machine overrides and connection retries.
+- **Cleanup scheduler** (`backend/app.py`) runs every 24 hours to purge codes whose `expiration_date` has passed and removes related scan logs.
+
+## Logging & Diagnostics
+- Logs are stored at `backend/logs/app.log` with rotation (5 MB, 3 backups) and mirrored to stdout.
+- Set `LOG_LEVEL` before launching the backend to override the stored setting (`export LOG_LEVEL=INFO`).
+- Use `Testing_Files/view_db.py` for quick database inspection from the command line.
+- Sample HTTP flows are available under `Testing_Files/*.http` (compatible with VS Code REST Client and Insomnia).
+
+## Testing & Tooling
+- Python unit tests: `python -m unittest discover Testing_Files`.
+- Logging smoke test: `Testing_Files/test_logger.py`.
+- Serial reader exercise: `Testing_Files/qr_test.py` (adjust the COM/TTY port).
+- Frontend linting/formatting can be added with `npm run lint` once a config is introduced (Prettier is included as a dev dependency).
+
+## Troubleshooting
+- Confirm the backend created `codes.db` in the repository root. Deleting it will reset all codes and settings.
+- If the kiosk shows "Invalid API key", reseed settings and update the key stored in the browser.
+- Serial scanners on Windows usually appear as `COM#`. Update `serial_port` accordingly.
+- Enable debug logging (`LOG_LEVEL=DEBUG`) to capture serial failures and Shelly responses.
+
+## Maintenance Notes
+- Track open bugs, follow-ups, and future optimizations in `issues and sejections.txt`. Update entries as fixes land; do not implement a suggestion until it is confirmed with the project owner.
+- Consider migrating to SQLAlchemy `scoped_session` or per-request sessions before deploying multi-threaded or production workloads.
+- Replace placeholder machine definitions and hard-coded API keys prior to field trials.
 
-Press F11 to toggle kiosk mode in most browsers. On Windows use Chrome's `--kiosk` flag when starting the browser.
 
-## Logging
-
-Logging is configured centrally in `utils/logger.py`. A rotating log file is stored in `logs/app.log` and messages are also printed to the console.
-
-### Log Level
-
-The log level defaults to `INFO` but can be adjusted by setting the environment variable `LOG_LEVEL` before running the application:
-
-```bash
-export LOG_LEVEL=DEBUG
-```
-
-If a `log_level` entry exists in the `settings` table, it will be used when the environment variable is not set.
-
-### Log Directory
-
-The `setup/setup_logs.py` script creates the `logs/` directory with permissions suitable for multi-user deployments (755 for the folder and 644 for the log file). Run it once before starting the app:
-
-```bash
-python setup/setup_logs.py
-```
-
-### Advanced
-
-Logs rotate after reaching 5MB with three backups kept. For production deployments you might extend `utils/logger.py` to forward logs to external systems (e.g., email or Slack).
-
----
-
-## Viewing the Database
-
-You can use the script `Testing_Files/view_db.py` to view the contents of your database tables from the command line.
-
-### Usage
-
-```bash
-python Testing_Files/view_db.py [--table TABLE] [--limit N] [--code CODE] [--order_id ORDER_ID] [--key KEY]
-```
-
-- `--table`  
-  Which table to view. Options are:  
-  - `codes` (default)  
-  - `settings`  
-  - `scan_logs`  
-
-- `--limit`  
-  How many rows to display (default: all rows).
-
-- `--code`  
-  Filter by code value (for `codes` and `scan_logs` tables).
-
-- `--order_id`  
-  Filter by order ID (for `codes` and `scan_logs` tables).
-
-- `--key`  
-  Filter by key (for `settings` table).
-
-### Examples
-
-- **View all codes:**  
-  ```bash
-  python Testing_Files/view_db.py
-  ```
-
-- **View first 5 codes:**  
-  ```bash
-  python Testing_Files/view_db.py --limit 5
-  ```
-
-- **View all settings:**  
-  ```bash
-  python Testing_Files/view_db.py --table settings
-  ```
-
-- **View a specific setting by key:**  
-  ```bash
-  python Testing_Files/view_db.py --table settings --key log_level
-  ```
-
-- **View all scan logs:**  
-  ```bash
-  python Testing_Files/view_db.py --table scan_logs
-  ```
-
-- **View the 10 most recent scan logs:**  
-  ```bash
-  python Testing_Files/view_db.py --table scan_logs --limit 10
-  ```
-
-- **View all codes with a specific order ID:**  
-  ```bash
-  python Testing_Files/view_db.py --table codes --order_id 12345
-  ```
-
-- **View all scan logs for a specific code:**  
-  ```bash
-  python Testing_Files/view_db.py --table scan_logs --code ABC123
-  ```
-
-- **View all scan logs for a specific order ID:**  
-  ```bash
-  python Testing_Files/view_db.py --table scan_logs --order_id 12345
-  ```
-
----
-
-## Admin & Debug API Endpoints
-
-The Flask server provides several admin/debug endpoints for monitoring and managing codes and usage.  
-**Note:** These endpoints are for admin/debug use only and should be protected before use in production.
-
-### List of Admin Endpoints
-
-- **Get all codes:**  
-  ```
-  GET /admin/codes
-  ```
-  Returns all QR codes in the database.
-
-- **Get last N created codes:**  
-  ```
-  GET /admin/codes/last/<count>
-  ```
-  Returns the last `<count>` created codes.
-
-- **Get all codes by order ID:**  
-  ```
-  GET /admin/codes/by_order_id/<order_id>
-  ```
-  Returns all codes associated with the given order ID.
-
-- **Get info about a specific code:**  
-  ```
-  GET /admin/codes/<code>
-  ```
-  Returns info about a specific code.
-
-- **Delete a code by code:**  
-  ```
-  DELETE /admin/codes/<code>
-  ```
-  Deletes a specific code.
-
-- **Delete all codes for an order ID:**  
-  ```
-  DELETE /admin/codes/by_order_id/<order_id>
-  ```
-  Deletes all codes associated with the given order ID.
-
-- **Update a setting:**  
-  ```
-  PUT /admin/settings/<key>
-  ```
-  Updates a setting value.  
-  Example body:
-  ```json
-  { "value": "new_value" }
-  ```
-
-- **Get all scan log entries for an order ID:**  
-  ```
-  GET /admin/usage/by_order_id/<order_id>
-  ```
-  Returns all scan log entries for the given order ID, including timestamp, result, and details.
-
-- **Get all scan log entries for a code:**  
-  ```
-  GET /admin/usage/by_code/<code>
-  ```
-  Returns all scan log entries for the given code, including timestamp, result, and details.
-
-- **Get the last N scan log entries:**
-  ```
-  GET /admin/scan_logs/last/<count>
-  ```
-  Returns the last `<count>` scan log entries.
-
-- **Update allowed CORS origins:**
-  ```
-  PUT /admin/settings/cors
-  ```
-  Update the comma-separated list of allowed origins.
-
-- **Get or update any setting:**
-  ```
-  GET /admin/settings/<key>
-  PUT /admin/settings/<key>
-  ```
-  Retrieve or change a setting value.
-
-### Example Usage with curl
-
-- Get all codes:
-  ```bash
-  curl http://127.0.0.1:5000/admin/codes
-  ```
-
-- Get last 10 codes:
-  ```bash
-  curl http://127.0.0.1:5000/admin/codes/last/10
-  ```
-
-- Get all codes for order ID 12345:
-  ```bash
-  curl http://127.0.0.1:5000/admin/codes/by_order_id/12345
-  ```
-
-- Get info about code ABC123:
-  ```bash
-  curl http://127.0.0.1:5000/admin/codes/ABC123
-  ```
-
-- Delete code ABC123:
-  ```bash
-  curl -X DELETE http://127.0.0.1:5000/admin/codes/ABC123
-  ```
-
-- Delete all codes for order ID 12345:
-  ```bash
-  curl -X DELETE http://127.0.0.1:5000/admin/codes/by_order_id/12345
-  ```
-
-- Update a setting (e.g. set cleanup days to 7):
-  ```bash
-  curl -X PUT http://127.0.0.1:5000/admin/settings/expired_code_cleanup_days \
-    -H "Content-Type: application/json" \
-    -d '{"value": "7"}'
-  ```
-
-- Get all scan logs for order ID 12345:
-  ```bash
-  curl http://127.0.0.1:5000/admin/usage/by_order_id/12345
-  ```
-
-- Get all scan logs for code ABC123:
-  ```bash
-  curl http://127.0.0.1:5000/admin/usage/by_code/ABC123
-  ```
-
-- Get the last 5 scan logs:
-  ```bash
-  curl http://127.0.0.1:5000/admin/scan_logs/last/5
-  ```
-
----
-**Remember:**
-These endpoints are powerful for debugging and admin tasks.
-**Always add authentication before exposing them in production!**
-
-## API Key and Admin Operations
-
-The server requires an API key for non-admin endpoints. Run the seeding script
-once to generate the key if it does not exist:
-
-```bash
-python setup/seed_settings.py
-```
-
-Retrieve the key locally with:
-
-```bash
-python scripts/get_api_key.py
-```
-
-**Remember:**  
-These endpoints are powerful for debugging and admin tasks.  
-**Always add authentication before exposing them in production!**
-
----
-
-## Code Expiration and Cleanup
-
-Generated QR codes may automatically expire based on values in the `settings` table.
-
-- `code_expiration_days` – Number of days after creation that an unused code will expire. Set to `0` to disable.
-- `expired_code_cleanup_days` – When a code has reached its usage limit it is marked for deletion this many days later. Set to `0` to remove immediately.
-
-If a code's `expiration_date` is `None`, it will never expire while unused.
-
-Expired codes are removed by `controllers.code_cleanup.cleanup_expired_codes`. `app.py` starts a background thread that runs this cleanup every 24 hours.
-
-Example lifecycle:
-1. `/generate_code` creates a code with an expiration date in UTC if `code_expiration_days` > 0.
-2. When the code is scanned and reaches its usage limit, a new expiration date is set according to `expired_code_cleanup_days`.
-3. The cleanup job deletes codes whose `expiration_date` has
-
-Include this value in the `X-API-KEY` header when calling general API
-endpoints.
-
-Allowed CORS origins are stored in the `cors_allowed_origins` setting as a
-comma-separated list. Admins can update it with:
-
-```bash
-curl -X PUT -u admin:yourpassword \
-  -H "Content-Type: application/json" \
-  -d '{"origins": ["http://localhost"]}' \
-  http://127.0.0.1:5000/admin/settings/cors
-```
-
-### Rotating the API key or changing the admin password
-
-Use the generic settings endpoint to modify values in the `settings` table. For
-example, to rotate the API key:
-
-```bash
-curl -X PUT -u admin:currentpassword \
-  -H "Content-Type: application/json" \
-  -d '{"value": "<new api key>"}' \
-  http://127.0.0.1:5000/admin/settings/api_key
-```
-
-After rotating, retrieve the new key with `python scripts/get_api_key.py`.
-
-To change the admin password, first compute the SHA-256 hash of the new
-password and update `admin_password_hash` in the same way:
-
-```bash
-curl -X PUT -u admin:currentpassword \
-  -H "Content-Type: application/json" \
-  -d '{"value": "<sha256 hash>"}' \
-  http://127.0.0.1:5000/admin/settings/admin_password_hash
-```

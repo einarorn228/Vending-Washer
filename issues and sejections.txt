@@ -1,0 +1,45 @@
+Issues and Suggestions Log
+Purpose: Single source of truth for outstanding bugs, risks, and future enhancements. Codex must keep this file updated, close items only when the owner confirms, and never implement a suggestion without explicit approval.
+
+Open Issues
+1. Admin DELETE endpoints lack auth
+   - Location: backend/flask_server.py
+   - Problem: `/admin/codes/<code>` and `/admin/codes/by_order_id/<order_id>` DELETE routes are missing the `@require_admin_auth` decorator.
+   - Impact: Any client can delete codes without credentials.
+   - Proposed Fix: Add `@require_admin_auth` to both routes and verify tests cover them.
+
+2. Redundant seed_settings execution
+   - Location: backend/app.py
+   - Problem: `seed_settings` is invoked during module import when the log file is missing and again after `init_db()`, causing duplicate writes and wasted startup time.
+   - Impact: Slower boot, noisy logs, and unexpected setting churn if the script gains side effects.
+   - Proposed Fix: Call `backend.setup.seed_settings` exactly once during startup and run a dedicated log setup script instead.
+
+3. Shared SQLAlchemy session across threads
+   - Location: backend/models/__init__.py
+   - Problem: `session = Session()` is global and reused by Flask, the scanner loop, and background threads.
+   - Impact: Session objects are not thread-safe; this can corrupt transactions or raise `InvalidRequestError` under load.
+   - Proposed Fix: Swap to `scoped_session(Session)` or create/close sessions per thread/request.
+
+4. Machine cleanup ignores configuration
+   - Location: backend/controllers/machine_control.py
+   - Problem: When `usage_limit` is reached the code sets `expiration_date` to 1 day regardless of `expired_code_cleanup_days`.
+   - Impact: Cleanup timing diverges from the admin-configured policy.
+   - Proposed Fix: Read the retention value from settings (same logic as `qr_scanner.process_qr_code`).
+
+Suggestions (Do Not Implement Without Approval)
+A. Centralize machine definitions
+   - Idea: Store machine metadata in the database to allow runtime edits without code changes.
+   - Benefit: Enables non-developers to manage kiosk content and keeps UI state in sync with hardware inventory.
+
+B. Replace console reload in ResultScreen
+   - Idea: Instead of `window.location.reload()`, reset UI state via an API field to avoid a full page refresh.
+   - Benefit: Smoother UX and fewer reload race conditions.
+
+C. Package the backend as a systemd/Windows service
+   - Idea: Provide scripts to run the listener and Flask app as managed services.
+   - Benefit: Reliable startup on rebooted kiosks without manual intervention.
+
+Resolved Issues
+- 2025-07-17: Frontend state handling (`frontend/src/App.jsx`) now renders the idle ScanScreen before falling back to result states; reordered the switch and added a default message to prevent fallthrough.
+- 2025-07-17: Removed hard-coded kiosk API key (`frontend/src/api/backend.js`); the UI now reads from localStorage or `VITE_API_KEY` configuration and logs when no key is present.
+

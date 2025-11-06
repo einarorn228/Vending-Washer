@@ -1,0 +1,177 @@
+Admin Command Examples
+=======================
+Purpose: comprehensive reference for administrators performing maintenance, configuration, and manual workflows on the Vending Washer system.
+
+Conventions
+-----------
+- Run commands from the repository root (`Vending-Washer-master/version 2`).
+- Replace angle-bracket placeholders (e.g., `<ORDER_ID>`) with real values.
+- Unless otherwise noted, backend listens on `http://127.0.0.1:5000` and frontend on `http://127.0.0.1:3000`.
+- Include both HTTP Basic auth (`-u <username>:<password>`) and the `X-API-KEY` header for admin routes.
+
+Environment & Credentials
+-------------------------
+# Capture the generated kiosk API key
+python backend/scripts/get_api_key.py
+
+# PowerShell: store API key in current session for reuse
+$env:API_KEY = "<PASTE_API_KEY>"
+
+# bash/zsh: store API key
+export API_KEY="<PASTE_API_KEY>"
+
+# Inspect stored admin credentials (sqlite3 CLI)
+sqlite3 backend/codes.db "SELECT key, value FROM settings WHERE key LIKE 'admin_%';"
+
+QR Code Lifecycle
+-----------------
+# Generate a fresh QR code for an order (public endpoint, API key only)
+curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+  -d '{"order_id": "<ORDER_ID>", "usage_limit": 3}' \
+  http://127.0.0.1:5000/generate_code
+
+# Manually validate a code via the kiosk API
+curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+  -d '{"code": "<CODE_VALUE>"}' \
+  http://127.0.0.1:5000/api/scan_code
+
+# Start a machine for a valid code (simulate external trigger)
+curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+  -d '{"code": "<CODE_VALUE>", "machine_id": "washer1"}' \
+  http://127.0.0.1:5000/api/start_machine
+
+# Poll current UI state (confirm kiosk sees the right screen)
+curl -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/api/ui_state
+
+# Revoke a code once a job is finished (delete)
+curl -X DELETE -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes/<CODE_VALUE>
+
+QR Code Inventory Management
+----------------------------
+# List all codes
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes
+
+# Fetch last 10 created codes
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes/last/10
+
+# Filter codes by order ID
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
+
+# Inspect a specific code
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes/<CODE_VALUE>
+
+# Delete all codes for an order
+curl -X DELETE -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
+
+Scan Log & Usage Diagnostics
+----------------------------
+# Last 5 scan attempts
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/scan_logs/last/5
+
+# Scans for an order ID
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/usage/by_order_id/<ORDER_ID>
+
+# Scans for a specific code
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/usage/by_code/<CODE_VALUE>
+
+Configuration & Settings
+------------------------
+# View any setting value
+curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  http://127.0.0.1:5000/admin/settings/<SETTING_KEY>
+
+# Update numeric/string settings (e.g., code_expiration_days)
+curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"value": "7"}' \
+  http://127.0.0.1:5000/admin/settings/code_expiration_days
+
+# Update CORS origins
+curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"origins": ["http://localhost:3000", "http://192.168.1.50"]}' \
+  http://127.0.0.1:5000/admin/settings/cors
+
+# Rotate the API key (redistribute new value afterwards)
+curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"value": "<NEW_API_KEY>"}' \
+  http://127.0.0.1:5000/admin/settings/api_key
+
+# Change admin password (hash first)
+$NEW_PASS = "<newPassword>"
+$HASH = (echo -n $NEW_PASS | openssl dgst -sha256).Split(" ")[-1]
+curl -X PUT -u admin:<currentPassword> -H "X-API-KEY: $env:API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"value": "'"$HASH"'"}' \
+  http://127.0.0.1:5000/admin/settings/admin_password_hash
+
+Database & Utility Scripts
+--------------------------
+# Explore DB tables via helper script
+python Testing_Files/view_db.py --table codes --limit 10
+python Testing_Files/view_db.py --table settings
+python Testing_Files/view_db.py --table scan_logs --limit 20
+
+# Manual expired-code cleanup (same logic as nightly job)
+python -c "from backend.controllers.code_cleanup import cleanup_expired_codes; cleanup_expired_codes()"
+
+# Run logger unit test
+python -m unittest Testing_Files/test_logger.py
+
+# Tail the backend log (PowerShell)
+Get-Content backend/logs/app.log -Wait
+
+# Tail the backend log (bash/zsh)
+tail -f backend/logs/app.log
+
+Hardware Simulation & Testing
+----------------------------
+# Keyboard-driven QR scan (fallback when serial device absent)
+python -m backend.controllers.qr_scanner
+# Type codes manually when prompted in the console.
+
+# Send a Shelly pulse manually for hardware validation
+python -c "from backend.utils.shelly_control import send_shelly_pulse; print(send_shelly_pulse('192.168.1.100', duration=1.5))"
+
+# Trigger kiosk state transitions without hardware
+curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+  -d '{"code": "<CODE_VALUE>"}' http://127.0.0.1:5000/api/scan_code
+curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+  -d '{"code": "<CODE_VALUE>", "machine_id": "washer1"}' http://127.0.0.1:5000/api/start_machine
+curl -H "X-API-KEY: $env:API_KEY" http://127.0.0.1:5000/api/ui_state
+
+Service Control
+---------------
+# Launch backend (virtualenv active)
+python -m backend.app
+
+# Stop backend (Ctrl+C in the backend terminal)
+
+# Frontend dev server
+cd frontend
+npm install
+npm run dev
+
+# Production-ready frontend build
+cd frontend
+npm install
+npm run build
+npm run start   # serves static bundle via Vite preview
+
+Maintenance Tips
+----------------
+- Rerun `python -m backend.setup.seed_settings` after deleting `codes.db` or pulling schema changes.
+- Redistribute updated API keys or admin passwords immediately to all kiosks and automation scripts.
+- Export database snapshots before running destructive operations in production environments.
+- Monitor `backend/logs/app.log` during testing for serial scanner, Shelly, and API errors.
