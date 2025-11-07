@@ -11,7 +11,11 @@ from backend.utils.shelly_control import send_shelly_pulse, send_shelly_on
 from datetime import datetime, timedelta
 import logging
 
+from backend.utils.logger import get_error_logger, get_event_logger
+
 logger = logging.getLogger(__name__)
+events_logger = get_event_logger()
+error_logger = get_error_logger()
 
 
 # ----- SETTINGS from DB -----
@@ -116,10 +120,19 @@ def process_qr_code(scanned_code):
             logger.warning(
                 "Invalid code", extra={"code": scanned_code, "reason": code_info}
             )
+            reason_key = "invalid"
+            if code_info == "Usage limit exceeded":
+                reason_key = "usage_limit_reached"
+            elif code_info == "Expired code":
+                reason_key = "expired"
+            events_logger.info(
+                "SCAN rejected: %s (%s)", scanned_code, reason_key
+            )
             log_scan_event(scanned_code, result, code_info)
             return
 
         logger.info("Code accepted")
+        events_logger.info("SCAN accepted: %s", scanned_code)
 
         # Simulate Shelly success if SHELLY_IP is 0 or None and debug mode is on
         debug_mode = logger.isEnabledFor(logging.DEBUG)
@@ -165,12 +178,17 @@ def process_qr_code(scanned_code):
             log_scan_event(scanned_code, "fail", "Shelly command failed")
     except Exception as e:
         logger.exception("Error processing QR code")
+        events_logger.error("SCAN error for %s: %s", scanned_code, e)
+        error_logger.error(
+            "SCAN error while processing code %s", scanned_code, exc_info=True
+        )
         log_scan_event(scanned_code, "error", str(e))
 
 
 def listen_for_scans():
     """Continuously get codes from scanner or input."""
     while True:
+        events_logger.info("SCAN started")
         scanned_code = read_qr_code()
         logger.debug("Scanned code received", extra={"code": scanned_code})
         process_qr_code(scanned_code)

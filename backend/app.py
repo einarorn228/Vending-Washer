@@ -1,32 +1,21 @@
-import os
-import subprocess
+import logging
 import threading
 import time
-import logging
-import sys
 
 from backend.utils.logger import configure_logger
+from backend.models import init_db
+from backend.setup.seed_settings import bootstrap_settings
 
 configure_logger()
-
-# --- Auto-setup section ---
-
-LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
-LOG_FILE = os.path.join(LOG_DIR, "app.log")
-if not os.path.exists(LOG_FILE):
-    subprocess.run([sys.executable, "-m", "backend.setup.seed_settings"], check=True)
-
-from backend.models import init_db
-
 init_db()
-subprocess.run([sys.executable, "-m", "backend.setup.seed_settings"], check=True)
+bootstrap_settings()
 
 logger = logging.getLogger(__name__)
 logger.info("===== APP STARTED =====")
 
 # Now import modules that use the DB
-from backend.controllers.qr_scanner import listen_for_scans
 from backend.controllers.code_cleanup import cleanup_expired_codes
+from backend.controllers.qr_scanner import listen_for_scans
 
 
 def start_flask():
@@ -43,10 +32,6 @@ def cleanup_scheduler():
 
 if __name__ == "__main__":
     try:
-        # Initialize the database (create all tables)
-        init_db()
-        logger.info("Database initialized")
-
         # Start the Flask server in a separate thread
         threading.Thread(target=start_flask, daemon=True).start()
         logger.info("Flask server started")

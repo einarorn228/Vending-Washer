@@ -1,14 +1,23 @@
 """Flask routes for touchscreen UI."""
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
+from backend.controllers.machine_control import (
+    UI_STATE,
+    get_machine_snapshot,
+    start_machine,
+    update_ui_state,
+    validate_code,
+)
 from backend.models import session
-from backend.models.code_model import Code
-from backend.controllers.machine_control import MACHINES, UI_STATE, validate_code, start_machine
 from backend.models.setting_model import get_setting_value
+from backend.utils.logger import get_event_logger
 
 ui_api = Blueprint("ui_api", __name__)
 
 API_KEY_HEADER = "X-API-KEY"
+
+events_logger = get_event_logger()
 
 
 @ui_api.before_request
@@ -23,13 +32,17 @@ def check_api_key():
 def scan_code():
     data = request.get_json(force=True)
     code = data.get("code")
+    events_logger.info("SCAN started (api)")
     if not code:
+        events_logger.info("SCAN rejected: <missing> (invalid)")
         return jsonify({"success": False, "message": "Missing code"}), 400
     obj, msg = validate_code(code)
     if not obj:
-        UI_STATE.update({"state": "error", "message": msg})
+        events_logger.info("SCAN rejected: %s (invalid)", code)
+        update_ui_state({"state": "error", "message": msg})
         return jsonify({"success": False, "message": msg})
-    UI_STATE.update(
+    events_logger.info("SCAN accepted: %s", code)
+    update_ui_state(
         {
             "state": "choose_machine",
             "message": "Please select a machine.",
@@ -48,10 +61,7 @@ def scan_code():
 
 
 def list_machines():
-    return [
-        {"id": mid, "name": m["name"], "available": m["available"]}
-        for mid, m in MACHINES.items()
-    ]
+    return get_machine_snapshot()
 
 
 @ui_api.route("/start_machine", methods=["POST"])
@@ -63,11 +73,11 @@ def start_machine_endpoint():
         return jsonify({"success": False, "message": "Missing data"}), 400
     obj, msg = validate_code(code)
     if not obj:
-        UI_STATE.update({"state": "error", "message": msg})
+        update_ui_state({"state": "error", "message": msg})
         return jsonify({"success": False, "message": msg})
     ok, err = start_machine(obj, machine_id)
     if not ok:
-        UI_STATE.update({"state": "error", "message": err})
+        update_ui_state({"state": "error", "message": err})
         return jsonify({"success": False, "message": err})
     return jsonify(
         {
