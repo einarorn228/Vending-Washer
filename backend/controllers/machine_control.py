@@ -11,13 +11,15 @@ from backend.utils.shelly_control import send_shelly_pulse
 logger = logging.getLogger(__name__)
 
 MACHINES: Dict[str, dict] = {
-    "washer1": {"name": "Washer 1", "available": True, "ip": "192.168.1.101"},
-    "washer2": {"name": "Washer 2", "available": True, "ip": "192.168.1.102"},
+    "washer1": {"name": "Washer 1", "available": True, "ip": "192.168.107.11"},
+    "washer2": {"name": "Dryer 1", "available": True, "ip": "192.168.107.12"},
+    "washer1": {"name": "Washer 2", "available": True, "ip": "192.168.107.13"},
+    "washer2": {"name": "Dryer 2", "available": True, "ip": "192.168.107.14"},
 }
 
 UI_STATE = {
     "state": "waiting_for_code",
-    "message": "Ready",
+    "message": "Scan your code to start",
     "uses_left": None,
     "current_machine": None,
     "machines": [],

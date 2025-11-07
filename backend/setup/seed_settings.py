@@ -29,7 +29,7 @@ DEFAULT_SETTINGS = {
     "max_usage_limit": "3",
     "cleanup_interval": "7",
     "relay_mode": "on",  # Options: "on", "pulse"
-    "cors_allowed_origins": "http://localhost, http://173.25.200.254",
+    "cors_allowed_origins": "http://localhost",
 }
 
 

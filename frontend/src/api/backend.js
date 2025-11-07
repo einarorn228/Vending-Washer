@@ -2,23 +2,18 @@ const STORAGE_KEY = "API_KEY";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function getApiKey() {
+  const envKey = import.meta.env.VITE_API_KEY;
+  if (envKey) return envKey;
+
   if (typeof window !== "undefined") {
     const storedKey = window.localStorage.getItem(STORAGE_KEY);
-    if (storedKey) {
-      return storedKey;
-    }
+    if (storedKey) return storedKey;
   }
 
-  const envKey = import.meta.env.VITE_API_KEY;
-  if (envKey) {
-    return envKey;
-  }
-
-  console.warn(
-    "No API key configured. Set localStorage API_KEY or VITE_API_KEY before using the kiosk UI."
-  );
+  console.warn("No API key configured. Set VITE_API_KEY or localStorage API_KEY.");
   return null;
 }
+
 
 async function request(path, options = {}) {
   const apiKey = getApiKey();
