@@ -1,14 +1,21 @@
-import logging
 import base64
 import hashlib
+import logging
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from backend.controllers.code_generator import generate_new_code
 from backend.controllers.ui_api import ui_api
-from backend.models import session
-from backend.models.scan_log_model import ScanLog
+from backend.models import init_db, session
 from backend.models.code_model import Code
+from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
+from backend.setup.seed_settings import bootstrap_settings
+from backend.utils.logger import configure_logger
+
+configure_logger()
+init_db()
+bootstrap_settings(logging.getLogger(__name__))
 
 logger = logging.getLogger(__name__)
 
