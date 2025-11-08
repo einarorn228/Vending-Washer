@@ -16,9 +16,9 @@ error_logger = get_error_logger()
 
 MACHINES: Dict[str, dict] = {
     "washer1": {"name": "Washer 1", "available": True, "ip": "192.168.107.11"},
-    "washer2": {"name": "Dryer 1", "available": True, "ip": "192.168.107.12"},
-    "washer1": {"name": "Washer 2", "available": True, "ip": "192.168.107.13"},
-    "washer2": {"name": "Dryer 2", "available": True, "ip": "192.168.107.14"},
+    "dryer1": {"name": "Dryer 1", "available": True, "ip": "192.168.107.12"},
+    "washer2": {"name": "Washer 2", "available": True, "ip": "192.168.107.13"},
+    "dryer2": {"name": "Dryer 2", "available": True, "ip": "192.168.107.14"},
 }
 
 UI_STATE = {
@@ -191,7 +191,7 @@ def release_machine(machine_id: str):
     update_ui_state(
         {
             "state": "waiting_for_code",
-            "message": "Ready",
+            "message": "Scan your code to start",
             "current_machine": None,
             "uses_left": None,
         }
