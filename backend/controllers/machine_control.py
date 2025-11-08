@@ -61,7 +61,7 @@ def schedule_reset_to_ready(delay_seconds: int = 3) -> None:
         update_ui_state(
             {
                 "state": "waiting_for_code",
-                "message": "Ready",
+                "message": "Scan your code to start",
                 "current_machine": None,
                 "uses_left": None,
             }
