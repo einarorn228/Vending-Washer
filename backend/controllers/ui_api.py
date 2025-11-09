@@ -6,6 +6,7 @@ from backend.controllers.machine_control import (
     UI_STATE,
     get_machine_snapshot,
     record_scan_pending,
+    show_error_state,
     start_machine,
     update_ui_state,
     validate_code,
@@ -89,11 +90,11 @@ def start_machine_endpoint():
         return jsonify({"success": False, "message": "Missing data"}), 400
     obj, msg = validate_code(code)
     if not obj:
-        update_ui_state({"state": "error", "message": msg})
+        show_error_state(msg)
         return jsonify({"success": False, "message": msg})
     ok, err = start_machine(obj, machine_id)
     if not ok:
-        update_ui_state({"state": "error", "message": err})
+        show_error_state(err)
         return jsonify({"success": False, "message": err})
     return jsonify(
         {

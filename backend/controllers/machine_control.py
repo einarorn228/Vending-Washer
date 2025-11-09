@@ -33,6 +33,7 @@ UI_STATE = {
 }
 
 lock = threading.Lock()
+
 pending_lock = threading.Lock()
 wait_lock = threading.Lock()
 metrics_lock = threading.Lock()
@@ -101,12 +102,20 @@ def _record_failure(machine_id: str) -> None:
     inc("machine_start_failures", machine=machine_id)
     _update_success_ratio(machine_id)
 
+_reset_timer: Optional[threading.Timer] = None
+
 
 def update_ui_state(updates: Dict[str, object]) -> None:
     """Update the shared UI state and emit a concise event log entry."""
 
+    global _reset_timer
+    cancel_timer = updates.get("state") not in (None, "error")
+
     with lock:
         UI_STATE.update(updates)
+        if cancel_timer and _reset_timer and _reset_timer.is_alive():
+            _reset_timer.cancel()
+            _reset_timer = None
         summary = {
             "state": UI_STATE.get("state"),
             "message": UI_STATE.get("message"),
@@ -121,6 +130,45 @@ def update_ui_state(updates: Dict[str, object]) -> None:
         _cleanup_expired_pending()
 
     events_logger.info("UI_STATE updated", extra={"ui_state": summary})
+
+
+def schedule_reset_to_ready(delay_seconds: int = 3) -> None:
+    """Schedule a reset of the UI to the ready state after the given delay."""
+
+    def _reset():
+        update_ui_state(
+            {
+                "state": "waiting_for_code",
+                "message": "Scan your code to start",
+                "current_machine": None,
+                "uses_left": None,
+            }
+        )
+
+    global _reset_timer
+    timer: Optional[threading.Timer] = None
+    with lock:
+        if _reset_timer and _reset_timer.is_alive():
+            _reset_timer.cancel()
+        _reset_timer = threading.Timer(delay_seconds, _reset)
+        timer = _reset_timer
+
+    if timer:
+        timer.start()
+
+
+def show_error_state(message: str, hold_seconds: int = 3) -> None:
+    """Display an error message briefly before returning to the ready state."""
+
+    update_ui_state(
+        {
+            "state": "error",
+            "message": message,
+            "current_machine": None,
+            "uses_left": None,
+        }
+    )
+    schedule_reset_to_ready(hold_seconds)
 
 
 def get_machine_snapshot():
@@ -261,7 +309,7 @@ def release_machine(machine_id: str):
     update_ui_state(
         {
             "state": "waiting_for_code",
-            "message": "Ready",
+            "message": "Scan your code to start",
             "current_machine": None,
             "uses_left": None,
         }

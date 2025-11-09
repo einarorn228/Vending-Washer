@@ -21,7 +21,7 @@ venv/
 *.sqlite3
 
 # Logs & runtime data
-logs/
+backend/logs/
 *.log
 
 # Coverage / testing
