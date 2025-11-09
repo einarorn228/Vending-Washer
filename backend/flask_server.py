@@ -1,8 +1,12 @@
 import base64
 import hashlib
 import logging
+import time
+import uuid
+from datetime import datetime
+from io import StringIO
 
-from flask import Flask, jsonify, request
+from flask import Flask, Response, g, jsonify, request
 from flask_cors import CORS
 from backend.controllers.code_generator import generate_new_code
 from backend.controllers.ui_api import ui_api
@@ -12,12 +16,17 @@ from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
 from backend.setup.seed_settings import bootstrap_settings
 from backend.utils.logger import configure_logger
+from logging import getLogger
+import csv
+
+from backend.metrics import inc, observe_ms, snapshot
 
 configure_logger()
 init_db()
 bootstrap_settings(logging.getLogger(__name__))
 
 logger = logging.getLogger(__name__)
+root_logger = getLogger()
 
 app = Flask(__name__)
 
@@ -27,6 +36,52 @@ origins_list = [o.strip() for o in allowed_origins.split(",") if o.strip()]
 CORS(app, origins=origins_list)
 
 app.register_blueprint(ui_api, url_prefix="/api")
+
+
+@app.before_request
+def _start_timer_and_request_id():
+    g._t0 = time.perf_counter()
+    g.request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
+    g.session_id = request.cookies.get("session_id")
+
+
+@app.after_request
+def _log_request(resp):
+    start = getattr(g, "_t0", None)
+    if start is None:
+        duration_ms = 0
+    else:
+        duration_ms = int((time.perf_counter() - start) * 1000)
+
+    request_id = getattr(g, "request_id", uuid.uuid4().hex)
+    session_id = getattr(g, "session_id", None)
+    extra = {
+        "request_id": request_id,
+        "route": request.path,
+        "method": request.method,
+        "status": resp.status_code,
+        "latency_ms": duration_ms,
+        "session_id": session_id,
+        "client_ip": request.remote_addr,
+    }
+
+    level = logging.INFO if resp.status_code < 400 else logging.ERROR
+    root_logger.log(level, "HTTP request", extra=extra)
+
+    inc(
+        "http_requests_total",
+        endpoint=request.path,
+        method=request.method,
+        status=resp.status_code,
+    )
+    observe_ms(
+        "http_request_duration_ms",
+        duration_ms,
+        endpoint=request.path,
+    )
+
+    resp.headers["X-Request-ID"] = request_id
+    return resp
 
 
 def check_admin_auth(auth_header):
@@ -111,6 +166,81 @@ def generate_code():
 
 # ----- Admin/Debug Endpoints -----
 # TODO: Add authentication before exposing in production
+
+
+def _normalise_labels(labels_tuple):
+    return {k: v for k, v in labels_tuple}
+
+
+@app.route("/admin/metrics", methods=["GET"])
+@require_admin_auth
+def admin_metrics():
+    counters, gauges, histograms = snapshot()
+
+    def _prepare(mapping):
+        return [
+            {"name": name, "labels": _normalise_labels(labels), "value": value}
+            for (name, labels), value in mapping.items()
+        ]
+
+    histo_payload = []
+    for (name, labels), values in histograms.items():
+        entry = {"name": name, "labels": _normalise_labels(labels)}
+        entry.update(values)
+        histo_payload.append(entry)
+
+    return jsonify(
+        {
+            "counters": _prepare(counters),
+            "gauges": _prepare(gauges),
+            "histograms": histo_payload,
+        }
+    )
+
+
+@app.route("/admin/metrics/export.csv", methods=["GET"])
+@require_admin_auth
+def admin_metrics_export():
+    counters, gauges, histograms = snapshot()
+    buffer = StringIO()
+    writer = csv.writer(buffer)
+    timestamp = datetime.utcnow().isoformat()
+
+    writer.writerow(["timestamp", "type", "name", "labels", "metric", "value"])
+
+    def _labels_to_str(labels_tuple):
+        labels = _normalise_labels(labels_tuple)
+        if not labels:
+            return "-"
+        return ";".join(f"{k}={v}" for k, v in sorted(labels.items()))
+
+    for (name, labels), value in counters.items():
+        writer.writerow([timestamp, "counter", name, _labels_to_str(labels), "value", value])
+    for (name, labels), value in gauges.items():
+        writer.writerow([timestamp, "gauge", name, _labels_to_str(labels), "value", value])
+    histo_metrics = ("count", "avg_ms", "p95_ms", "p99_ms", "max_ms")
+    for (name, labels), values in histograms.items():
+        for metric_name in histo_metrics:
+            metric_value = values.get(metric_name)
+            if metric_value is not None:
+                writer.writerow(
+                    [
+                        timestamp,
+                        "histogram",
+                        name,
+                        _labels_to_str(labels),
+                        metric_name,
+                        metric_value,
+                    ]
+                )
+
+    csv_data = buffer.getvalue()
+    buffer.close()
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=metrics_export.csv"},
+    )
 
 
 @app.route("/admin/usage/by_order_id/<order_id>", methods=["GET"])

@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 import serial
+import time
 from backend.models import session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
@@ -12,6 +13,7 @@ from datetime import datetime, timedelta
 import logging
 
 from backend.utils.logger import get_error_logger, get_event_logger
+from backend.metrics import inc, observe_ms
 
 logger = logging.getLogger(__name__)
 events_logger = get_event_logger()
@@ -51,7 +53,10 @@ def read_qr_code():
     """Reads a QR code—serial if connected, otherwise manual input."""
     if SERIAL_AVAILABLE:
         try:
+            t0 = time.perf_counter()
             data = ser.readline().decode("utf-8").strip()
+            read_ms = int((time.perf_counter() - t0) * 1000)
+            observe_ms("scanner_read_ms", read_ms, source="serial")
             if data:
                 logger.info("Received QR Code", extra={"code": data})
                 return data
@@ -126,13 +131,16 @@ def process_qr_code(scanned_code):
             elif code_info == "Expired code":
                 reason_key = "expired"
             events_logger.info(
-                "SCAN rejected: %s (%s)", scanned_code, reason_key
+                "SCAN rejected",
+                extra={"code": scanned_code, "reason": reason_key},
             )
+            inc("scan_total", outcome="rejected", reason=reason_key, source="scanner")
             log_scan_event(scanned_code, result, code_info)
             return
 
         logger.info("Code accepted")
-        events_logger.info("SCAN accepted: %s", scanned_code)
+        events_logger.info("SCAN accepted", extra={"code": scanned_code})
+        inc("scan_total", outcome="accepted", source="scanner")
 
         # Simulate Shelly success if SHELLY_IP is 0 or None and debug mode is on
         debug_mode = logger.isEnabledFor(logging.DEBUG)
@@ -173,15 +181,23 @@ def process_qr_code(scanned_code):
             session.commit()
             logger.info("Shelly command succeeded", extra={"code": code_info.code})
             log_scan_event(scanned_code, "success")
+            inc("scan_total", outcome="success", source="scanner")
         else:
             logger.error("Shelly command failed", extra={"code": code_info.code})
+            inc("scan_total", outcome="error", reason="shelly_failed", source="scanner")
             log_scan_event(scanned_code, "fail", "Shelly command failed")
     except Exception as e:
         logger.exception("Error processing QR code")
-        events_logger.error("SCAN error for %s: %s", scanned_code, e)
-        error_logger.error(
-            "SCAN error while processing code %s", scanned_code, exc_info=True
+        events_logger.error(
+            "SCAN error",
+            extra={"code": scanned_code, "error": str(e)},
         )
+        error_logger.error(
+            "SCAN error while processing code",
+            extra={"code": scanned_code},
+            exc_info=True,
+        )
+        inc("scan_total", outcome="error", reason="exception", source="scanner")
         log_scan_event(scanned_code, "error", str(e))
 
 

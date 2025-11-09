@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from backend.controllers.machine_control import (
     UI_STATE,
     get_machine_snapshot,
+    record_scan_pending,
     show_error_state,
     start_machine,
     update_ui_state,
@@ -13,6 +14,7 @@ from backend.controllers.machine_control import (
 from backend.models import session
 from backend.models.setting_model import get_setting_value
 from backend.utils.logger import get_event_logger
+from backend.metrics import inc
 
 ui_api = Blueprint("ui_api", __name__)
 
@@ -26,6 +28,7 @@ def check_api_key():
     key = request.headers.get(API_KEY_HEADER)
     db_key = get_setting_value(session, "api_key")
     if not key or key != db_key:
+        inc("http_auth_failures", endpoint=request.path or "ui_api")
         return jsonify({"success": False, "message": "Invalid API key"}), 401
 
 
@@ -33,16 +36,29 @@ def check_api_key():
 def scan_code():
     data = request.get_json(force=True)
     code = data.get("code")
-    events_logger.info("SCAN started (api)")
+    events_logger.info("SCAN started", extra={"source": "api"})
     if not code:
-        events_logger.info("SCAN rejected: <missing> (invalid)")
+        events_logger.info(
+            "SCAN rejected",
+            extra={"source": "api", "reason": "missing_code"},
+        )
+        inc("scan_total", outcome="rejected", reason="missing_code", source="ui")
         return jsonify({"success": False, "message": "Missing code"}), 400
     obj, msg = validate_code(code)
     if not obj:
-        events_logger.info("SCAN rejected: %s (invalid)", code)
-        show_error_state(msg)
+        events_logger.info(
+            "SCAN rejected",
+            extra={"source": "api", "reason": "invalid", "code": code},
+        )
+        update_ui_state({"state": "error", "message": msg})
+        reason = msg.lower().replace(" ", "_") if msg else "invalid"
+        inc("scan_total", outcome="rejected", reason=reason, source="ui")
         return jsonify({"success": False, "message": msg})
-    events_logger.info("SCAN accepted: %s", code)
+    events_logger.info(
+        "SCAN accepted", extra={"source": "api", "code": code}
+    )
+    inc("scan_total", outcome="accepted", source="ui")
+    record_scan_pending(code)
     update_ui_state(
         {
             "state": "choose_machine",

@@ -4,11 +4,90 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 from logging import Logger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import Set
 
 from dotenv import load_dotenv
+
+POLL_ROUTES: Set[str] = {"/api/ui_state"}
+SLOW_MS = 300
+
+
+class RouteFilter(logging.Filter):
+    """Filter out successful poll endpoints unless they are slow."""
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: D401 - see class docstring
+        if getattr(record, "_force_log", False):
+            return True
+        if not hasattr(record, "route") or not hasattr(record, "status"):
+            return True
+        try:
+            status_code = int(getattr(record, "status", 0))
+        except (TypeError, ValueError):
+            status_code = 0
+        if status_code >= 400:
+            return True
+        if getattr(record, "route") in POLL_ROUTES:
+            latency = getattr(record, "latency_ms", None)
+            if latency and latency > SLOW_MS:
+                return True
+            return False
+        return True
+
+
+class SlowRequestFilter(logging.Filter):
+    """Mark slow requests so downstream filters always log them."""
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: D401 - see class docstring
+        latency = getattr(record, "latency_ms", None)
+        try:
+            latency_value = int(latency) if latency is not None else None
+        except (TypeError, ValueError):
+            latency_value = None
+        if latency_value is not None and latency_value > SLOW_MS:
+            setattr(record, "_force_log", True)
+        return True
+
+
+class RedactFilter(logging.Filter):
+    """Mask sensitive identifiers that may appear in structured extras."""
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: D401 - see class docstring
+        for key in ("code", "qr_code", "api_key"):
+            if hasattr(record, key):
+                value = getattr(record, key)
+                if value:
+                    value_str = str(value)
+                    masked = f"{value_str[:2]}***{value_str[-2:]}" if len(value_str) > 4 else "***"
+                    setattr(record, key, masked)
+        return True
+
+
+class SamplingFilter(logging.Filter):
+    """Apply lightweight sampling to high-volume successful requests."""
+
+    SAMPLE_RATE = 0.01
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: D401 - see class docstring
+        if getattr(record, "_force_log", False):
+            return True
+        status = getattr(record, "status", None)
+        try:
+            status_code = int(status) if status is not None else None
+        except (TypeError, ValueError):
+            status_code = None
+        slow = False
+        latency = getattr(record, "latency_ms", None)
+        try:
+            slow = latency is not None and int(latency) > SLOW_MS
+        except (TypeError, ValueError):
+            slow = False
+        if status_code is not None and status_code < 400 and not slow:
+            return random.random() < self.SAMPLE_RATE
+        return True
 
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 APP_LOG_FILE = LOG_DIR / "app.log"
@@ -59,11 +138,13 @@ def _resolve_log_level() -> str:
     return "INFO"
 
 
-def _create_rotating_handler(path: Path, level: int) -> RotatingFileHandler:
+def _create_rotating_handler(
+    path: Path, level: int, *, max_bytes: int = 5 * 1024 * 1024, backup_count: int = 3
+) -> RotatingFileHandler:
     handler = RotatingFileHandler(
         path,
-        maxBytes=5 * 1024 * 1024,
-        backupCount=3,
+        maxBytes=max_bytes,
+        backupCount=backup_count,
         encoding="utf-8",
     )
     handler.setLevel(level)
@@ -93,7 +174,19 @@ def configure_logger() -> Logger:
     resolved_level_name = logging.getLevelName(level)
     root.setLevel(level)
 
-    file_handler = _create_rotating_handler(APP_LOG_FILE, level)
+    route_filter = RouteFilter()
+    slow_filter = SlowRequestFilter()
+    redact_filter = RedactFilter()
+    sampling_filter = SamplingFilter()
+
+    file_handler = _create_rotating_handler(
+        APP_LOG_FILE, level, max_bytes=10 * 1024 * 1024, backup_count=5
+    )
+    file_handler.addFilter(redact_filter)
+    file_handler.addFilter(slow_filter)
+    file_handler.addFilter(route_filter)
+    file_handler.addFilter(sampling_filter)
+
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
     console_handler.setFormatter(
@@ -102,6 +195,10 @@ def configure_logger() -> Logger:
             "(%(filename)s:%(lineno)d)"
         )
     )
+    console_handler.addFilter(redact_filter)
+    console_handler.addFilter(slow_filter)
+    console_handler.addFilter(route_filter)
+    console_handler.addFilter(sampling_filter)
 
     root.addHandler(file_handler)
     root.addHandler(console_handler)
@@ -110,15 +207,19 @@ def configure_logger() -> Logger:
     events_logger = logging.getLogger("app.events")
     events_logger.setLevel(logging.INFO)
     events_logger.handlers.clear()
-    events_logger.addHandler(_create_rotating_handler(EVENTS_LOG_FILE, logging.INFO))
+    events_handler = _create_rotating_handler(EVENTS_LOG_FILE, logging.INFO)
+    events_handler.addFilter(redact_filter)
+    events_handler.addFilter(route_filter)
+    events_logger.addHandler(events_handler)
     events_logger.propagate = False
 
     errors_logger = logging.getLogger("app.errors")
     errors_logger.setLevel(logging.ERROR)
     errors_logger.handlers.clear()
-    errors_logger.addHandler(
-        _create_rotating_handler(ERRORS_LOG_FILE, logging.ERROR)
-    )
+    errors_handler = _create_rotating_handler(ERRORS_LOG_FILE, logging.ERROR)
+    errors_handler.addFilter(redact_filter)
+    errors_handler.addFilter(route_filter)
+    errors_logger.addHandler(errors_handler)
     errors_logger.propagate = False
 
     # Noise reduction from verbose dependencies.
