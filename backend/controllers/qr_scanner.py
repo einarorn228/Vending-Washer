@@ -1,22 +1,34 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import serial
-from models import session
-from models.code_model import Code
-from models.scan_log_model import ScanLog
-from models.setting_model import get_setting_value
-from utils.shelly_control import send_shelly_pulse, send_shelly_on
+import time
+from backend.models import session
+from backend.models.code_model import Code
+from backend.models.scan_log_model import ScanLog
+from backend.models.setting_model import get_setting_value
+from backend.utils.shelly_control import send_shelly_pulse, send_shelly_on
 from datetime import datetime, timedelta
 import logging
 
+from backend.utils.logger import get_error_logger, get_event_logger
+from backend.metrics import inc, observe_ms
+
 logger = logging.getLogger(__name__)
+events_logger = get_event_logger()
+error_logger = get_error_logger()
 
 
 # ----- SETTINGS from DB -----
-SERIAL_PORT     = get_setting_value(session, "serial_port",    default="/dev/ttyUSB0")
+SERIAL_PORT = get_setting_value(session, "serial_port", default="/dev/ttyUSB0")
 SERIAL_BAUDRATE = int(get_setting_value(session, "serial_baudrate", default=9600))
-SCAN_TIMEOUT    = int(get_setting_value(session, "scan_timeout",    default=1))
-SHELLY_IP       = get_setting_value(session, "shelly_ip",       default="192.168.1.100")
-PULSE_DURATION  = int(get_setting_value(session, "pulse_duration", default=1))
-RELAY_MODE = get_setting_value(session, "relay_mode", default="on").lower()  # "on" or "pulse"
+SCAN_TIMEOUT = int(get_setting_value(session, "scan_timeout", default=1))
+SHELLY_IP = get_setting_value(session, "shelly_ip", default="192.168.1.100")
+PULSE_DURATION = int(get_setting_value(session, "pulse_duration", default=1))
+RELAY_MODE = get_setting_value(
+    session, "relay_mode", default="on"
+).lower()  # "on" or "pulse"
 
 # ----- Initialize serial scanner if available -----
 try:
@@ -26,10 +38,10 @@ try:
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
-        timeout=SCAN_TIMEOUT
+        timeout=SCAN_TIMEOUT,
     )
     SERIAL_AVAILABLE = True
-    
+
     logger.debug("Serial scanner available on %s", SERIAL_PORT)
 
 except Exception as e:
@@ -41,7 +53,10 @@ def read_qr_code():
     """Reads a QR code—serial if connected, otherwise manual input."""
     if SERIAL_AVAILABLE:
         try:
+            t0 = time.perf_counter()
             data = ser.readline().decode("utf-8").strip()
+            read_ms = int((time.perf_counter() - t0) * 1000)
+            observe_ms("scanner_read_ms", read_ms, source="serial")
             if data:
                 logger.info("Received QR Code", extra={"code": data})
                 return data
@@ -110,10 +125,22 @@ def process_qr_code(scanned_code):
             logger.warning(
                 "Invalid code", extra={"code": scanned_code, "reason": code_info}
             )
+            reason_key = "invalid"
+            if code_info == "Usage limit exceeded":
+                reason_key = "usage_limit_reached"
+            elif code_info == "Expired code":
+                reason_key = "expired"
+            events_logger.info(
+                "SCAN rejected",
+                extra={"code": scanned_code, "reason": reason_key},
+            )
+            inc("scan_total", outcome="rejected", reason=reason_key, source="scanner")
             log_scan_event(scanned_code, result, code_info)
             return
 
         logger.info("Code accepted")
+        events_logger.info("SCAN accepted", extra={"code": scanned_code})
+        inc("scan_total", outcome="accepted", source="scanner")
 
         # Simulate Shelly success if SHELLY_IP is 0 or None and debug mode is on
         debug_mode = logger.isEnabledFor(logging.DEBUG)
@@ -129,7 +156,9 @@ def process_qr_code(scanned_code):
                 success = send_shelly_on(SHELLY_IP)
             else:
                 logger.error("Unknown relay mode: %s", RELAY_MODE)
-                log_scan_event(scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}")
+                log_scan_event(
+                    scanned_code, "error", f"Unknown relay mode: {RELAY_MODE}"
+                )
                 return
 
         if success:
@@ -138,7 +167,9 @@ def process_qr_code(scanned_code):
                 # Mark code for cleanup after retention period
                 try:
                     days = int(
-                        get_setting_value(session, "expired_code_cleanup_days", default=30)
+                        get_setting_value(
+                            session, "expired_code_cleanup_days", default=30
+                        )
                     )
                 except (TypeError, ValueError):
                     days = 30
@@ -150,16 +181,30 @@ def process_qr_code(scanned_code):
             session.commit()
             logger.info("Shelly command succeeded", extra={"code": code_info.code})
             log_scan_event(scanned_code, "success")
+            inc("scan_total", outcome="success", source="scanner")
         else:
             logger.error("Shelly command failed", extra={"code": code_info.code})
+            inc("scan_total", outcome="error", reason="shelly_failed", source="scanner")
             log_scan_event(scanned_code, "fail", "Shelly command failed")
     except Exception as e:
         logger.exception("Error processing QR code")
+        events_logger.error(
+            "SCAN error",
+            extra={"code": scanned_code, "error": str(e)},
+        )
+        error_logger.error(
+            "SCAN error while processing code",
+            extra={"code": scanned_code},
+            exc_info=True,
+        )
+        inc("scan_total", outcome="error", reason="exception", source="scanner")
         log_scan_event(scanned_code, "error", str(e))
+
 
 def listen_for_scans():
     """Continuously get codes from scanner or input."""
     while True:
+        events_logger.info("SCAN started")
         scanned_code = read_qr_code()
         logger.debug("Scanned code received", extra={"code": scanned_code})
         process_qr_code(scanned_code)

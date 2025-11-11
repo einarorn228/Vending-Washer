@@ -1,0 +1,23 @@
+{
+  "name": "vending-washer-ui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k \"vite --host --port 3000 --strictPort\" \"npm:open:pi\"",
+    "open:pi": "wait-on http://localhost:3000 && bash ./scripts/open-pi-browser.sh",
+    "build": "vite build",
+    "start": "vite preview --host --port 3000"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.6.0",
+    "concurrently": "^9.2.1",
+    "prettier": "^2.8.8",
+    "vite": "^7.0.5",
+    "wait-on": "^9.0.1"
+  }
+}
+

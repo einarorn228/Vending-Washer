@@ -2,6 +2,7 @@ import os
 
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
 
+
 def setup_logs():
     os.makedirs(LOG_DIR, exist_ok=True)
     os.chmod(LOG_DIR, 0o755)
@@ -16,4 +17,3 @@ def setup_logs():
 
 if __name__ == "__main__":
     setup_logs()
-

@@ -1,9 +1,10 @@
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime
-from models import Base
+from backend.models import Base
+
 
 class ScanLog(Base):
-    __tablename__ = 'scan_logs'
+    __tablename__ = "scan_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(String)

@@ -3,22 +3,25 @@ import random
 import string
 
 from datetime import datetime, timedelta
-from models import session
-from models.code_model import Code
-from models.setting_model import get_setting_value
+from backend.models import session
+from backend.models.code_model import Code
+from backend.models.setting_model import get_setting_value
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 def generate_random_code(length=8):
     """Generate a random alphanumeric code."""
     characters = string.ascii_letters + string.digits
-    return ''.join(random.choices(characters, k=length))
+    return "".join(random.choices(characters, k=length))
+
 
 def is_code_unique(code_value):
     """Check if the generated code already exists in the database."""
     existing_code = session.query(Code).filter_by(code=code_value).first()
     return existing_code is None
+
 
 def generate_unique_code(length=8):
     """Generate a unique QR code that doesn't already exist in the database."""
@@ -27,6 +30,7 @@ def generate_unique_code(length=8):
         logger.debug("Generated candidate code", extra={"code": random_code})
         if is_code_unique(random_code):
             return random_code
+
 
 def generate_new_code(order_id, usage_limit):
     """Generate a new QR code respecting expiration settings."""
@@ -39,7 +43,7 @@ def generate_new_code(order_id, usage_limit):
             "code": existing_code.code,
             "usage_limit": existing_code.usage_limit,
             "current_usage": existing_code.current_usage,
-            "status_code": 400
+            "status_code": 400,
         }
 
     # Generate a new unique QR code
@@ -66,17 +70,18 @@ def generate_new_code(order_id, usage_limit):
     session.commit()
     logger.info(
         "Generated new code",
-        extra={"order_id": order_id, "code": random_code, "expiration_date": expiration_date},
+        extra={
+            "order_id": order_id,
+            "code": random_code,
+            "expiration_date": expiration_date,
+        },
     )
 
     return {
         "message": "QR code generated successfully.",
         "code": random_code,
         "order_id": order_id,
-        "usage_info": {
-            "usage_limit": usage_limit,
-            "current_usage": 0
-        },
+        "usage_info": {"usage_limit": usage_limit, "current_usage": 0},
         "status_code": 201,
         "expiration_date": expiration_date.isoformat() if expiration_date else None,
     }
