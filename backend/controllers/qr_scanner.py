@@ -6,13 +6,13 @@ import serial
 import time
 from backend.models import session
 from backend.models.code_model import Code
-from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value
 from backend.utils.shelly_control import send_shelly_pulse, send_shelly_on
 from datetime import datetime, timedelta
 import logging
 
 from backend.utils.logger import get_error_logger, get_event_logger
+from backend.controllers.machine_control import write_scan_log
 from backend.metrics import inc, observe_ms
 
 logger = logging.getLogger(__name__)
@@ -81,39 +81,18 @@ def search_table(scanned_code):
     return False, "Usage limit exceeded"
 
 
-def log_scan_event(code_value, result, details=None):
-    """Persist a scan attempt to the database."""
+def log_scan_event(code_value, result, details=None, order_id=None):
+    """Persist a scan attempt using the shared logging helper."""
+
     try:
-        code_entry = session.query(Code).filter_by(code=code_value).first()
-        order_id = code_entry.order_id if code_entry else None
-
-        usage_left_msg = None
-        if code_entry:
-            usage_left = code_entry.usage_limit - code_entry.current_usage
-            if result == "success":
-                if usage_left > 0:
-                    usage_left_msg = f"Code now has {usage_left} uses left."
-                else:
-                    usage_left_msg = "Code has now expired."
-            elif result == "expired":
-                usage_left_msg = "Code has already expired."
-            # You can add more result cases here if needed
-
-        if usage_left_msg:
-            details = f"{details}; {usage_left_msg}" if details else usage_left_msg
-
-        log_entry = ScanLog(
-            code=code_value,
-            order_id=order_id,
-            timestamp=datetime.utcnow(),
-            result=result,
-            details=details,
-        )
-        session.add(log_entry)
-        session.commit()
-    except Exception as e:
+        if order_id is None and code_value:
+            code_entry = session.query(Code).filter_by(code=code_value).first()
+            order_id = code_entry.order_id if code_entry else None
+    except Exception:
         session.rollback()
-        logger.exception("Failed to log scan event: %s", e)
+        logger.exception("Failed to load order id for scan log")
+        order_id = None
+    write_scan_log(code_value, order_id, result, "serial", details=details)
 
 
 def process_qr_code(scanned_code):
@@ -121,25 +100,32 @@ def process_qr_code(scanned_code):
     try:
         is_valid, code_info = search_table(scanned_code)
         if not is_valid:
-            result = "expired" if code_info != "Invalid code" else "invalid"
             logger.warning(
                 "Invalid code", extra={"code": scanned_code, "reason": code_info}
             )
             reason_key = "invalid"
             if code_info == "Usage limit exceeded":
-                reason_key = "usage_limit_reached"
+                reason_key = "usage_limit_exceeded"
             elif code_info == "Expired code":
                 reason_key = "expired"
             events_logger.info(
-                "SCAN rejected",
-                extra={"code": scanned_code, "reason": reason_key},
+                "SCAN received",
+                extra={
+                    "source": "scanner",
+                    "code": scanned_code,
+                    "result": "invalid",
+                    "reason": reason_key,
+                },
             )
             inc("scan_total", outcome="rejected", reason=reason_key, source="scanner")
-            log_scan_event(scanned_code, result, code_info)
+            log_scan_event(scanned_code, "invalid", code_info)
             return
 
         logger.info("Code accepted")
-        events_logger.info("SCAN accepted", extra={"code": scanned_code})
+        events_logger.info(
+            "SCAN received",
+            extra={"source": "scanner", "code": scanned_code, "result": "valid"},
+        )
         inc("scan_total", outcome="accepted", source="scanner")
 
         # Simulate Shelly success if SHELLY_IP is 0 or None and debug mode is on
@@ -180,12 +166,12 @@ def process_qr_code(scanned_code):
 
             session.commit()
             logger.info("Shelly command succeeded", extra={"code": code_info.code})
-            log_scan_event(scanned_code, "success")
+            log_scan_event(scanned_code, "valid")
             inc("scan_total", outcome="success", source="scanner")
         else:
             logger.error("Shelly command failed", extra={"code": code_info.code})
             inc("scan_total", outcome="error", reason="shelly_failed", source="scanner")
-            log_scan_event(scanned_code, "fail", "Shelly command failed")
+            log_scan_event(scanned_code, "invalid", "Shelly command failed")
     except Exception as e:
         logger.exception("Error processing QR code")
         events_logger.error(
@@ -198,7 +184,7 @@ def process_qr_code(scanned_code):
             exc_info=True,
         )
         inc("scan_total", outcome="error", reason="exception", source="scanner")
-        log_scan_event(scanned_code, "error", str(e))
+        log_scan_event(scanned_code, "invalid", str(e))
 
 
 def listen_for_scans():
