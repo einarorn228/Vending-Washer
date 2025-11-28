@@ -103,3 +103,22 @@ def send_shelly_on(ip, relay=0):
     except Exception:  # pragma: no cover - network errors
         logger.exception("Could not reach Shelly", extra={"ip": ip})
         return False
+
+
+def send_shelly_off(ip, relay=0):
+    """Turn a Shelly relay OFF via HTTP."""
+
+    url = f"http://{ip}/relay/{relay}?turn=off"
+    try:
+        start = time.perf_counter()
+        ok, status = _perform_request(url, ip, "turn_off")
+        total_ms = int((time.perf_counter() - start) * 1000)
+        observe_ms("shelly_rtt_ms", total_ms, device=ip)
+        if ok:
+            logger.info("Shelly OFF succeeded", extra={"ip": ip})
+            return True
+        logger.error("Shelly OFF failed", extra={"ip": ip, "status": status})
+        return False
+    except Exception:  # pragma: no cover - network errors
+        logger.exception("Could not reach Shelly", extra={"ip": ip})
+        return False
