@@ -26,7 +26,7 @@ error_logger = get_error_logger()
 
 @dataclass
 class ValidatedCode:
-    id: int
+    id: Optional[int]
     code: str
     order_id: Optional[str]
     usage_limit: int
@@ -222,7 +222,7 @@ def validate_code(code: str) -> Tuple[Optional[ValidatedCode], str]:
             return None, "Code expired or invalid."
         return (
             ValidatedCode(
-                id=obj.id,
+                id=getattr(obj, "id", None),
                 code=obj.code,
                 order_id=obj.order_id,
                 usage_limit=obj.usage_limit,
@@ -266,8 +266,11 @@ def write_scan_log(
 def _apply_usage_delta(code_info: ValidatedCode) -> int:
     db = _get_session()
     try:
-        obj = db.query(Code).get(code_info.id)
+        obj = db.query(Code).filter_by(code=code_info.code).first()
         if not obj:
+            error_logger.error(
+                "Code not found when applying usage delta", extra={"code": code_info.code}
+            )
             return code_info.usage_limit - code_info.current_usage
         obj.current_usage += 1
         uses_left = max(obj.usage_limit - obj.current_usage, 0)
