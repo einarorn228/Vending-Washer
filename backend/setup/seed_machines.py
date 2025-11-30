@@ -37,7 +37,7 @@ DEFAULT_DEVICES = [
         "model": "shelly-uni",
         "ip": "192.168.107.11",
         "relay_channel": 0,
-        "metric_source": "power",
+        "metric_source": "voltage",
     },
     {
         "name": "Dryer 1 UNI",
@@ -45,7 +45,7 @@ DEFAULT_DEVICES = [
         "model": "shelly-uni",
         "ip": "192.168.107.12",
         "relay_channel": 0,
-        "metric_source": "power",
+        "metric_source": "voltage",
     },
     {
         "name": "Washer 2 UNI",
