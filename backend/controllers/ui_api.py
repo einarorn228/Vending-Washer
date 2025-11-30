@@ -28,7 +28,7 @@ events_logger = get_event_logger()
 
 @ui_api.before_request
 def check_api_key():
-    key = request.headers.get(API_KEY_HEADER)
+    key = request.headers.get(API_KEY_HEADER) or request.args.get("api_key")
     db_key = get_setting_value(session, "api_key")
     if not key or key != db_key:
         inc("http_auth_failures", endpoint=request.path or "ui_api")
@@ -131,10 +131,13 @@ def ui_state():
     return jsonify(state)
 
 
-@ui_api.route("/i4_event", methods=["POST"])
+@ui_api.route("/i4_event", methods=["POST", "GET"])
 def i4_event():
-    data = request.get_json(force=True)
-    button = data.get("button")
+    if request.method == "GET":
+        button = request.args.get("button")
+    else:
+        data = request.get_json(force=True, silent=True) or {}
+        button = data.get("button")
     if button is None:
         return jsonify({"success": False, "message": "Missing button index"}), 400
     try:
