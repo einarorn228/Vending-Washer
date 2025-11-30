@@ -375,6 +375,11 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
                     value = meters[channel].get("power")
                     if value is not None:
                         return float(value)
+                # Shelly UNI Gen2 devices expose voltage via Shelly.GetStatus; use it as a
+                # last-resort fallback for "power" sources when no apower readings exist.
+                voltmeter = data.get("voltmeter:100")
+                if isinstance(voltmeter, dict) and "voltage" in voltmeter:
+                    return float(voltmeter["voltage"])
 
         elif metric == "adc":
             url = f"http://{device.ip}/rpc/Adc.GetStatus?id={channel}"
@@ -395,6 +400,18 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
                 state = data.get("state")
                 if state is not None:
                     return float(1 if state else 0)
+
+        elif metric in {"voltage", "voltmeter"}:
+            # Shelly UNI Gen2 exposes its built-in voltmeter via this RPC endpoint. The ID
+            # "100" is reserved for the internal voltmeter on UNI devices and returns a
+            # floating-point voltage value. If the request fails or the field is missing,
+            # treat the device as offline so telemetry can recover gracefully.
+            url = f"http://{device.ip}/rpc/Voltmeter.GetStatus?id=100"
+            resp = requests.get(url, timeout=3)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "voltage" in data:
+                    return float(data["voltage"])
 
     except Exception:  # pragma: no cover - network interactions
         error_logger.exception("Telemetry read failed", extra={"device": device.ip})
