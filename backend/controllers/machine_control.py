@@ -234,6 +234,69 @@ def validate_code(code: str) -> Tuple[Optional[ValidatedCode], str]:
         db.close()
 
 
+def _reason_from_message(message: str) -> str:
+    return (message or "invalid").rstrip(".").lower().replace(" ", "_")
+
+
+def handle_scanned_code(
+    raw_code: Optional[str], source: str
+) -> Tuple[bool, str, Optional[ValidatedCode]]:
+    """Shared handler for scans from HTTP or physical scanner."""
+
+    code = (raw_code or "").strip()
+    if not code:
+        events_logger.info(
+            "SCAN received",
+            extra={
+                "source": source,
+                "code": code,
+                "result": "invalid",
+                "reason": "missing_code",
+            },
+        )
+        inc("scan_total", outcome="rejected", reason="missing_code", source=source)
+        write_scan_log("", None, "invalid", source, details="missing_code")
+        update_ui_state({"state": "error", "message": "Missing code"})
+        return False, "Missing code", None
+
+    code_info, msg = validate_code(code)
+    if not code_info:
+        reason = _reason_from_message(msg)
+        events_logger.info(
+            "SCAN received",
+            extra={
+                "source": source,
+                "code": code,
+                "result": "invalid",
+                "reason": reason,
+            },
+        )
+        update_ui_state({"state": "error", "message": msg})
+        inc("scan_total", outcome="rejected", reason=reason, source=source)
+        write_scan_log(code, None, "invalid", source, details=reason)
+        return False, msg, None
+
+    events_logger.info(
+        "SCAN received",
+        extra={"source": source, "code": code, "result": "valid"},
+    )
+    inc("scan_total", outcome="accepted", source=source)
+    record_scan_pending(code)
+    write_scan_log(code, code_info.order_id, "valid", source)
+    arm_code(code_info)
+    machines = get_machine_snapshot()
+    uses_left = code_info.usage_limit - code_info.current_usage
+    update_ui_state(
+        {
+            "state": "choose_machine",
+            "message": "Please select a machine.",
+            "machines": machines,
+            "uses_left": uses_left,
+        }
+    )
+    return True, "Please select a machine.", code_info
+
+
 def write_scan_log(
     code_value: str,
     order_id: Optional[str],
