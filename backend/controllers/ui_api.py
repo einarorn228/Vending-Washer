@@ -1,29 +1,22 @@
 """Flask routes for touchscreen UI."""
-
 from flask import Blueprint, jsonify, request
 
 from backend.controllers.machine_control import (
     UI_STATE,
-    arm_code,
     get_machine_snapshot,
     handle_i4_button,
-    record_scan_pending,
+    handle_scanned_code,
     show_error_state,
     start_machine,
-    update_ui_state,
     validate_code,
-    write_scan_log,
 )
 from backend.models import session
 from backend.models.setting_model import get_setting_value
-from backend.utils.logger import get_event_logger
 from backend.metrics import inc
 
 ui_api = Blueprint("ui_api", __name__)
 
 API_KEY_HEADER = "X-API-KEY"
-
-events_logger = get_event_logger()
 
 
 @ui_api.before_request
@@ -39,53 +32,12 @@ def check_api_key():
 def scan_code():
     data = request.get_json(force=True)
     code = data.get("code")
-    if not code:
-        events_logger.info(
-            "SCAN received",
-            extra={
-                "source": "api",
-                "code": code,
-                "result": "invalid",
-                "reason": "missing_code",
-            },
-        )
-        inc("scan_total", outcome="rejected", reason="missing_code", source="ui")
-        write_scan_log("", None, "invalid", "api", details="missing_code")
-        return jsonify({"success": False, "message": "Missing code"}), 400
-    code_info, msg = validate_code(code)
-    if not code_info:
-        reason = (msg or "invalid").rstrip(".").lower().replace(" ", "_")
-        events_logger.info(
-            "SCAN received",
-            extra={
-                "source": "api",
-                "code": code,
-                "result": "invalid",
-                "reason": reason,
-            },
-        )
-        update_ui_state({"state": "error", "message": msg})
-        inc("scan_total", outcome="rejected", reason=reason, source="ui")
-        write_scan_log(code, None, "invalid", "api", details=reason)
-        return jsonify({"success": False, "message": msg})
-    events_logger.info(
-        "SCAN received",
-        extra={"source": "api", "code": code, "result": "valid"},
-    )
-    inc("scan_total", outcome="accepted", source="ui")
-    record_scan_pending(code)
-    write_scan_log(code, code_info.order_id, "valid", "api")
-    arm_code(code_info)
+    success, message, code_info = handle_scanned_code(code, source="api")
+    if not success:
+        status = 400 if not code else 200
+        return jsonify({"success": False, "message": message}), status
     machines = list_machines()
-    uses_left = code_info.usage_limit - code_info.current_usage
-    update_ui_state(
-        {
-            "state": "choose_machine",
-            "message": "Please select a machine.",
-            "machines": machines,
-            "uses_left": uses_left,
-        }
-    )
+    uses_left = code_info.usage_limit - code_info.current_usage if code_info else None
     return jsonify(
         {
             "success": True,
