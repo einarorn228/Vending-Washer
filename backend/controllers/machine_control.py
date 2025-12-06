@@ -461,7 +461,6 @@ def arm_code(code_info: ValidatedCode) -> None:
 
     def _timeout():
         with armed_lock:
-            global _armed_code
             if not _armed_code or _armed_code.code.code != code_info.code:
                 return
             events_logger.info("BUTTON_SELECT_TIMEOUT", extra={"code": code_info.code})
@@ -470,6 +469,7 @@ def arm_code(code_info: ValidatedCode) -> None:
         show_error_state("No selection detected. Please scan again.")
 
     with armed_lock:
+        global _armed_code
         _clear_armed_code_locked()
         timer = threading.Timer(timeout, _timeout)
         _armed_code = ArmedCode(code=code_info, expires_at=expires_at, timer=timer)
@@ -483,6 +483,21 @@ def disarm_code() -> None:
             return
         _deactivate_button_box()
         _clear_armed_code_locked()
+
+
+def _get_active_code_info() -> Optional[ValidatedCode]:
+    """Return the currently armed code if still valid and not expired."""
+
+    now = time.monotonic()
+    with armed_lock:
+        armed = _armed_code
+        if not armed:
+            return None
+        if armed.expires_at < now:
+            _deactivate_button_box()
+            _clear_armed_code_locked()
+            return None
+        return armed.code
 
 
 def _resolve_machine(machine_id: str):
@@ -555,20 +570,33 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
     return True, "Starting machine... please wait."
 
 
-def start_machine_from_button(machine_id: str) -> Tuple[bool, str]:
-    with armed_lock:
-        code_info = _armed_code.code if _armed_code else None
+def start_machine_from_button(machine_id: str) -> Tuple[bool, str, Optional[int]]:
+    code_info = _get_active_code_info()
     if not code_info:
-        events_logger.info("MACHINE start rejected", extra={"machine": machine_id, "reason": "no_code"})
-        return False, "No valid scan in progress."
-    return start_machine(code_info, machine_id)
+        events_logger.info(
+            "MACHINE start rejected", extra={"machine": machine_id, "reason": "no_code"}
+        )
+        return False, "No valid scan in progress.", None
+
+    fresh_code_info, msg = validate_code(code_info.code)
+    if not fresh_code_info:
+        events_logger.info(
+            "MACHINE start rejected",
+            extra={"machine": machine_id, "reason": msg or "invalid_code"},
+        )
+        disarm_code()
+        return False, msg, None
+
+    uses_left = fresh_code_info.usage_limit - fresh_code_info.current_usage
+    ok, message = start_machine(fresh_code_info, machine_id)
+    return ok, message, uses_left if ok else None
 
 
-def handle_i4_button(button_index: int) -> Tuple[bool, str]:
+def handle_i4_button(button_index: int) -> Tuple[bool, str, Optional[int]]:
     machine_id = _store.resolve_button(button_index)
     if not machine_id:
         events_logger.warning("I4_BUTTON_UNKNOWN", extra={"button": button_index})
-        return False, "Unknown button."
+        return False, "Unknown button.", None
     events_logger.info("I4_BUTTON_PRESS", extra={"button": button_index, "machine": machine_id})
     return start_machine_from_button(machine_id)
 

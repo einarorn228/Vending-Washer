@@ -96,8 +96,8 @@ def i4_event():
         index = int(button)
     except (TypeError, ValueError):
         return jsonify({"success": False, "message": "Invalid button index"}), 400
-    ok, message = handle_i4_button(index)
+    ok, message, uses_left = handle_i4_button(index)
     status = 200 if ok else 409
     if not ok:
         show_error_state(message)
-    return jsonify({"success": ok, "message": message}), status
+    return jsonify({"success": ok, "message": message, "uses_left": uses_left}), status
