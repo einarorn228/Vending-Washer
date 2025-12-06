@@ -465,7 +465,7 @@ def arm_code(code_info: ValidatedCode) -> None:
                 return
             events_logger.info("BUTTON_SELECT_TIMEOUT", extra={"code": code_info.code})
             _deactivate_button_box()
-            _armed_code = None
+            _clear_armed_code_locked()
         show_error_state("No selection detected. Please scan again.")
 
     with armed_lock:
