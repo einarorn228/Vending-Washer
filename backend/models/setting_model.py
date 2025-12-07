@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer
-from backend.models import Base
+from backend.models import Base, session as default_session
 
 class Settings(Base):
     __tablename__ = "settings"
@@ -24,3 +24,8 @@ def update_setting_value(session, key, value):
         setting = Settings(key=key, value=value)
         session.add(setting)
     session.commit()
+
+
+def is_backend_relay_enabled(session=default_session) -> bool:
+    raw = get_setting_value(session, "backend_relay_enabled", default="false")
+    return str(raw).lower() in ("1", "true", "yes")

@@ -15,9 +15,13 @@ from backend.metrics import inc, observe_ms, set_gauge
 from backend.models import Session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
-from backend.models.setting_model import get_setting_value
+from backend.models.setting_model import get_setting_value, is_backend_relay_enabled
 from backend.utils.logger import get_error_logger, get_event_logger
-from backend.utils.shelly_control import send_shelly_off, send_shelly_on, send_shelly_pulse
+from backend.utils.shelly_control import (
+    send_shelly_pulse,
+    shelly_switch_off,
+    shelly_switch_on,
+)
 
 logger = logging.getLogger(__name__)
 events_logger = get_event_logger()
@@ -292,6 +296,7 @@ def handle_scanned_code(
             "message": "Please select a machine.",
             "machines": machines,
             "uses_left": uses_left,
+            "current_machine": None,
         }
     )
     return True, "Please select a machine.", code_info
@@ -429,7 +434,7 @@ def _deactivate_button_box() -> None:
     if device.metric_source == "pulse":
         ok = send_shelly_pulse(device.ip, relay=device.relay_channel or 0, duration=1)
     else:
-        ok = send_shelly_off(device.ip, relay=device.relay_channel or 0)
+        ok = shelly_switch_off(device)
     if ok:
         events_logger.info("BUTTON_BOX_OFF")
     else:
@@ -440,7 +445,7 @@ def _activate_button_box() -> None:
     device = _store.get_device_by_role("button_box")
     if not device:
         return
-    if send_shelly_on(device.ip, relay=device.relay_channel or 0):
+    if shelly_switch_on(device):
         events_logger.info("BUTTON_BOX_ON")
     else:
         events_logger.warning("BUTTON_BOX_ON_FAILED")
@@ -529,32 +534,48 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
         _machine_attempts[machine_id] += 1
 
     _store.mark_pending_start(machine_id)
+    db = _get_session()
+    try:
+        backend_control_enabled = is_backend_relay_enabled(db)
+    finally:
+        db.close()
     events_logger.info(
-        "START_PULSE_SENT",
-        extra={"machine": machine_id, "code": code_info.code},
+        "START_REQUESTED",
+        extra={
+            "machine": machine_id,
+            "code": code_info.code,
+            "backend_relay": backend_control_enabled,
+        },
     )
 
-    try:
-        success = send_shelly_pulse(
-            runtime.uni_device.ip,
-            relay=runtime.uni_device.relay_channel or 0,
-        )
-    except Exception:
-        success = False
-        error_logger.exception(
-            "Relay communication failed", extra={"machine": machine_id}
-        )
+    success = True
+    if backend_control_enabled:
+        try:
+            success = shelly_switch_on(runtime.uni_device)
+        except Exception:
+            success = False
+            error_logger.exception(
+                "Relay communication failed", extra={"machine": machine_id}
+            )
 
-    if not success:
-        _store.clear_pending_start(machine_id)
-        events_logger.error("MACHINE error: Shelly command failed", extra={"machine": machine_id})
-        _record_failure(machine_id)
-        return False, "Machine start failed."
+        if not success:
+            _store.clear_pending_start(machine_id)
+            events_logger.error(
+                "MACHINE error: Shelly command failed", extra={"machine": machine_id}
+            )
+            _record_failure(machine_id)
+            return False, "Machine start failed."
+
+    message = (
+        f"{runtime.ui_name}: power on. Select program on the machine (max 10 minutes)."
+        if not backend_control_enabled
+        else "Starting machine... please wait."
+    )
 
     update_ui_state(
         {
             "state": "machine_starting",
-            "message": "Starting machine... please wait.",
+            "message": message,
             "current_machine": machine_id,
             "uses_left": code_info.usage_limit - code_info.current_usage,
         }
