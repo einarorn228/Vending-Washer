@@ -424,14 +424,16 @@ def _handle_poll(store: MachineStateStore, ctx: MachinePollContext) -> None:
     started = time.monotonic()
     value = _read_metric(ctx.uni_device)
     success = value is not None
-    events_logger.info(
-        "TELEMETRY_READ",
-        extra={
-            "machine": ctx.slug,
-            "status": "ok" if success else "error",
-            "value": value,
-        },
-    )
+    if success:
+        logger.debug(
+            "TELEMETRY_READ",
+            extra={"machine": ctx.slug, "status": "ok", "value": value},
+        )
+    else:
+        events_logger.warning(
+            "TELEMETRY_READ",
+            extra={"machine": ctx.slug, "status": "error", "value": value},
+        )
     store.update_measurement(ctx.slug, value, success, started)
     if not success:
         store.mark_offline(ctx.slug)
