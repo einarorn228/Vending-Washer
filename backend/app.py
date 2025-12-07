@@ -17,7 +17,7 @@ logger.info("===== APP STARTED =====")
 
 # Now import modules that use the DB
 from backend.controllers.code_cleanup import cleanup_expired_codes
-from backend.controllers.qr_scanner import listen_for_scans
+from backend.controllers.qr_scanner import start_scanner_listener
 from backend.controllers.telemetry import start_telemetry_poll
 
 
@@ -48,7 +48,10 @@ if __name__ == "__main__":
         logger.info("Cleanup scheduler started")
 
         # Start the QR code scanning process
-        listen_for_scans()
+        start_scanner_listener()
+
+        while True:
+            time.sleep(1)
 
     except KeyboardInterrupt:
         # Clean up GPIO resources on program exit
