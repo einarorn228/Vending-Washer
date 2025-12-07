@@ -268,12 +268,14 @@ class MachineStateStore:
             runtime.available = False
             runtime.pending_start = False
         if not was_offline:
+            logger.warning("Machine marked offline", extra={"machine": slug})
             events_logger.warning("DEVICE_OFFLINE", extra={"machine": slug})
             self._emit("device_offline", slug)
             set_gauge("machine_available", 0, machine=slug)
 
     def transition_to_in_use(self, slug: str) -> None:
         self.set_run_state(slug, RUNSTATE_IN_USE)
+        logger.info("Machine runstate transitioned to in_use", extra={"machine": slug})
         events_logger.info("RUNSTATE_STARTED", extra={"machine": slug})
         self._emit("runstate_started", slug)
 
@@ -285,6 +287,7 @@ class MachineStateStore:
                 previous_state = runtime.run_state
         self.set_run_state(slug, RUNSTATE_AVAILABLE)
         if previous_state == RUNSTATE_IN_USE:
+            logger.info("Machine runstate transitioned to available", extra={"machine": slug})
             events_logger.info("RUNSTATE_STOPPED", extra={"machine": slug})
             self._emit("runstate_stopped", slug)
 
@@ -444,6 +447,7 @@ def _handle_poll(store: MachineStateStore, ctx: MachinePollContext) -> None:
         return
 
     if runtime.run_state == RUNSTATE_OFFLINE:
+        logger.info("Telemetry recovered; machine back online", extra={"machine": ctx.slug})
         store.set_run_state(ctx.slug, RUNSTATE_AVAILABLE)
 
     threshold_on = ctx.config.on_threshold
