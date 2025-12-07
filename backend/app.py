@@ -6,11 +6,13 @@ from backend.utils.logger import configure_logger
 from backend.models import init_db
 from backend.setup.seed_settings import bootstrap_settings
 from backend.setup.seed_machines import bootstrap_devices_and_machines
+from backend.models.setting_model import ensure_backend_relay_setting_exists
 
 configure_logger()
 init_db()
 bootstrap_settings()
 bootstrap_devices_and_machines()
+ensure_backend_relay_setting_exists()
 
 logger = logging.getLogger(__name__)
 logger.info("===== APP STARTED =====")
