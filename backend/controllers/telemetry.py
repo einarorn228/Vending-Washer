@@ -357,6 +357,16 @@ def _load_devices_by_role() -> Dict[str, DeviceInfo]:
         session.close()
 
 
+def _classify_band(value: float, config: MachineConfigInfo) -> str:
+    """Categorise a telemetry reading relative to configured thresholds."""
+
+    if value >= config.on_threshold:
+        return "high"
+    if value <= config.off_threshold:
+        return "low"
+    return "mid"
+
+
 def _read_metric(device: DeviceInfo) -> Optional[float]:
     channel = device.relay_channel or 0
     metric = (device.metric_source or "").lower()
@@ -424,19 +434,37 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
 
 
 def _handle_poll(store: MachineStateStore, ctx: MachinePollContext) -> None:
+    previous_runtime = store.get_machine(ctx.slug)
+    previous_value = previous_runtime.last_value if previous_runtime else None
+    previous_band = (
+        _classify_band(previous_value, ctx.config) if previous_value is not None else None
+    )
+
     started = time.monotonic()
     value = _read_metric(ctx.uni_device)
     success = value is not None
-    if success:
-        logger.debug(
-            "TELEMETRY_READ",
-            extra={"machine": ctx.slug, "status": "ok", "value": value},
-        )
-    else:
+    if not success:
         events_logger.warning(
             "TELEMETRY_READ",
             extra={"machine": ctx.slug, "status": "error", "value": value},
         )
+    else:
+        current_band = _classify_band(value, ctx.config)
+        if previous_value is None:
+            logger.info(
+                "Telemetry reading received",
+                extra={"machine": ctx.slug, "value": value, "band": current_band},
+            )
+        elif current_band != previous_band:
+            logger.info(
+                "Telemetry band changed",
+                extra={
+                    "machine": ctx.slug,
+                    "value": value,
+                    "band": current_band,
+                    "previous_band": previous_band,
+                },
+            )
     store.update_measurement(ctx.slug, value, success, started)
     if not success:
         store.mark_offline(ctx.slug)
