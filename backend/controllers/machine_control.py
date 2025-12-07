@@ -566,6 +566,15 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
             _record_failure(machine_id)
             return False, "Machine start failed."
 
+        events_logger.info(
+            "MACHINE relay start sent", extra={"machine": machine_id, "backend_relay": True}
+        )
+    else:
+        events_logger.info(
+            "MACHINE backend relay disabled; skipping Shelly command",
+            extra={"machine": machine_id, "backend_relay": False},
+        )
+
     message = (
         f"{runtime.ui_name}: power on. Select program on the machine (max 10 minutes)."
         if not backend_control_enabled
