@@ -2,6 +2,8 @@
 from flask import Blueprint, jsonify, request
 
 from backend.controllers.machine_control import (
+    SCAN_BUSY_MESSAGE,
+    SELECT_MACHINE_MESSAGE,
     UI_STATE,
     get_machine_snapshot,
     handle_i4_button,
@@ -34,7 +36,7 @@ def scan_code():
     code = data.get("code")
     success, message, code_info = handle_scanned_code(code, source="api")
     if not success:
-        status = 400 if not code else 200
+        status = 409 if message == SCAN_BUSY_MESSAGE else 400
         return jsonify({"success": False, "message": message}), status
     machines = list_machines()
     uses_left = code_info.usage_limit - code_info.current_usage if code_info else None
@@ -43,7 +45,7 @@ def scan_code():
             "success": True,
             "uses_left": uses_left,
             "machines": machines,
-            "message": "Please select a machine.",
+            "message": SELECT_MACHINE_MESSAGE,
         }
     )
 
