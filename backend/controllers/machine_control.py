@@ -27,6 +27,15 @@ logger = logging.getLogger(__name__)
 events_logger = get_event_logger()
 error_logger = get_error_logger()
 
+SCAN_BUSY_MESSAGE = "System busy. Please wait."
+SELECT_MACHINE_MESSAGE = "Select a machine using the physical buttons"
+STARTING_INSTRUCTION_TEMPLATE = (
+    "{machine} is powered on. Select a program on the machine (max 10 minutes)."
+)
+RUNNING_NOTICE_TEMPLATE = "{machine} started. You have {uses_left} uses left."
+STARTING_NOTICE_SECONDS = 3.0
+RUNNING_NOTICE_SECONDS = 3.0
+
 
 @dataclass
 class ValidatedCode:
@@ -140,7 +149,7 @@ def update_ui_state(updates: Dict[str, object]) -> None:
     """Update the shared UI state and emit a concise event log entry."""
 
     global _reset_timer
-    cancel_timer = updates.get("state") not in (None, "error")
+    cancel_timer = updates.get("state") in ("waiting_for_code", "choose_machine")
 
     with lock:
         UI_STATE.update(updates)
@@ -161,6 +170,37 @@ def update_ui_state(updates: Dict[str, object]) -> None:
         _cleanup_expired_pending()
 
     events_logger.info("UI_STATE updated", extra={"ui_state": summary})
+
+
+def can_accept_scan() -> bool:
+    """Return True if the UI is in a state that accepts scans."""
+
+    with lock:
+        return UI_STATE.get("state") == "waiting_for_code"
+
+
+def require_ready_to_scan(source: str, code: str) -> Tuple[bool, Optional[str]]:
+    """Reject scans unless the UI is in the ready state."""
+
+    if can_accept_scan():
+        return True, None
+
+    with lock:
+        ui_state = UI_STATE.get("state") or "unknown"
+    message = SCAN_BUSY_MESSAGE
+    reason = f"busy_state_{ui_state}"
+    events_logger.info(
+        "SCAN received",
+        extra={
+            "source": source,
+            "code": code,
+            "result": "invalid",
+            "reason": reason,
+        },
+    )
+    inc("scan_total", outcome="rejected", reason=reason, source=source)
+    write_scan_log(code, None, "invalid", source, details=reason)
+    return False, message
 
 
 def schedule_reset_to_ready(delay_seconds: float = 3.0) -> None:
@@ -186,6 +226,16 @@ def schedule_reset_to_ready(delay_seconds: float = 3.0) -> None:
 
     if timer:
         timer.start()
+
+
+def cancel_reset_timer() -> None:
+    """Cancel any pending UI reset timer (primarily for tests)."""
+
+    global _reset_timer
+    with lock:
+        if _reset_timer and _reset_timer.is_alive():
+            _reset_timer.cancel()
+        _reset_timer = None
 
 
 def show_error_state(message: str, hold_seconds: int = 3) -> None:
@@ -242,12 +292,21 @@ def _reason_from_message(message: str) -> str:
     return (message or "invalid").rstrip(".").lower().replace(" ", "_")
 
 
+def _machine_display_name(machine_id: str) -> str:
+    runtime = _store.get_machine(machine_id)
+    return runtime.ui_name if runtime else machine_id
+
+
 def handle_scanned_code(
     raw_code: Optional[str], source: str
 ) -> Tuple[bool, str, Optional[ValidatedCode]]:
     """Shared handler for scans from HTTP or physical scanner."""
 
     code = (raw_code or "").strip()
+    ready, message = require_ready_to_scan(source, code)
+    if not ready:
+        return False, message or "System busy. Please wait.", None
+
     if not code:
         events_logger.info(
             "SCAN received",
@@ -293,13 +352,13 @@ def handle_scanned_code(
     update_ui_state(
         {
             "state": "choose_machine",
-            "message": "Please select a machine.",
+            "message": SELECT_MACHINE_MESSAGE,
             "machines": machines,
             "uses_left": uses_left,
             "current_machine": None,
         }
     )
-    return True, "Please select a machine.", code_info
+    return True, SELECT_MACHINE_MESSAGE, code_info
 
 
 def write_scan_log(
@@ -354,6 +413,23 @@ def _apply_usage_delta(code_info: ValidatedCode) -> int:
         db.close()
 
 
+def _show_program_started(machine_id: str, uses_left: int) -> str:
+    machine_name = _machine_display_name(machine_id)
+    message = RUNNING_NOTICE_TEMPLATE.format(machine=machine_name, uses_left=uses_left)
+    update_ui_state(
+        {
+            "state": "machine_in_use",
+            "message": message,
+            "current_machine": machine_id,
+            "uses_left": uses_left,
+            "machines": get_machine_snapshot(),
+        }
+    )
+    cancel_reset_timer()
+    schedule_reset_to_ready(RUNNING_NOTICE_SECONDS)
+    return message
+
+
 def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
     uses_left = _apply_usage_delta(code_info)
     with metrics_lock:
@@ -366,17 +442,15 @@ def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
     if wait_ms is not None:
         observe_ms("scan_to_start_ms", wait_ms)
         _update_wait_stats(wait_ms)
-    update_ui_state(
-        {
-            "state": "waiting_for_code",
-            "message": "Scan your code to start",
-            "current_machine": None,
-            "uses_left": uses_left,
-        }
-    )
+    message = _show_program_started(machine_id, uses_left)
     events_logger.info(
         "START_CONFIRMED",
-        extra={"machine": machine_id, "code": code_info.code, "uses_left": uses_left},
+        extra={
+            "machine": machine_id,
+            "code": code_info.code,
+            "uses_left": uses_left,
+            "message": message,
+        },
     )
 
 
@@ -512,6 +586,27 @@ def _resolve_machine(machine_id: str):
     return runtime
 
 
+def _enter_machine_starting_state(machine_id: str, code_info: ValidatedCode) -> str:
+    machine_name = _machine_display_name(machine_id)
+    message = STARTING_INSTRUCTION_TEMPLATE.format(machine=machine_name)
+    update_ui_state(
+        {
+            "state": "machine_starting",
+            "message": message,
+            "current_machine": machine_id,
+            "uses_left": code_info.usage_limit - code_info.current_usage,
+            "machines": get_machine_snapshot(),
+        }
+    )
+    cancel_reset_timer()
+    schedule_reset_to_ready(STARTING_NOTICE_SECONDS)
+    events_logger.info(
+        "MACHINE_STARTING_UI",
+        extra={"machine": machine_id, "code": code_info.code},
+    )
+    return message
+
+
 def start_machine(code_info: ValidatedCode, machine_id: str):
     """Trigger machine relay and wait for telemetry confirmation."""
 
@@ -533,7 +628,6 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
     with metrics_lock:
         _machine_attempts[machine_id] += 1
 
-    _store.mark_pending_start(machine_id)
     db = _get_session()
     try:
         backend_control_enabled = is_backend_relay_enabled(db)
@@ -547,6 +641,9 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
             "backend_relay": backend_control_enabled,
         },
     )
+
+    _store.mark_pending_start(machine_id)
+    start_message = _enter_machine_starting_state(machine_id, code_info)
 
     success = True
     if backend_control_enabled:
@@ -575,21 +672,6 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
             extra={"machine": machine_id, "backend_relay": False},
         )
 
-    message = (
-        f"{runtime.ui_name}: power on. Select program on the machine (max 10 minutes)."
-        if not backend_control_enabled
-        else "Starting machine... please wait."
-    )
-
-    update_ui_state(
-        {
-            "state": "machine_starting",
-            "message": message,
-            "current_machine": machine_id,
-            "uses_left": code_info.usage_limit - code_info.current_usage,
-        }
-    )
-
     timer = threading.Timer(START_CONFIRM_TIMEOUT, _start_timeout, args=[machine_id])
     timer.start()
     _pending_starts[machine_id] = PendingStart(
@@ -597,7 +679,7 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
         started_at=time.monotonic(),
         timer=timer,
     )
-    return True, "Starting machine... please wait."
+    return True, start_message
 
 
 def start_machine_from_button(machine_id: str) -> Tuple[bool, str, Optional[int]]:
@@ -629,4 +711,3 @@ def handle_i4_button(button_index: int) -> Tuple[bool, str, Optional[int]]:
         return False, "Unknown button.", None
     events_logger.info("I4_BUTTON_PRESS", extra={"button": button_index, "machine": machine_id})
     return start_machine_from_button(machine_id)
-

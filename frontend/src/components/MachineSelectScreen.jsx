@@ -3,7 +3,7 @@ import React from "react";
 export default function MachineSelectScreen({ machines, message }) {
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h1>{message || "Select a machine"}</h1>
+      <h1>{message || "Select a machine using the physical buttons"}</h1>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {machines &&
           machines.map((m) => (
