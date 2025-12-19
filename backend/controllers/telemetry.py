@@ -181,6 +181,7 @@ class MachineStateStore:
                 return
             runtime.pending_start = True
             runtime.available = False
+            set_gauge("machine_available", 0, machine=slug)
 
     def clear_pending_start(self, slug: str) -> None:
         with self._lock:
@@ -189,6 +190,7 @@ class MachineStateStore:
                 return
             runtime.pending_start = False
             runtime.available = runtime.run_state == RUNSTATE_AVAILABLE
+            set_gauge("machine_available", 1 if runtime.available else 0, machine=slug)
 
     def set_run_state(self, slug: str, new_state: str) -> None:
         with self._lock:
@@ -266,7 +268,6 @@ class MachineStateStore:
             was_offline = runtime.run_state == RUNSTATE_OFFLINE
             runtime.run_state = RUNSTATE_OFFLINE
             runtime.available = False
-            runtime.pending_start = False
         if not was_offline:
             logger.warning("Machine marked offline", extra={"machine": slug})
             events_logger.warning("DEVICE_OFFLINE", extra={"machine": slug})
@@ -529,4 +530,3 @@ def start_telemetry_poll() -> None:
             time.sleep(0.2)
 
     threading.Thread(target=_poll_loop, daemon=True, name="telemetry-poll").start()
-

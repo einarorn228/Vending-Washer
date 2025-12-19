@@ -33,8 +33,10 @@ STARTING_INSTRUCTION_TEMPLATE = (
     "{machine} is powered on. Select a program on the machine (max 10 minutes)."
 )
 RUNNING_NOTICE_TEMPLATE = "{machine} started. You have {uses_left} uses left."
-STARTING_NOTICE_SECONDS = 3.0
-RUNNING_NOTICE_SECONDS = 3.0
+SELECTION_NOTICE_SECONDS = 3.0
+STARTED_NOTICE_SECONDS = 3.0
+SELECTION_TIMEOUT_SECONDS = 600.0
+SELECTION_TIMEOUT_MESSAGE = "Selection timed out. Please scan again."
 
 
 @dataclass
@@ -83,7 +85,6 @@ _pending_starts: Dict[str, PendingStart] = {}
 _armed_code: Optional[ArmedCode] = None
 
 PENDING_SCAN_TTL = 600.0  # seconds
-START_CONFIRM_TIMEOUT = 30.0
 
 _store = MachineStateStore.instance()
 
@@ -426,7 +427,7 @@ def _show_program_started(machine_id: str, uses_left: int) -> str:
         }
     )
     cancel_reset_timer()
-    schedule_reset_to_ready(RUNNING_NOTICE_SECONDS)
+    schedule_reset_to_ready(STARTED_NOTICE_SECONDS)
     return message
 
 
@@ -454,18 +455,33 @@ def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
     )
 
 
-def _start_timeout(machine_id: str) -> None:
+def _selection_timeout(machine_id: str) -> None:
     pending = _pending_starts.pop(machine_id, None)
-    if not pending:
-        return
     _store.clear_pending_start(machine_id)
-    events_logger.warning("START_TIMEOUT", extra={"machine": machine_id})
-    show_error_state("Machine did not start. Please try again.")
-    _record_failure(machine_id)
+    if pending and pending.timer:
+        pending.timer.cancel()
+    events_logger.info(
+        "SELECTION_TIMEOUT",
+        extra={"machine": machine_id, "notice": SELECTION_TIMEOUT_MESSAGE},
+    )
+    with lock:
+        ui_state = UI_STATE.get("state")
+        current_machine = UI_STATE.get("current_machine")
+    if ui_state == "machine_starting" and current_machine == machine_id:
+        update_ui_state(
+            {
+                "state": "waiting_for_code",
+                "message": "Scan your code to start",
+                "current_machine": None,
+                "uses_left": None,
+                "machines": get_machine_snapshot(),
+            }
+        )
 
 
 def _on_runstate_started(machine_id: str) -> None:
     pending = _pending_starts.pop(machine_id, None)
+    _store.clear_pending_start(machine_id)
     if not pending:
         return
     if pending.timer:
@@ -482,11 +498,29 @@ def _on_runstate_started(machine_id: str) -> None:
 def _on_device_offline(machine_id: str) -> None:
     if machine_id in _pending_starts:
         events_logger.warning("START_FAILED_OFFLINE", extra={"machine": machine_id})
-        _start_timeout(machine_id)
+        with lock:
+            ui_state = UI_STATE.get("state")
+        if ui_state in {"machine_starting", "choose_machine"}:
+            update_ui_state({"machines": get_machine_snapshot()})
 
 
 _store.add_listener("runstate_started", _on_runstate_started)
 _store.add_listener("device_offline", _on_device_offline)
+
+
+def _selection_timeout_seconds() -> float:
+    db = _get_session()
+    try:
+        raw = get_setting_value(db, "selection_timeout_sec")
+    finally:
+        db.close()
+    try:
+        value = float(raw)
+        if value > 0:
+            return value
+    except (TypeError, ValueError):
+        pass
+    return SELECTION_TIMEOUT_SECONDS
 
 
 def _button_timeout_seconds() -> int:
@@ -599,7 +633,7 @@ def _enter_machine_starting_state(machine_id: str, code_info: ValidatedCode) -> 
         }
     )
     cancel_reset_timer()
-    schedule_reset_to_ready(STARTING_NOTICE_SECONDS)
+    schedule_reset_to_ready(SELECTION_NOTICE_SECONDS)
     events_logger.info(
         "MACHINE_STARTING_UI",
         extra={"machine": machine_id, "code": code_info.code},
@@ -642,6 +676,10 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
         },
     )
 
+    existing_pending = _pending_starts.pop(machine_id, None)
+    if existing_pending and existing_pending.timer:
+        existing_pending.timer.cancel()
+
     _store.mark_pending_start(machine_id)
     start_message = _enter_machine_starting_state(machine_id, code_info)
 
@@ -672,7 +710,7 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
             extra={"machine": machine_id, "backend_relay": False},
         )
 
-    timer = threading.Timer(START_CONFIRM_TIMEOUT, _start_timeout, args=[machine_id])
+    timer = threading.Timer(_selection_timeout_seconds(), _selection_timeout, args=[machine_id])
     timer.start()
     _pending_starts[machine_id] = PendingStart(
         code=code_info,
