@@ -4,7 +4,7 @@ Purpose: comprehensive reference for administrators performing maintenance, conf
 
 Conventions
 -----------
-- Run commands from the repository root (`Vending-Washer-master/version 2`).
+- Run commands from the repository root (`Vending-Washer`).
 - Replace angle-bracket placeholders (e.g., `<ORDER_ID>`) with real values.
 - Unless otherwise noted, backend listens on `http://127.0.0.1:5000` and frontend on `http://127.0.0.1:3000`.
 - Include both HTTP Basic auth (`-u <username>:<password>`) and the `X-API-KEY` header for admin routes.
@@ -13,6 +13,10 @@ Environment & Credentials
 -------------------------
 # Capture the generated kiosk API key
 python backend/scripts/get_api_key.py
+
+# Seed settings and hardware inventory on a fresh database
+python -m backend.setup.seed_settings
+python -m backend.setup.seed_machines
 
 # PowerShell: store API key in current session for reuse
 $env:API_KEY = "<PASTE_API_KEY>"
@@ -26,84 +30,89 @@ sqlite3 backend/codes.db "SELECT key, value FROM settings WHERE key LIKE 'admin_
 QR Code Lifecycle
 -----------------
 # Generate a fresh QR code for an order (public endpoint, API key only)
-curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
   -d '{"order_id": "<ORDER_ID>", "usage_limit": 3}' \
   http://127.0.0.1:5000/generate_code
 
-# Manually validate a code via the kiosk API
-curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+# Manually validate a code via the kiosk API (logs to scan_logs)
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
   -d '{"code": "<CODE_VALUE>"}' \
   http://127.0.0.1:5000/api/scan_code
 
-# Start a machine for a valid code (simulate external trigger)
-curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+# Start a machine for a valid code (telemetry will confirm and debit usage)
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
   -d '{"code": "<CODE_VALUE>", "machine_id": "washer1"}' \
   http://127.0.0.1:5000/api/start_machine
 
-# Poll current UI state (confirm kiosk sees the right screen)
-curl -H "X-API-KEY: $env:API_KEY" \
+# Trigger a start via Shelly i4 button mapping (button index from 0)
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
+  -d '{"button": 0}' \
+  http://127.0.0.1:5000/api/i4_event
+
+# Poll current UI state (includes machine telemetry snapshot)
+curl -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/api/ui_state
 
 # Revoke a code once a job is finished (delete)
-curl -X DELETE -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -X DELETE -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes/<CODE_VALUE>
 
 QR Code Inventory Management
 ----------------------------
 # List all codes
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes
 
 # Fetch last 10 created codes
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes/last/10
 
 # Filter codes by order ID
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
 
 # Inspect a specific code
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes/<CODE_VALUE>
 
 # Delete all codes for an order
-curl -X DELETE -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -X DELETE -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/codes/by_order_id/<ORDER_ID>
 
 Scan Log & Usage Diagnostics
 ----------------------------
 # Last 5 scan attempts
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/scan_logs/last/5
 
 # Scans for an order ID
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/usage/by_order_id/<ORDER_ID>
 
 # Scans for a specific code
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/usage/by_code/<CODE_VALUE>
 
 Configuration & Settings
 ------------------------
 # View any setting value
-curl -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -u admin:<password> -H "X-API-KEY: $API_KEY" \
   http://127.0.0.1:5000/admin/settings/<SETTING_KEY>
 
-# Update numeric/string settings (e.g., code_expiration_days)
-curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+# Update numeric/string settings (e.g., button_select_timeout_sec)
+curl -X PUT -u admin:<password> -H "X-API-KEY: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"value": "7"}' \
-  http://127.0.0.1:5000/admin/settings/code_expiration_days
+  -d '{"value": "60"}' \
+  http://127.0.0.1:5000/admin/settings/button_select_timeout_sec
 
 # Update CORS origins
-curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -X PUT -u admin:<password> -H "X-API-KEY: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"origins": ["http://localhost:3000", "http://192.168.1.50"]}' \
   http://127.0.0.1:5000/admin/settings/cors
 
 # Rotate the API key (redistribute new value afterwards)
-curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
+curl -X PUT -u admin:<password> -H "X-API-KEY: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"value": "<NEW_API_KEY>"}' \
   http://127.0.0.1:5000/admin/settings/api_key
@@ -111,7 +120,7 @@ curl -X PUT -u admin:<password> -H "X-API-KEY: $env:API_KEY" \
 # Change admin password (hash first)
 $NEW_PASS = "<newPassword>"
 $HASH = (echo -n $NEW_PASS | openssl dgst -sha256).Split(" ")[-1]
-curl -X PUT -u admin:<currentPassword> -H "X-API-KEY: $env:API_KEY" \
+curl -X PUT -u admin:<currentPassword> -H "X-API-KEY: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"value": "'"$HASH"'"}' \
   http://127.0.0.1:5000/admin/settings/admin_password_hash
@@ -122,6 +131,8 @@ Database & Utility Scripts
 python Testing_Files/view_db.py --table codes --limit 10
 python Testing_Files/view_db.py --table settings
 python Testing_Files/view_db.py --table scan_logs --limit 20
+python Testing_Files/view_db.py --table devices --limit 10
+python Testing_Files/view_db.py --table machines --limit 10
 
 # Manual expired-code cleanup (same logic as nightly job)
 python -c "from backend.controllers.code_cleanup import cleanup_expired_codes; cleanup_expired_codes()"
@@ -145,11 +156,13 @@ python -m backend.controllers.qr_scanner
 python -c "from backend.utils.shelly_control import send_shelly_pulse; print(send_shelly_pulse('192.168.1.100', duration=1.5))"
 
 # Trigger kiosk state transitions without hardware
-curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
   -d '{"code": "<CODE_VALUE>"}' http://127.0.0.1:5000/api/scan_code
-curl -X POST -H "X-API-KEY: $env:API_KEY" -H "Content-Type: application/json" \
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
   -d '{"code": "<CODE_VALUE>", "machine_id": "washer1"}' http://127.0.0.1:5000/api/start_machine
-curl -H "X-API-KEY: $env:API_KEY" http://127.0.0.1:5000/api/ui_state
+curl -X POST -H "X-API-KEY: $API_KEY" -H "Content-Type: application/json" \
+  -d '{"button": 0}' http://127.0.0.1:5000/api/i4_event
+curl -H "X-API-KEY: $API_KEY" http://127.0.0.1:5000/api/ui_state
 
 Service Control
 ---------------
@@ -171,7 +184,7 @@ npm run start   # serves static bundle via Vite preview
 
 Maintenance Tips
 ----------------
-- Rerun `python -m backend.setup.seed_settings` after deleting `codes.db` or pulling schema changes.
+- Rerun seed scripts after deleting `codes.db` or changing hardware inventory.
 - Redistribute updated API keys or admin passwords immediately to all kiosks and automation scripts.
 - Export database snapshots before running destructive operations in production environments.
-- Monitor `backend/logs/app.log` during testing for serial scanner, Shelly, and API errors.
+- Monitor `backend/logs/app.log` during testing for serial scanner, Shelly, telemetry, and API errors.

@@ -5,7 +5,10 @@ import ResultScreen from './components/ResultScreen.jsx';
 import { pollState } from './api/backend.js';
 
 export default function App() {
-  const [uiState, setUiState] = useState({ state: 'waiting_for_code', message: 'Ready' });
+  const [uiState, setUiState] = useState({
+    state: 'waiting_for_code',
+    message: 'Scan your code to start',
+  });
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -22,6 +25,7 @@ export default function App() {
       return (
         <MachineSelectScreen machines={uiState.machines} message={uiState.message} />
       );
+    case 'machine_starting':
     case 'machine_in_use':
     case 'error':
       return <ResultScreen message={uiState.message} />;

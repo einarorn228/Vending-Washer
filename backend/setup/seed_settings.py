@@ -13,30 +13,11 @@ from backend.models.setting_model import Settings, get_setting_value, update_set
 init_db()
 
 DEFAULT_SETTINGS = {
-    "serial_port": "/dev/ttyUSB0",
-    "serial_baudrate": "9600",
-    "notification_email": "einarorn864@gmail.com",
     "admin_username": "admin",
     "admin_password_hash": hashlib.sha256(b"admin").hexdigest(),
-    "api_rate_limit": "60",
-    "ui_refresh_interval": "5",
-    "max_machines": "10",
-    "machine_types": "washer,dryer",
-    "default_machine_type": "washer",
-    "max_retry_attempts": "3",
-    "log_level": "INFO",
-    "shelly_ip": "0",
-    "pulse_duration": "1",
-    "usage_limit_default": "1",
-    # Codes do not expire while unused by default
-    "code_expiration_days": "0",
-    # How long to keep expired/used codes before deletion
-    "expired_code_cleanup_days": "30",
-    "scan_timeout": "1",
-    "max_usage_limit": "3",
-    "cleanup_interval": "7",
-    "relay_mode": "on",  # Options: "on", "pulse"
     "cors_allowed_origins": "http://localhost",
+    "log_level": "INFO",
+    "button_select_timeout_sec": "45",
 }
 
 

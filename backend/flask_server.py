@@ -15,6 +15,7 @@ from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
 from backend.setup.seed_settings import bootstrap_settings
+from backend.setup.seed_machines import bootstrap_devices_and_machines
 from backend.utils.logger import configure_logger
 from logging import getLogger
 import csv
@@ -24,6 +25,7 @@ from backend.metrics import inc, observe_ms, snapshot
 configure_logger()
 init_db()
 bootstrap_settings(logging.getLogger(__name__))
+bootstrap_devices_and_machines(logging.getLogger(__name__))
 
 logger = logging.getLogger(__name__)
 root_logger = getLogger()

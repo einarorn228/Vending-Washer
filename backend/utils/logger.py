@@ -139,7 +139,7 @@ def _resolve_log_level() -> str:
 
 
 def _create_rotating_handler(
-    path: Path, level: int, *, max_bytes: int = 5 * 1024 * 1024, backup_count: int = 3
+    path: Path, level: int, *, max_bytes: int = 10 * 1024 * 1024, backup_count: int = 5
 ) -> RotatingFileHandler:
     handler = RotatingFileHandler(
         path,
@@ -149,10 +149,7 @@ def _create_rotating_handler(
     )
     handler.setLevel(level)
     handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(name)s - %(message)s "
-            "(%(filename)s:%(lineno)d)"
-        )
+        logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     )
     return handler
 
@@ -188,12 +185,10 @@ def configure_logger() -> Logger:
     file_handler.addFilter(sampling_filter)
 
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(level)
+    console_level = logging.INFO if level < logging.INFO else level
+    console_handler.setLevel(console_level)
     console_handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(name)s - %(message)s "
-            "(%(filename)s:%(lineno)d)"
-        )
+        logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     )
     console_handler.addFilter(redact_filter)
     console_handler.addFilter(slow_filter)

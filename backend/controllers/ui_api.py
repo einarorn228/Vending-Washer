@@ -1,31 +1,29 @@
 """Flask routes for touchscreen UI."""
-
 from flask import Blueprint, jsonify, request
 
 from backend.controllers.machine_control import (
+    SCAN_BUSY_MESSAGE,
+    SELECT_MACHINE_MESSAGE,
     UI_STATE,
     get_machine_snapshot,
-    record_scan_pending,
+    handle_i4_button,
+    handle_scanned_code,
     show_error_state,
     start_machine,
-    update_ui_state,
     validate_code,
 )
 from backend.models import session
 from backend.models.setting_model import get_setting_value
-from backend.utils.logger import get_event_logger
 from backend.metrics import inc
 
 ui_api = Blueprint("ui_api", __name__)
 
 API_KEY_HEADER = "X-API-KEY"
 
-events_logger = get_event_logger()
-
 
 @ui_api.before_request
 def check_api_key():
-    key = request.headers.get(API_KEY_HEADER)
+    key = request.headers.get(API_KEY_HEADER) or request.args.get("api_key")
     db_key = get_setting_value(session, "api_key")
     if not key or key != db_key:
         inc("http_auth_failures", endpoint=request.path or "ui_api")
@@ -36,43 +34,18 @@ def check_api_key():
 def scan_code():
     data = request.get_json(force=True)
     code = data.get("code")
-    events_logger.info("SCAN started", extra={"source": "api"})
-    if not code:
-        events_logger.info(
-            "SCAN rejected",
-            extra={"source": "api", "reason": "missing_code"},
-        )
-        inc("scan_total", outcome="rejected", reason="missing_code", source="ui")
-        return jsonify({"success": False, "message": "Missing code"}), 400
-    obj, msg = validate_code(code)
-    if not obj:
-        events_logger.info(
-            "SCAN rejected",
-            extra={"source": "api", "reason": "invalid", "code": code},
-        )
-        update_ui_state({"state": "error", "message": msg})
-        reason = msg.lower().replace(" ", "_") if msg else "invalid"
-        inc("scan_total", outcome="rejected", reason=reason, source="ui")
-        return jsonify({"success": False, "message": msg})
-    events_logger.info(
-        "SCAN accepted", extra={"source": "api", "code": code}
-    )
-    inc("scan_total", outcome="accepted", source="ui")
-    record_scan_pending(code)
-    update_ui_state(
-        {
-            "state": "choose_machine",
-            "message": "Please select a machine.",
-            "machines": list_machines(),
-            "uses_left": obj.usage_limit - obj.current_usage,
-        }
-    )
+    success, message, code_info = handle_scanned_code(code, source="api")
+    if not success:
+        status = 409 if message == SCAN_BUSY_MESSAGE else 400
+        return jsonify({"success": False, "message": message}), status
+    machines = list_machines()
+    uses_left = code_info.usage_limit - code_info.current_usage if code_info else None
     return jsonify(
         {
             "success": True,
-            "uses_left": obj.usage_limit - obj.current_usage,
-            "machines": list_machines(),
-            "message": "Please select a machine.",
+            "uses_left": uses_left,
+            "machines": machines,
+            "message": SELECT_MACHINE_MESSAGE,
         }
     )
 
@@ -88,20 +61,19 @@ def start_machine_endpoint():
     machine_id = data.get("machine_id")
     if not code or not machine_id:
         return jsonify({"success": False, "message": "Missing data"}), 400
-    obj, msg = validate_code(code)
-    if not obj:
+    code_info, msg = validate_code(code)
+    if not code_info:
         show_error_state(msg)
         return jsonify({"success": False, "message": msg})
-    ok, err = start_machine(obj, machine_id)
+    ok, message = start_machine(code_info, machine_id)
     if not ok:
-        show_error_state(err)
-        return jsonify({"success": False, "message": err})
+        show_error_state(message)
+        return jsonify({"success": False, "message": message})
     return jsonify(
         {
             "success": True,
-            "uses_left": obj.usage_limit - obj.current_usage,
-            "message": "Machine started! You have %d uses left."
-            % (obj.usage_limit - obj.current_usage),
+            "uses_left": code_info.usage_limit - code_info.current_usage,
+            "message": message,
         }
     )
 
@@ -111,3 +83,23 @@ def ui_state():
     state = UI_STATE.copy()
     state["machines"] = list_machines()
     return jsonify(state)
+
+
+@ui_api.route("/i4_event", methods=["POST", "GET"])
+def i4_event():
+    if request.method == "GET":
+        button = request.args.get("button")
+    else:
+        data = request.get_json(force=True, silent=True) or {}
+        button = data.get("button")
+    if button is None:
+        return jsonify({"success": False, "message": "Missing button index"}), 400
+    try:
+        index = int(button)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Invalid button index"}), 400
+    ok, message, uses_left = handle_i4_button(index)
+    status = 200 if ok else 409
+    if not ok:
+        show_error_state(message)
+    return jsonify({"success": ok, "message": message, "uses_left": uses_left}), status
