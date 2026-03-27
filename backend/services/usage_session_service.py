@@ -17,6 +17,7 @@ STATE_AUTHORIZED = "authorized"
 STATE_START_REQUESTED = "start_requested"
 STATE_START_CONFIRMED = "start_confirmed"
 STATE_COMMIT_OK = "commit_ok"
+STATE_COMPLETED = "completed"
 STATE_FAILED = "failed"
 STATE_TIMED_OUT = "timed_out"
 
@@ -118,6 +119,87 @@ def update_usage_session(
     except Exception:
         db.rollback()
         logger.exception("Failed to update usage session", extra={"session_uid": session_uid})
+        return False
+    finally:
+        db.close()
+
+
+def mark_committed(
+    session_uid: Optional[str],
+    *,
+    machine_id: Optional[str],
+    committed_quantity: int,
+    remaining_after_commit: Optional[int],
+) -> bool:
+    """Mark session as commit_ok once, ignoring duplicate commit attempts safely."""
+
+    if not session_uid:
+        return False
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return False
+
+        if row.state in {STATE_COMMIT_OK, STATE_COMPLETED}:
+            logger.info(
+                "Ignoring duplicate commit transition",
+                extra={"session_uid": session_uid, "state": row.state},
+            )
+            return False
+
+        row.state = STATE_COMMIT_OK
+        if machine_id is not None:
+            row.machine_id = machine_id
+        row.committed_quantity = max(committed_quantity, 0)
+        row.remaining_after_commit = remaining_after_commit
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark committed", extra={"session_uid": session_uid})
+        return False
+    finally:
+        db.close()
+
+
+def mark_completed_for_machine(machine_id: Optional[str], *, completed_at: Optional[datetime] = None) -> bool:
+    """Mark latest committed/start-confirmed session for machine as completed once."""
+
+    if not machine_id:
+        return False
+
+    db = _get_session()
+    try:
+        row = (
+            db.query(UsageSession)
+            .filter(
+                UsageSession.machine_id == machine_id,
+                UsageSession.state.in_([STATE_COMMIT_OK, STATE_START_CONFIRMED, STATE_COMPLETED]),
+            )
+            .order_by(UsageSession.updated_at.desc(), UsageSession.id.desc())
+            .first()
+        )
+        if not row:
+            return False
+
+        if row.state == STATE_COMPLETED or row.completed_at is not None:
+            logger.info(
+                "Ignoring duplicate completion transition",
+                extra={"machine_id": machine_id, "session_uid": row.session_uid},
+            )
+            return False
+
+        row.state = STATE_COMPLETED
+        row.completed_at = completed_at or datetime.utcnow()
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark completed", extra={"machine_id": machine_id})
         return False
     finally:
         db.close()
