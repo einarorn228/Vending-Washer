@@ -15,6 +15,11 @@ from backend.models import Session
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, is_backend_relay_enabled
 from backend.providers.local_provider import LocalProvider
+from backend.services.usage_session_service import (
+    STATE_FAILED,
+    STATE_TIMED_OUT,
+    update_usage_session,
+)
 from backend.utils.logger import get_error_logger, get_event_logger
 from backend.utils.shelly_control import (
     send_shelly_pulse,
@@ -52,6 +57,7 @@ class PendingStart:
     code: ValidatedCode
     started_at: float
     timer: Optional[threading.Timer]
+    session_uid: Optional[str] = None
 
 
 @dataclass
@@ -463,6 +469,13 @@ def _selection_timeout(machine_id: str) -> None:
     _store.clear_pending_start(machine_id)
     if pending and pending.timer:
         pending.timer.cancel()
+    if pending and pending.session_uid:
+        update_usage_session(
+            pending.session_uid,
+            state=STATE_TIMED_OUT,
+            error_code="selection_timeout",
+            error_detail=SELECTION_TIMEOUT_MESSAGE,
+        )
     events_logger.info(
         "SELECTION_TIMEOUT",
         extra={"machine": machine_id, "notice": SELECTION_TIMEOUT_MESSAGE},
@@ -491,7 +504,15 @@ def _on_runstate_started(machine_id: str) -> None:
 
 
 def _on_device_offline(machine_id: str) -> None:
-    if machine_id in _pending_starts:
+    pending = _pending_starts.get(machine_id)
+    if pending:
+        if pending.session_uid:
+            update_usage_session(
+                pending.session_uid,
+                state=STATE_FAILED,
+                error_code="device_offline",
+                error_detail="Machine device went offline while start pending.",
+            )
         events_logger.warning("START_FAILED_OFFLINE", extra={"machine": machine_id})
         with lock:
             ui_state = UI_STATE.get("state")
@@ -659,7 +680,11 @@ def _enter_machine_starting_state(machine_id: str, code_info: ValidatedCode) -> 
     return message
 
 
-def start_machine(code_info: ValidatedCode, machine_id: str):
+def start_machine(
+    code_info: ValidatedCode,
+    machine_id: str,
+    session_uid: Optional[str] = None,
+):
     """Trigger machine relay and wait for telemetry confirmation."""
 
     runtime = _resolve_machine(machine_id)
@@ -734,6 +759,7 @@ def start_machine(code_info: ValidatedCode, machine_id: str):
         code=code_info,
         started_at=time.monotonic(),
         timer=timer,
+        session_uid=session_uid,
     )
     return True, start_message
 
