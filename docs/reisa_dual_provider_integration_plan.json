@@ -1,0 +1,157 @@
+{
+  "current_architecture": {
+    "startup": [
+      "backend/app.py initializes logging/DB/seeds then starts Flask, telemetry, cleanup, scanner",
+      "backend/flask_server.py also runs bootstrap side effects at import"
+    ],
+    "routes": {
+      "flask_server": [
+        "/generate_code",
+        "/admin/metrics",
+        "/admin/usage/*",
+        "/admin/codes/*",
+        "/admin/settings/*"
+      ],
+      "ui_api": [
+        "/api/scan_code",
+        "/api/start_machine",
+        "/api/ui_state",
+        "/api/i4_event"
+      ]
+    },
+    "scanner_flow": "backend/controllers/qr_scanner.py -> machine_control.handle_scanned_code",
+    "machine_flow": "machine_control.start_machine marks pending and waits for telemetry runstate_started before debit",
+    "state": "UI_STATE and pending maps are in-memory",
+    "db_models": [
+      "codes",
+      "scan_logs",
+      "settings",
+      "devices",
+      "machines",
+      "machine_configs"
+    ]
+  },
+  "touchpoints": [
+    {
+      "file": "backend/controllers/ui_api.py",
+      "plan": "keep routes thin, call orchestrator"
+    },
+    {
+      "file": "backend/controllers/qr_scanner.py",
+      "plan": "keep serial ingress, delegate business flow to orchestrator"
+    },
+    {
+      "file": "backend/controllers/machine_control.py",
+      "plan": "extract validation/usage/provider logic; retain hardware control primitives"
+    },
+    {
+      "file": "backend/controllers/telemetry.py",
+      "plan": "keep runstate engine; connect orchestrator listeners"
+    },
+    {
+      "file": "backend/flask_server.py",
+      "plan": "keep app shell/auth/metrics; avoid provider logic in routes"
+    }
+  ],
+  "risks": [
+    "machine_control.py is too coupled",
+    "critical process-memory state for pending starts and UI",
+    "mixed global and per-call DB sessions",
+    "async telemetry confirmation timing can cause commit races",
+    "split flow between /start_machine and i4 armed code",
+    "stringly-typed settings with weak validation",
+    "duplicated startup side effects",
+    "admin delete route auth inconsistency"
+  ],
+  "proposed_new_files": [
+    "backend/integrations/reisa_client.py",
+    "backend/integrations/reisa_service.py",
+    "backend/providers/base_provider.py",
+    "backend/providers/local_provider.py",
+    "backend/providers/reisa_provider.py",
+    "backend/services/start_orchestrator.py",
+    "backend/services/usage_service.py",
+    "backend/models/usage_session_model.py",
+    "backend/models/reisa_audit_model.py"
+  ],
+  "phases": [
+    {
+      "phase": 1,
+      "name": "extract orchestration shape without behavior change"
+    },
+    {
+      "phase": 2,
+      "name": "put local mode behind provider abstraction"
+    },
+    {
+      "phase": 3,
+      "name": "add Reisa read-only lookup"
+    },
+    {
+      "phase": 4,
+      "name": "add Reisa commit after confirmed machine start"
+    },
+    {
+      "phase": 5,
+      "name": "add completion/metadata/audit logging"
+    },
+    {
+      "phase": 6,
+      "name": "cleanup and hardening"
+    }
+  ],
+  "settings": [
+    "provider_default",
+    "provider_local_enabled",
+    "provider_reisa_enabled",
+    "reisa_base_url",
+    "reisa_bearer_token",
+    "reisa_timeout_ms",
+    "reisa_connect_timeout_ms",
+    "reisa_read_timeout_ms",
+    "reisa_completion_reporting_enabled",
+    "reisa_metadata_reporting_enabled",
+    "reisa_retry_max_attempts",
+    "reisa_retry_backoff_ms"
+  ],
+  "data_models": {
+    "usage_sessions": [
+      "session_uid",
+      "provider",
+      "provider_reference",
+      "identifier_type",
+      "identifier_value_masked",
+      "machine_id",
+      "scan_source",
+      "state",
+      "requested_quantity",
+      "committed_quantity",
+      "remaining_after_commit",
+      "error_code",
+      "error_detail",
+      "created_at",
+      "updated_at",
+      "started_at",
+      "completed_at"
+    ],
+    "reisa_audit_logs": [
+      "session_uid",
+      "endpoint",
+      "method",
+      "request_payload_redacted",
+      "response_status_code",
+      "response_payload_redacted",
+      "result",
+      "attempt_number",
+      "latency_ms",
+      "created_at"
+    ]
+  },
+  "provider_methods": [
+    "lookup(identifier, mode)",
+    "authorize(lookup_result, machine_id, now)",
+    "commit_start(session_ref, quantity=1)",
+    "mark_completion(session_ref, completion_payload)",
+    "update_metadata(session_ref, metadata)"
+  ]
+}
