@@ -6,16 +6,15 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
 from backend.controllers.telemetry import MachineStateStore
 from backend.metrics import inc, observe_ms, set_gauge
 from backend.models import Session
-from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, is_backend_relay_enabled
+from backend.providers.local_provider import LocalProvider
 from backend.utils.logger import get_error_logger, get_event_logger
 from backend.utils.shelly_control import (
     send_shelly_pulse,
@@ -87,6 +86,7 @@ _armed_code: Optional[ArmedCode] = None
 PENDING_SCAN_TTL = 600.0  # seconds
 
 _store = MachineStateStore.instance()
+_local_provider = LocalProvider()
 
 
 def _cleanup_expired_pending_locked(now: Optional[float] = None) -> None:
@@ -266,27 +266,15 @@ def _get_session():
 def validate_code(code: str) -> Tuple[Optional[ValidatedCode], str]:
     """Return ValidatedCode if valid and not expired/overused."""
 
-    db = _get_session()
-    try:
-        obj = db.query(Code).filter_by(code=code).first()
-        if not obj:
-            return None, "Code expired or invalid."
-        if obj.expiration_date and obj.expiration_date <= datetime.utcnow():
-            return None, "Code expired or invalid."
-        if obj.current_usage >= obj.usage_limit:
-            return None, "Code expired or invalid."
-        return (
-            ValidatedCode(
-                id=getattr(obj, "id", None),
-                code=obj.code,
-                order_id=obj.order_id,
-                usage_limit=obj.usage_limit,
-                current_usage=obj.current_usage,
-            ),
-            "",
-        )
-    finally:
-        db.close()
+    lookup = _local_provider.lookup(code, mode="local_code")
+    if not lookup.success or not lookup.entitlement:
+        return None, lookup.message
+
+    auth = _local_provider.authorize(lookup.entitlement)
+    if not auth.authorized or not auth.entitlement:
+        return None, auth.message
+
+    return auth.entitlement, ""
 
 
 def _reason_from_message(message: str) -> str:
@@ -392,26 +380,15 @@ def write_scan_log(
 
 
 def _apply_usage_delta(code_info: ValidatedCode) -> int:
-    db = _get_session()
-    try:
-        obj = db.query(Code).filter_by(code=code_info.code).first()
-        if not obj:
-            error_logger.error(
-                "Code not found when applying usage delta", extra={"code": code_info.code}
-            )
-            return code_info.usage_limit - code_info.current_usage
-        obj.current_usage += 1
-        uses_left = max(obj.usage_limit - obj.current_usage, 0)
-        if obj.current_usage >= obj.usage_limit:
-            obj.expiration_date = datetime.utcnow() + timedelta(days=1)
-        db.commit()
-        return uses_left
-    except Exception:
-        db.rollback()
-        error_logger.exception("Failed to debit code", extra={"code": code_info.code})
-        raise
-    finally:
-        db.close()
+    commit = _local_provider.commit_start(code_info, quantity=1)
+    if not commit.success:
+        error_logger.error(
+            "Code not found when applying usage delta", extra={"code": code_info.code}
+        )
+        return code_info.usage_limit - code_info.current_usage
+    if commit.uses_left is None:
+        return max(code_info.usage_limit - code_info.current_usage - 1, 0)
+    return commit.uses_left
 
 
 def _show_program_started(machine_id: str, uses_left: int) -> str:
@@ -431,8 +408,13 @@ def _show_program_started(machine_id: str, uses_left: int) -> str:
     return message
 
 
-def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
-    uses_left = _apply_usage_delta(code_info)
+def finalize_started_machine(
+    machine_id: str,
+    code_info: ValidatedCode,
+    uses_left: int,
+) -> None:
+    """Record machine-start success metrics and update UI after commit."""
+
     with metrics_lock:
         _machine_success[machine_id] += 1
     _update_success_ratio(machine_id)
@@ -453,6 +435,11 @@ def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
             "message": message,
         },
     )
+
+
+def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
+    uses_left = _apply_usage_delta(code_info)
+    finalize_started_machine(machine_id, code_info, uses_left)
 
 
 def consume_pending_start(machine_id: str) -> Optional[PendingStart]:
@@ -619,6 +606,29 @@ def _get_active_code_info() -> Optional[ValidatedCode]:
             _clear_armed_code_locked()
             return None
         return armed.code
+
+
+def get_button_start_code(machine_id: str) -> Optional[ValidatedCode]:
+    """Return active code for a button-start request and emit rejection log if missing."""
+
+    code_info = _get_active_code_info()
+    if code_info:
+        return code_info
+    events_logger.info(
+        "MACHINE start rejected", extra={"machine": machine_id, "reason": "no_code"}
+    )
+    return None
+
+
+def resolve_button_machine(button_index: int) -> Optional[str]:
+    """Resolve i4 button index to machine slug and log press/unknown events."""
+
+    machine_id = _store.resolve_button(button_index)
+    if not machine_id:
+        events_logger.warning("I4_BUTTON_UNKNOWN", extra={"button": button_index})
+        return None
+    events_logger.info("I4_BUTTON_PRESS", extra={"button": button_index, "machine": machine_id})
+    return machine_id
 
 
 def _resolve_machine(machine_id: str):
