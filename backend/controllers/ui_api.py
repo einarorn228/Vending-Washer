@@ -2,19 +2,19 @@
 from flask import Blueprint, jsonify, request
 
 from backend.controllers.machine_control import (
-    SCAN_BUSY_MESSAGE,
-    SELECT_MACHINE_MESSAGE,
     UI_STATE,
     get_machine_snapshot,
-    handle_i4_button,
-    handle_scanned_code,
-    show_error_state,
-    start_machine,
-    validate_code,
+    SELECT_MACHINE_MESSAGE,
 )
 from backend.models import session
 from backend.models.setting_model import get_setting_value
 from backend.metrics import inc
+from backend.services.start_orchestrator import (
+    SCAN_BUSY_MESSAGE,
+    ingest_scan,
+    start_from_button,
+    start_from_code,
+)
 
 ui_api = Blueprint("ui_api", __name__)
 
@@ -34,11 +34,13 @@ def check_api_key():
 def scan_code():
     data = request.get_json(force=True)
     code = data.get("code")
-    success, message, code_info = handle_scanned_code(code, source="api")
-    if not success:
+    outcome = ingest_scan(code, source="api")
+    if not outcome.success:
+        message = outcome.message
         status = 409 if message == SCAN_BUSY_MESSAGE else 400
         return jsonify({"success": False, "message": message}), status
     machines = list_machines()
+    code_info = outcome.code_info
     uses_left = code_info.usage_limit - code_info.current_usage if code_info else None
     return jsonify(
         {
@@ -59,21 +61,15 @@ def start_machine_endpoint():
     data = request.get_json(force=True)
     code = data.get("code")
     machine_id = data.get("machine_id")
-    if not code or not machine_id:
-        return jsonify({"success": False, "message": "Missing data"}), 400
-    code_info, msg = validate_code(code)
-    if not code_info:
-        show_error_state(msg)
-        return jsonify({"success": False, "message": msg})
-    ok, message = start_machine(code_info, machine_id)
-    if not ok:
-        show_error_state(message)
-        return jsonify({"success": False, "message": message})
+    outcome = start_from_code(machine_id=machine_id, raw_code=code)
+    if not outcome.success:
+        status = 400 if outcome.message == "Missing data" else 409
+        return jsonify({"success": False, "message": outcome.message}), status
     return jsonify(
         {
             "success": True,
-            "uses_left": code_info.usage_limit - code_info.current_usage,
-            "message": message,
+            "uses_left": outcome.uses_left,
+            "message": outcome.message,
         }
     )
 
@@ -98,8 +94,12 @@ def i4_event():
         index = int(button)
     except (TypeError, ValueError):
         return jsonify({"success": False, "message": "Invalid button index"}), 400
-    ok, message, uses_left = handle_i4_button(index)
-    status = 200 if ok else 409
-    if not ok:
-        show_error_state(message)
-    return jsonify({"success": ok, "message": message, "uses_left": uses_left}), status
+    outcome = start_from_button(index)
+    status = 200 if outcome.success else 409
+    return jsonify(
+        {
+            "success": outcome.success,
+            "message": outcome.message,
+            "uses_left": outcome.uses_left,
+        }
+    ), status

@@ -455,6 +455,22 @@ def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
     )
 
 
+def consume_pending_start(machine_id: str) -> Optional[PendingStart]:
+    """Remove and return pending start state for a machine."""
+
+    pending = _pending_starts.pop(machine_id, None)
+    _store.clear_pending_start(machine_id)
+    if pending and pending.timer:
+        pending.timer.cancel()
+    return pending
+
+
+def finalize_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
+    """Finalize machine start after telemetry confirms runstate."""
+
+    _handle_successful_start(machine_id, code_info)
+
+
 def _selection_timeout(machine_id: str) -> None:
     pending = _pending_starts.pop(machine_id, None)
     _store.clear_pending_start(machine_id)
@@ -480,19 +496,11 @@ def _selection_timeout(machine_id: str) -> None:
 
 
 def _on_runstate_started(machine_id: str) -> None:
-    pending = _pending_starts.pop(machine_id, None)
-    _store.clear_pending_start(machine_id)
-    if not pending:
-        return
-    if pending.timer:
-        pending.timer.cancel()
-    try:
-        _handle_successful_start(machine_id, pending.code)
-    except Exception:
-        error_logger.exception(
-            "Failed to finalize start", extra={"machine": machine_id}
-        )
-        show_error_state("Machine did not start. Please try again.")
+    # Local import avoids circular dependency: start_orchestrator already imports
+    # machine_control primitives for ingress/start paths.
+    from backend.services.start_orchestrator import handle_start_confirmed
+
+    handle_start_confirmed(machine_id)
 
 
 def _on_device_offline(machine_id: str) -> None:
