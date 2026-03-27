@@ -4,9 +4,9 @@ from typing import Optional
 
 import serial
 
-from backend.controllers.machine_control import handle_scanned_code
 from backend.models import session
 from backend.models.setting_model import get_setting_value
+from backend.services.start_orchestrator import ingest_scan
 
 logger = logging.getLogger(__name__)
 
@@ -56,11 +56,11 @@ def _handle_scanned_value(decoded: str) -> None:
         return
 
     try:
-        success, message, _ = handle_scanned_code(decoded, source="scanner")
-        if success:
+        outcome = ingest_scan(decoded, source="scanner")
+        if outcome.success:
             logger.info("Accepted scan: %s", decoded)
         else:
-            logger.debug("Scan rejected: %s (reason=%s)", decoded, message)
+            logger.debug("Scan rejected: %s (reason=%s)", decoded, outcome.message)
     except Exception as exc:  # pragma: no cover - defensive for runtime issues
         logger.exception("Error processing QR code: %s", exc)
 
