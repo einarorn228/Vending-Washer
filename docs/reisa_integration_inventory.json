@@ -1,0 +1,130 @@
+{
+  "relevant_files": [
+    "backend/app.py",
+    "backend/flask_server.py",
+    "backend/controllers/ui_api.py",
+    "backend/controllers/machine_control.py",
+    "backend/controllers/qr_scanner.py",
+    "backend/controllers/telemetry.py",
+    "backend/controllers/code_generator.py",
+    "backend/controllers/code_cleanup.py",
+    "backend/models/__init__.py",
+    "backend/models/code_model.py",
+    "backend/models/scan_log_model.py",
+    "backend/models/setting_model.py",
+    "backend/models/device_model.py",
+    "backend/models/machine_model.py",
+    "backend/setup/seed_settings.py",
+    "backend/setup/seed_machines.py",
+    "backend/setup/setup_logs.py",
+    "backend/utils/logger.py",
+    "backend/utils/shelly_control.py",
+    "backend/metrics.py",
+    "backend/scripts/get_api_key.py",
+    "frontend/src/api/backend.js",
+    "frontend/src/App.jsx",
+    "README.md"
+  ],
+  "routes": [
+    "POST /generate_code",
+    "GET /admin/metrics",
+    "GET /admin/metrics/export.csv",
+    "GET /admin/usage/by_order_id/<order_id>",
+    "GET /admin/usage/by_code/<code>",
+    "GET /admin/scan_logs/last/<int:count>",
+    "GET /admin/codes",
+    "GET /admin/codes/last/<int:count>",
+    "GET /admin/codes/by_order_id/<order_id>",
+    "GET /admin/codes/<code>",
+    "DELETE /admin/codes/<code>",
+    "DELETE /admin/codes/by_order_id/<order_id>",
+    "PUT /admin/settings/cors",
+    "GET|PUT /admin/settings/<key>",
+    "POST /api/scan_code",
+    "POST /api/start_machine",
+    "GET /api/ui_state",
+    "GET|POST /api/i4_event"
+  ],
+  "models": [
+    "Code (table: codes)",
+    "ScanLog (table: scan_logs)",
+    "Settings (table: settings)",
+    "Device (table: devices)",
+    "Machine (table: machines)",
+    "MachineConfig (table: machine_configs)"
+  ],
+  "env_vars": [
+    "LOG_LEVEL",
+    "VITE_API_BASE_URL",
+    "VITE_API_KEY"
+  ],
+  "startup_files": [
+    "backend/app.py",
+    "backend/flask_server.py",
+    "backend/setup/seed_settings.py",
+    "backend/setup/seed_machines.py",
+    "backend/models/__init__.py",
+    "backend/utils/logger.py"
+  ],
+  "qr_flow_files": [
+    "backend/controllers/qr_scanner.py",
+    "backend/controllers/ui_api.py",
+    "backend/controllers/machine_control.py",
+    "backend/models/code_model.py",
+    "backend/models/scan_log_model.py"
+  ],
+  "machine_control_files": [
+    "backend/controllers/machine_control.py",
+    "backend/controllers/telemetry.py",
+    "backend/utils/shelly_control.py",
+    "backend/models/device_model.py",
+    "backend/models/machine_model.py",
+    "backend/setup/seed_machines.py"
+  ],
+  "logging_files": [
+    "backend/utils/logger.py",
+    "backend/setup/setup_logs.py",
+    "backend/flask_server.py",
+    "backend/controllers/machine_control.py",
+    "backend/controllers/telemetry.py"
+  ],
+  "settings_files": [
+    "backend/models/setting_model.py",
+    "backend/setup/seed_settings.py",
+    "backend/flask_server.py",
+    "backend/controllers/qr_scanner.py",
+    "backend/controllers/machine_control.py",
+    "frontend/src/api/backend.js"
+  ],
+  "reisa_touchpoints": [
+    "backend/controllers/machine_control.py::validate_code",
+    "backend/controllers/machine_control.py::_apply_usage_delta",
+    "backend/controllers/machine_control.py::_handle_successful_start",
+    "backend/controllers/qr_scanner.py::_handle_scanned_value",
+    "backend/controllers/ui_api.py::scan_code",
+    "backend/controllers/ui_api.py::start_machine_endpoint",
+    "backend/controllers/telemetry.py::runstate_started listener",
+    "backend/flask_server.py route registration and auth helpers",
+    "backend/models/setting_model.py settings access for integration config",
+    "backend/utils/logger.py structured logging filters/handlers"
+  ],
+  "risks": [
+    "Machine orchestration, validation, DB writes, and UI state are tightly coupled in backend/controllers/machine_control.py",
+    "Mixed global SQLAlchemy session and ad-hoc Session() usage across multiple threads",
+    "No dedicated service/integration layer; controllers call data/hardware logic directly",
+    "Critical state kept in-memory (_armed_code, _pending_starts, UI_STATE) with timers",
+    "Asynchronous start confirmation via telemetry complicates external deduct sequencing",
+    "Destructive admin delete endpoints in flask_server.py lack require_admin_auth decorators",
+    "Stringly-typed settings storage with minimal validation for secrets/timeouts",
+    "Startup performs seeding side effects automatically, reducing deployment determinism",
+    "Error handling/retries for external service calls are not yet standardized",
+    "Legacy local code model may conflict with external source-of-truth usage accounting"
+  ],
+  "proposed_new_files": [
+    "backend/integrations/__init__.py",
+    "backend/integrations/reisa_client.py",
+    "backend/integrations/reisa_service.py",
+    "backend/models/reisa_audit_model.py",
+    "backend/services/start_orchestrator.py"
+  ]
+}
