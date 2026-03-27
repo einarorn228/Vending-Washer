@@ -28,12 +28,13 @@ from backend.providers.base_provider import BaseProvider
 from backend.providers.local_provider import LocalProvider
 from backend.services.usage_session_service import (
     STATE_AUTHORIZED,
-    STATE_COMMIT_OK,
     STATE_FAILED,
     STATE_SCANNED,
     STATE_START_CONFIRMED,
     STATE_START_REQUESTED,
     create_usage_session,
+    mark_committed,
+    mark_completed_for_machine,
     update_usage_session,
 )
 
@@ -212,9 +213,9 @@ def handle_start_confirmed(machine_id: str) -> None:
         uses_left = commit.uses_left
         if uses_left is None:
             uses_left = max(pending.code.usage_limit - pending.code.current_usage - 1, 0)
-        update_usage_session(
+        mark_committed(
             pending.session_uid,
-            state=STATE_COMMIT_OK,
+            machine_id=machine_id,
             committed_quantity=1,
             remaining_after_commit=uses_left,
         )
@@ -230,11 +231,23 @@ def handle_start_confirmed(machine_id: str) -> None:
         show_error_state("Machine did not start. Please try again.")
 
 
+def handle_run_completed(machine_id: str) -> None:
+    """Persist completion lifecycle when telemetry reports run stopped."""
+
+    updated = mark_completed_for_machine(machine_id)
+    if not updated:
+        logger.debug(
+            "Run completion transition skipped",
+            extra={"machine": machine_id},
+        )
+
+
 __all__ = [
     "SCAN_BUSY_MESSAGE",
     "ScanOutcome",
     "StartOutcome",
     "handle_start_confirmed",
+    "handle_run_completed",
     "ingest_scan",
     "start_from_button",
     "start_from_code",

@@ -77,6 +77,7 @@ UI_STATE = {
 
 lock = threading.Lock()
 pending_lock = threading.Lock()
+start_lock = threading.Lock()
 wait_lock = threading.Lock()
 metrics_lock = threading.Lock()
 armed_lock = threading.Lock()
@@ -451,7 +452,8 @@ def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
 def consume_pending_start(machine_id: str) -> Optional[PendingStart]:
     """Remove and return pending start state for a machine."""
 
-    pending = _pending_starts.pop(machine_id, None)
+    with start_lock:
+        pending = _pending_starts.pop(machine_id, None)
     _store.clear_pending_start(machine_id)
     if pending and pending.timer:
         pending.timer.cancel()
@@ -465,7 +467,8 @@ def finalize_successful_start(machine_id: str, code_info: ValidatedCode) -> None
 
 
 def _selection_timeout(machine_id: str) -> None:
-    pending = _pending_starts.pop(machine_id, None)
+    with start_lock:
+        pending = _pending_starts.pop(machine_id, None)
     _store.clear_pending_start(machine_id)
     if pending and pending.timer:
         pending.timer.cancel()
@@ -503,8 +506,16 @@ def _on_runstate_started(machine_id: str) -> None:
     handle_start_confirmed(machine_id)
 
 
+def _on_runstate_stopped(machine_id: str) -> None:
+    # Local import avoids circular dependency for same reasons as started callback.
+    from backend.services.start_orchestrator import handle_run_completed
+
+    handle_run_completed(machine_id)
+
+
 def _on_device_offline(machine_id: str) -> None:
-    pending = _pending_starts.get(machine_id)
+    with start_lock:
+        pending = _pending_starts.get(machine_id)
     if pending:
         if pending.session_uid:
             update_usage_session(
@@ -521,6 +532,7 @@ def _on_device_offline(machine_id: str) -> None:
 
 
 _store.add_listener("runstate_started", _on_runstate_started)
+_store.add_listener("runstate_stopped", _on_runstate_stopped)
 _store.add_listener("device_offline", _on_device_offline)
 
 
@@ -719,7 +731,8 @@ def start_machine(
         },
     )
 
-    existing_pending = _pending_starts.pop(machine_id, None)
+    with start_lock:
+        existing_pending = _pending_starts.pop(machine_id, None)
     if existing_pending and existing_pending.timer:
         existing_pending.timer.cancel()
 
@@ -755,12 +768,13 @@ def start_machine(
 
     timer = threading.Timer(_selection_timeout_seconds(), _selection_timeout, args=[machine_id])
     timer.start()
-    _pending_starts[machine_id] = PendingStart(
-        code=code_info,
-        started_at=time.monotonic(),
-        timer=timer,
-        session_uid=session_uid,
-    )
+    with start_lock:
+        _pending_starts[machine_id] = PendingStart(
+            code=code_info,
+            started_at=time.monotonic(),
+            timer=timer,
+            session_uid=session_uid,
+        )
     return True, start_message
 
 
