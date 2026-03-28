@@ -1,4 +1,4 @@
-"""Low-level Reisa API client (read-only endpoints for Phase 5)."""
+"""Low-level Reisa API client."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ class ReisaClientError(Exception):
 
 
 class ReisaClient:
-    """HTTP wrapper for Reisa lookup/info endpoints."""
+    """HTTP wrapper for Reisa lookup/info and start-commit write endpoints."""
 
     def __init__(
         self,
@@ -84,6 +84,41 @@ class ReisaClient:
         except ValueError as exc:
             raise ReisaClientError("Invalid Reisa response format", retryable=False) from exc
 
+    def _post(self, path: str, payload: Optional[dict[str, Any]] = None) -> Any:
+        self._ensure_configured()
+        url = f"{self.base_url}{path}"
+        body = payload or {}
+        try:
+            resp = requests.post(url, headers=self._headers(), json=body, timeout=self.timeout)
+        except requests.Timeout as exc:
+            logger.warning("Reisa request timeout", extra={"path": path})
+            raise ReisaClientError("Reisa request timed out", retryable=True) from exc
+        except requests.RequestException as exc:
+            logger.warning("Reisa request failed", extra={"path": path})
+            raise ReisaClientError("Failed to reach Reisa", retryable=True) from exc
+
+        if resp.status_code in (401, 403):
+            raise ReisaClientError("Reisa authentication failed", status_code=resp.status_code, retryable=False)
+        if resp.status_code >= 500:
+            raise ReisaClientError(
+                "Reisa service unavailable",
+                status_code=resp.status_code,
+                retryable=True,
+            )
+        if resp.status_code >= 400:
+            raise ReisaClientError(
+                "Reisa request rejected",
+                status_code=resp.status_code,
+                retryable=False,
+            )
+
+        if not resp.content:
+            return {}
+        try:
+            return resp.json()
+        except ValueError:
+            return {}
+
     def get_info(self) -> Any:
         return self._get("/info")
 
@@ -98,3 +133,19 @@ class ReisaClient:
         if not value:
             raise ReisaClientError("Missing PIN", retryable=False)
         return self._get(f"/pin/{value}")
+
+    def post_status(self, uuid: str, *, action: str) -> Any:
+        value = (uuid or "").strip()
+        if not value:
+            raise ReisaClientError("Missing UUID", retryable=False)
+        action_value = (action or "").strip()
+        if not action_value:
+            raise ReisaClientError("Missing status action", retryable=False)
+        return self._post(f"/uuid/{value}/status", {"action": action_value})
+
+    def post_deduct(self, uuid: str, *, quantity: int) -> Any:
+        value = (uuid or "").strip()
+        if not value:
+            raise ReisaClientError("Missing UUID", retryable=False)
+        qty = max(int(quantity), 1)
+        return self._post(f"/uuid/{value}/deduct", {"quantity": qty})

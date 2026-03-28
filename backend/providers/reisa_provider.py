@@ -1,4 +1,4 @@
-"""Reisa-backed provider (Phase 5: read-only lookup/authorize)."""
+"""Reisa-backed provider."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReisaProvider(BaseProvider):
-    """Provider implementation for Reisa lookup + authorization only."""
+    """Provider implementation for Reisa entitlement and confirmed-start commit."""
 
     def __init__(self, *, base_url: str, bearer_token: str, connect_timeout_ms: int, read_timeout_ms: int) -> None:
         self.service = ReisaService(
@@ -59,15 +59,57 @@ class ReisaProvider(BaseProvider):
         return ProviderAuthorizationResult(authorized=True, message="", entitlement=entitlement)
 
     def commit_start(self, entitlement, quantity: int = 1) -> ProviderCommitResult:
-        # Phase 5 is read-only. Do not call Reisa write endpoints yet.
-        if isinstance(entitlement, ReisaEntitlement):
+        if not isinstance(entitlement, ReisaEntitlement):
+            return ProviderCommitResult(success=False, message="Invalid Reisa entitlement", uses_left=None, retryable=False)
+
+        uuid = (entitlement.token or "").strip()
+        if not uuid:
             return ProviderCommitResult(
-                success=True,
-                message="Reisa commit deferred (read-only mode)",
-                uses_left=max(entitlement.uses_left, 0),
+                success=False,
+                message="Missing Reisa UUID/token for commit",
+                uses_left=None,
                 retryable=False,
             )
-        return ProviderCommitResult(success=False, message="Invalid Reisa entitlement", uses_left=None, retryable=False)
+
+        qty = max(int(quantity), 1)
+        try:
+            self.service.post_start_status(uuid, action="WASHING_MACHINE_START")
+            deduct = self.service.deduct_usage(uuid, quantity=qty)
+            uses_left = deduct.uses_left if deduct.uses_left is not None else max(entitlement.uses_left - qty, 0)
+            return ProviderCommitResult(
+                success=True,
+                message="",
+                uses_left=uses_left,
+                retryable=False,
+            )
+        except ReisaServiceError as exc:
+            logger.warning(
+                "Reisa commit_start failed",
+                extra={
+                    "external_id": entitlement.external_id,
+                    "retryable": exc.retryable,
+                },
+            )
+            return ProviderCommitResult(
+                success=False,
+                message=exc.message,
+                uses_left=None,
+                retryable=exc.retryable,
+            )
+        except ReisaClientError as exc:
+            logger.warning(
+                "Reisa commit_start client failure",
+                extra={
+                    "external_id": entitlement.external_id,
+                    "retryable": exc.retryable,
+                },
+            )
+            return ProviderCommitResult(
+                success=False,
+                message=exc.message,
+                uses_left=None,
+                retryable=exc.retryable,
+            )
 
     def mark_completion(self, entitlement, machine_id: Optional[str] = None) -> ProviderCompletionResult:
         # Phase 5 is read-only. Completion/status posting intentionally not implemented.
