@@ -21,6 +21,7 @@ logger.info("===== APP STARTED =====")
 from backend.controllers.code_cleanup import cleanup_expired_codes
 from backend.controllers.qr_scanner import start_scanner_listener
 from backend.controllers.telemetry import start_telemetry_poll
+from backend.services.reisa_retry_service import run_retry_worker_loop
 
 
 def start_flask():
@@ -48,6 +49,10 @@ if __name__ == "__main__":
         # Start cleanup scheduler
         threading.Thread(target=cleanup_scheduler, daemon=True).start()
         logger.info("Cleanup scheduler started")
+
+        # Optional guarded auto-retry worker (disabled by default in settings).
+        threading.Thread(target=run_retry_worker_loop, daemon=True).start()
+        logger.info("Reisa retry worker thread started (settings-gated)")
 
         # Start the QR code scanning process
         start_scanner_listener()

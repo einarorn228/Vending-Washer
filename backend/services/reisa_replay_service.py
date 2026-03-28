@@ -27,6 +27,7 @@ from backend.services.reisa_retry_service import (
     mark_retry_job_failure,
     mark_retry_job_skipped,
     mark_retry_job_success,
+    mark_retry_job_resolved_by_audit,
 )
 from backend.services.start_orchestrator import session_to_entitlement
 from backend.services.usage_session_service import (
@@ -52,6 +53,7 @@ class _StepResult:
     message: str
     retryable: bool = False
     uses_left: Optional[int] = None
+    audit_log_id: Optional[int] = None
 
 
 def _has_successful_action(session_uid: str, request_type: str) -> bool:
@@ -99,7 +101,7 @@ def _idempotency_skip_reason(session_uid: str, action_type: str) -> Optional[str
 def _replay_start_status(provider: ReisaProvider, *, session_uid: str, uuid: str, provider_reference: str) -> _StepResult:
     try:
         provider.service.post_start_status(uuid, action=provider.action_start)
-        record_reisa_audit(
+        audit_id = record_reisa_audit(
             session_uid=session_uid,
             request_type=REQUEST_START_STATUS,
             endpoint=f"/uuid/{uuid}/status",
@@ -108,7 +110,7 @@ def _replay_start_status(provider: ReisaProvider, *, session_uid: str, uuid: str
             provider_reference=provider_reference,
             request_payload={"action": provider.action_start, "replay": True},
         )
-        return _StepResult(True, "start_status synced")
+        return _StepResult(True, "start_status synced", audit_log_id=audit_id)
     except ReisaServiceError as exc:
         record_reisa_audit(
             session_uid=session_uid,
@@ -127,7 +129,7 @@ def _replay_start_status(provider: ReisaProvider, *, session_uid: str, uuid: str
 def _replay_deduct(provider: ReisaProvider, *, session_uid: str, uuid: str, provider_reference: str) -> _StepResult:
     try:
         deduct = provider.service.deduct_usage(uuid, quantity=1)
-        record_reisa_audit(
+        audit_id = record_reisa_audit(
             session_uid=session_uid,
             request_type=REQUEST_DEDUCT,
             endpoint=f"/uuid/{uuid}/deduct",
@@ -142,7 +144,7 @@ def _replay_deduct(provider: ReisaProvider, *, session_uid: str, uuid: str, prov
             committed_quantity=1,
             remaining_after_commit=deduct.uses_left,
         )
-        return _StepResult(True, "deduct synced", uses_left=deduct.uses_left)
+        return _StepResult(True, "deduct synced", uses_left=deduct.uses_left, audit_log_id=audit_id)
     except ReisaServiceError as exc:
         record_reisa_audit(
             session_uid=session_uid,
@@ -161,7 +163,7 @@ def _replay_deduct(provider: ReisaProvider, *, session_uid: str, uuid: str, prov
 def _replay_completion_status(provider: ReisaProvider, *, session_uid: str, uuid: str, provider_reference: str) -> _StepResult:
     try:
         provider.service.post_completion_status(uuid, action=provider.action_completion)
-        record_reisa_audit(
+        audit_id = record_reisa_audit(
             session_uid=session_uid,
             request_type=REQUEST_COMPLETION_STATUS,
             endpoint=f"/uuid/{uuid}/status",
@@ -171,7 +173,7 @@ def _replay_completion_status(provider: ReisaProvider, *, session_uid: str, uuid
             request_payload={"action": provider.action_completion, "replay": True},
         )
         mark_completion_recovered(session_uid)
-        return _StepResult(True, "completion_status synced")
+        return _StepResult(True, "completion_status synced", audit_log_id=audit_id)
     except ReisaServiceError as exc:
         record_reisa_audit(
             session_uid=session_uid,
@@ -227,6 +229,8 @@ def replay_retry_job(job_id: int) -> ReplayResult:
             if not start_result.success:
                 mark_retry_job_failure(job_id, error_message=start_result.message, retryable=start_result.retryable)
                 return ReplayResult(False, "failed", start_result.message)
+            if start_result.audit_log_id:
+                mark_retry_job_resolved_by_audit(job_id, resolved_by_audit_log_id=start_result.audit_log_id)
 
             # Recovery consistency: successful start replay should not leave pending deduct unsynced.
             if not _has_successful_action(session_uid, REQUEST_DEDUCT):
@@ -239,6 +243,8 @@ def replay_retry_job(job_id: int) -> ReplayResult:
                 if not deduct_result.success:
                     if deduct_result.retryable:
                         mark_retry_job_success(job_id)
+                        if start_result.audit_log_id:
+                            mark_retry_job_resolved_by_audit(job_id, resolved_by_audit_log_id=start_result.audit_log_id)
                         return ReplayResult(
                             True,
                             "succeeded",
@@ -257,6 +263,8 @@ def replay_retry_job(job_id: int) -> ReplayResult:
             if not deduct_result.success:
                 mark_retry_job_failure(job_id, error_message=deduct_result.message, retryable=deduct_result.retryable)
                 return ReplayResult(False, "failed", deduct_result.message)
+            if deduct_result.audit_log_id:
+                mark_retry_job_resolved_by_audit(job_id, resolved_by_audit_log_id=deduct_result.audit_log_id)
 
         elif action_type == ACTION_COMPLETION_STATUS:
             completion_result = _replay_completion_status(
@@ -268,6 +276,8 @@ def replay_retry_job(job_id: int) -> ReplayResult:
             if not completion_result.success:
                 mark_retry_job_failure(job_id, error_message=completion_result.message, retryable=completion_result.retryable)
                 return ReplayResult(False, "failed", completion_result.message)
+            if completion_result.audit_log_id:
+                mark_retry_job_resolved_by_audit(job_id, resolved_by_audit_log_id=completion_result.audit_log_id)
         else:
             mark_retry_job_skipped(job_id, reason="unsupported_action")
             return ReplayResult(True, "skipped", "unsupported_action")

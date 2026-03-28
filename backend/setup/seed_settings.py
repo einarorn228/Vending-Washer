@@ -26,6 +26,9 @@ DEFAULT_SETTINGS = {
     "reisa_read_timeout_ms": "2500",
     "reisa_action_start": "WASHING_MACHINE_START",
     "reisa_action_completion": "WASHING_MACHINE_COMPLETE",
+    "reisa_retry_worker_enabled": "false",
+    "reisa_retry_worker_interval_sec": "30",
+    "reisa_retry_worker_batch_size": "20",
 }
 
 

@@ -12,6 +12,7 @@ from sqlalchemy import desc
 from backend.models import Session
 from backend.models.reisa_audit_model import ReisaAuditLog
 from backend.models.usage_session_model import UsageSession
+from backend.services.reisa_failure_taxonomy import classify_reisa_failure
 from backend.services.reisa_retry_service import create_retry_job
 
 logger = logging.getLogger(__name__)
@@ -90,7 +91,7 @@ def record_reisa_audit(
     response_payload: Optional[Any] = None,
     retryable: bool = False,
     error_message: Optional[str] = None,
-) -> None:
+) -> Optional[int]:
     db = _get_session()
     try:
         row = ReisaAuditLog(
@@ -109,6 +110,7 @@ def record_reisa_audit(
         )
         db.add(row)
         db.commit()
+        audit_id = int(row.id)
 
         if (
             result == RESULT_ERROR
@@ -123,13 +125,16 @@ def record_reisa_audit(
                 request_payload_redacted=_safe_json(request_payload),
                 last_error=error_message,
                 last_status_code=response_status_code,
+                source_audit_log_id=audit_id,
             )
+        return audit_id
     except Exception:
         db.rollback()
         logger.exception(
             "Failed to persist Reisa audit log",
             extra={"request_type": request_type, "session_uid": session_uid},
         )
+        return None
     finally:
         db.close()
 
@@ -155,6 +160,13 @@ def list_failed_reisa_audit_events(limit: int = 100) -> list[dict[str, Any]]:
                 "status_code": row.response_status_code,
                 "retryable": row.retryable,
                 "error_message": row.error_message,
+                "failure_category": classify_reisa_failure(
+                    request_type=row.request_type,
+                    status_code=row.response_status_code,
+                    error_message=row.error_message,
+                    result=row.result,
+                    retryable=bool(row.retryable),
+                ),
                 "created_at": row.created_at.isoformat() if row.created_at else None,
             }
             for row in rows
@@ -221,6 +233,13 @@ def list_audit_events_for_session(
                 "retryable": row.retryable,
                 "status_code": row.response_status_code,
                 "error_message": row.error_message,
+                "failure_category": classify_reisa_failure(
+                    request_type=row.request_type,
+                    status_code=row.response_status_code,
+                    error_message=row.error_message,
+                    result=row.result,
+                    retryable=bool(row.retryable),
+                ),
                 "created_at": row.created_at.isoformat() if row.created_at else None,
             }
             for row in rows

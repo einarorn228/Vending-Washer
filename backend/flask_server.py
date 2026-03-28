@@ -16,9 +16,10 @@ from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
 from backend.setup.seed_settings import bootstrap_settings
 from backend.setup.seed_machines import bootstrap_devices_and_machines
-from backend.services.reisa_diagnostics_service import get_reisa_sync_diagnostics
+from backend.services.reisa_audit_service import list_audit_events_for_session
+from backend.services.reisa_diagnostics_service import get_reisa_session_diagnostics, get_reisa_sync_diagnostics
 from backend.services.reisa_replay_service import replay_due_jobs, replay_retry_job
-from backend.services.reisa_retry_service import list_retry_jobs
+from backend.services.reisa_retry_service import list_retry_jobs, list_retry_jobs_for_session
 from backend.utils.logger import configure_logger
 from logging import getLogger
 import csv
@@ -192,6 +193,39 @@ def admin_reisa_retry_jobs():
         limit = 100
     jobs = list_retry_jobs(limit=limit, status=status, due_only=due_only)
     return jsonify({"limit": max(min(limit, 500), 1), "count": len(jobs), "jobs": jobs})
+
+
+@app.route("/admin/reisa/session/<session_uid>", methods=["GET"])
+@require_admin_auth
+def admin_reisa_session_diagnostics(session_uid):
+    limit_raw = request.args.get("limit", "100")
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 100
+    payload = get_reisa_session_diagnostics(session_uid=session_uid, limit=limit)
+    payload["limit"] = max(min(limit, 500), 1)
+    return jsonify(payload)
+
+
+@app.route("/admin/reisa/audit/<session_uid>", methods=["GET"])
+@require_admin_auth
+def admin_reisa_audit_for_session(session_uid):
+    limit_raw = request.args.get("limit", "100")
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 100
+    events = list_audit_events_for_session(session_uid=session_uid, limit=limit)
+    jobs = list_retry_jobs_for_session(session_uid=session_uid, limit=limit)
+    return jsonify(
+        {
+            "session_uid": session_uid,
+            "limit": max(min(limit, 500), 1),
+            "audit_events": events,
+            "retry_jobs": jobs,
+        }
+    )
 
 
 @app.route("/admin/reisa/retry/<int:job_id>", methods=["POST"])
