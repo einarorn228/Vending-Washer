@@ -18,6 +18,12 @@ DEFAULT_SETTINGS = {
     "cors_allowed_origins": "http://localhost",
     "log_level": "INFO",
     "button_select_timeout_sec": "45",
+    "provider_default": "local",
+    "provider_reisa_enabled": "false",
+    "reisa_base_url": "",
+    "reisa_bearer_token": "",
+    "reisa_connect_timeout_ms": "1500",
+    "reisa_read_timeout_ms": "2500",
 }
 
 
