@@ -4,12 +4,17 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import logging
+import json
+import threading
+import time
 from typing import Any, Optional
 
 from sqlalchemy import and_, asc
 
 from backend.models import Session
+from backend.models.setting_model import get_setting_value
 from backend.models.reisa_retry_job_model import ReisaRetryJob
+from backend.services.reisa_failure_taxonomy import classify_reisa_failure
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +49,47 @@ def _coerce_datetime(value: Any) -> datetime:
     return datetime.utcnow()
 
 
+def _load_json(value: Optional[str]) -> dict[str, Any]:
+    if not value:
+        return {}
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, dict) else {}
+    except Exception:
+        return {}
+
+
+def _to_json(value: dict[str, Any]) -> Optional[str]:
+    if not value:
+        return None
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
+    except Exception:
+        return None
+
+
+def _merge_correlation_payload(
+    base_payload: Optional[str],
+    *,
+    source_audit_log_id: Optional[int] = None,
+    resolved_by_audit_log_id: Optional[int] = None,
+) -> Optional[str]:
+    payload = _load_json(base_payload)
+    correlation = payload.get("_correlation")
+    if not isinstance(correlation, dict):
+        correlation = {}
+
+    if source_audit_log_id is not None:
+        correlation["source_audit_log_id"] = int(source_audit_log_id)
+    if resolved_by_audit_log_id is not None:
+        correlation["resolved_by_audit_log_id"] = int(resolved_by_audit_log_id)
+
+    if correlation:
+        payload["_correlation"] = correlation
+
+    return _to_json(payload)
+
+
 def _backoff_seconds(retry_count: int) -> int:
     # Practical bounded backoff: 30s, 60s, 120s, ... capped at 15m.
     base = 30 * (2 ** max(retry_count - 1, 0))
@@ -59,6 +105,7 @@ def create_retry_job(
     last_error: Optional[str] = None,
     last_status_code: Optional[int] = None,
     max_retries: int = 5,
+    source_audit_log_id: Optional[int] = None,
 ) -> Optional[int]:
     """Create or refresh a pending retry job for a specific failed Reisa action."""
 
@@ -83,7 +130,10 @@ def create_retry_job(
         )
         if existing:
             existing.provider_reference = provider_reference or existing.provider_reference
-            existing.request_payload_redacted = request_payload_redacted or existing.request_payload_redacted
+            existing.request_payload_redacted = _merge_correlation_payload(
+                request_payload_redacted or existing.request_payload_redacted,
+                source_audit_log_id=source_audit_log_id,
+            )
             existing.last_error = (last_error or existing.last_error or "")[:512] or None
             existing.last_status_code = last_status_code if last_status_code is not None else existing.last_status_code
             existing.next_attempt_at = datetime.utcnow()
@@ -96,7 +146,10 @@ def create_retry_job(
             provider="reisa",
             action_type=normalized_action,
             provider_reference=provider_reference,
-            request_payload_redacted=request_payload_redacted,
+            request_payload_redacted=_merge_correlation_payload(
+                request_payload_redacted,
+                source_audit_log_id=source_audit_log_id,
+            ),
             status=STATUS_PENDING,
             retry_count=0,
             max_retries=_bounded_int(max_retries, default=5, minimum=1, maximum=20),
@@ -136,6 +189,27 @@ def mark_retry_job_success(job_id: int) -> bool:
     except Exception:
         db.rollback()
         logger.exception("Failed to mark retry job success", extra={"job_id": job_id})
+        return False
+    finally:
+        db.close()
+
+
+def mark_retry_job_resolved_by_audit(job_id: int, *, resolved_by_audit_log_id: int) -> bool:
+    db = _get_session()
+    try:
+        row = db.query(ReisaRetryJob).filter_by(id=job_id).first()
+        if not row:
+            return False
+        row.request_payload_redacted = _merge_correlation_payload(
+            row.request_payload_redacted,
+            resolved_by_audit_log_id=resolved_by_audit_log_id,
+        )
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark retry job resolution correlation", extra={"job_id": job_id})
         return False
     finally:
         db.close()
@@ -239,6 +313,53 @@ def list_retry_jobs(
         )
         return [
             {
+                **{
+                    "id": row.id,
+                    "session_uid": row.session_uid,
+                    "provider": row.provider,
+                    "action_type": row.action_type,
+                    "provider_reference": row.provider_reference,
+                    "status": row.status,
+                    "retry_count": row.retry_count,
+                    "max_retries": row.max_retries,
+                    "next_attempt_at": row.next_attempt_at.isoformat() if row.next_attempt_at else None,
+                    "last_attempt_at": row.last_attempt_at.isoformat() if row.last_attempt_at else None,
+                    "last_error": row.last_error,
+                    "last_status_code": row.last_status_code,
+                    "failure_category": classify_reisa_failure(
+                        request_type=row.action_type,
+                        status_code=row.last_status_code,
+                        error_message=row.last_error,
+                        result="error" if row.last_error else "ok",
+                        retryable=row.status in {STATUS_PENDING, STATUS_RETRYING},
+                    ),
+                    "correlation": _load_json(row.request_payload_redacted).get("_correlation"),
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+                    "resolved_at": row.resolved_at.isoformat() if row.resolved_at else None,
+                }
+            }
+            for row in rows
+        ]
+    finally:
+        db.close()
+
+
+def list_retry_jobs_for_session(*, session_uid: str, limit: int = 100) -> list[dict[str, Any]]:
+    normalized = (session_uid or "").strip()
+    if not normalized:
+        return []
+    db = _get_session()
+    try:
+        rows = (
+            db.query(ReisaRetryJob)
+            .filter(ReisaRetryJob.session_uid == normalized, ReisaRetryJob.disabled.is_(False))
+            .order_by(asc(ReisaRetryJob.next_attempt_at), asc(ReisaRetryJob.id))
+            .limit(_bounded_int(limit, default=100, minimum=1, maximum=500))
+            .all()
+        )
+        return [
+            {
                 "id": row.id,
                 "session_uid": row.session_uid,
                 "provider": row.provider,
@@ -251,6 +372,14 @@ def list_retry_jobs(
                 "last_attempt_at": row.last_attempt_at.isoformat() if row.last_attempt_at else None,
                 "last_error": row.last_error,
                 "last_status_code": row.last_status_code,
+                "failure_category": classify_reisa_failure(
+                    request_type=row.action_type,
+                    status_code=row.last_status_code,
+                    error_message=row.last_error,
+                    result="error" if row.last_error else "ok",
+                    retryable=row.status in {STATUS_PENDING, STATUS_RETRYING},
+                ),
+                "correlation": _load_json(row.request_payload_redacted).get("_correlation"),
                 "created_at": row.created_at.isoformat() if row.created_at else None,
                 "updated_at": row.updated_at.isoformat() if row.updated_at else None,
                 "resolved_at": row.resolved_at.isoformat() if row.resolved_at else None,
@@ -278,3 +407,41 @@ def list_due_retry_job_ids(*, limit: int = 50) -> list[int]:
         return [int(row[0]) for row in rows]
     finally:
         db.close()
+
+
+def _as_bool(value: Any, *, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _worker_settings() -> tuple[bool, int, int]:
+    db = _get_session()
+    try:
+        enabled = _as_bool(get_setting_value(db, "reisa_retry_worker_enabled", "false"))
+        interval = _bounded_int(get_setting_value(db, "reisa_retry_worker_interval_sec", "30"), default=30, minimum=5, maximum=300)
+        batch_size = _bounded_int(get_setting_value(db, "reisa_retry_worker_batch_size", "20"), default=20, minimum=1, maximum=100)
+        return enabled, interval, batch_size
+    finally:
+        db.close()
+
+
+def run_retry_worker_loop(*, stop_event: Optional[threading.Event] = None) -> None:
+    """Optional safe auto-replay loop. Disabled by default via settings."""
+
+    while True:
+        if stop_event and stop_event.is_set():
+            return
+        try:
+            enabled, interval_sec, batch_size = _worker_settings()
+            if enabled:
+                from backend.services.reisa_replay_service import replay_due_jobs
+
+                summary = replay_due_jobs(limit=batch_size)
+                logger.info("Reisa retry worker cycle complete", extra={"summary": summary, "batch_size": batch_size})
+        except Exception:
+            logger.exception("Reisa retry worker loop failure")
+
+        # Respect the configured interval even while disabled to avoid a hot loop.
+        _, interval_sec, _ = _worker_settings()
+        time.sleep(interval_sec)

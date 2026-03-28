@@ -18,6 +18,7 @@ from backend.services.reisa_audit_service import (
     list_audit_events_for_session,
     record_reisa_audit,
 )
+from backend.services.reisa_diagnostics_service import get_reisa_session_diagnostics
 from backend.services.reisa_replay_service import replay_retry_job
 from backend.services.reisa_retry_service import create_retry_job, list_retry_jobs
 from backend.services.usage_session_service import create_usage_session, get_usage_session
@@ -114,6 +115,8 @@ def test_retry_job_created_for_retryable_reisa_sync_failure():
         if row["session_uid"] == session_uid and row["action_type"] == "start_status"
     ]
     assert jobs
+    assert jobs[0]["correlation"]["source_audit_log_id"] is not None
+    assert jobs[0]["failure_category"] in {"network_timeout", "unexpected_response"}
 
 
 def test_replay_skips_when_start_status_already_synced():
@@ -250,3 +253,42 @@ def test_replay_start_status_also_attempts_deduct_and_repairs_commit(monkeypatch
 
     deduct_events = list_audit_events_for_session(session_uid=session_uid, request_type=REQUEST_DEDUCT, result=RESULT_OK)
     assert deduct_events
+
+
+def test_session_diagnostics_returns_correlated_operator_snapshot(monkeypatch):
+    init_db()
+    session_uid = create_usage_session(
+        provider="reisa",
+        provider_reference='{"token":"uuid-token"}',
+        identifier_type="uuid_or_pin",
+        identifier_value="1234",
+        machine_id="washer-6",
+        scan_source="api",
+        state="start_confirmed",
+        requested_quantity=1,
+    )
+    record_reisa_audit(
+        session_uid=session_uid,
+        request_type=REQUEST_START_STATUS,
+        endpoint="/uuid/uuid-token/status",
+        method="POST",
+        result=RESULT_ERROR,
+        retryable=True,
+        error_message="timeout",
+    )
+    provider = _fake_provider()
+    monkeypatch.setattr("backend.services.reisa_replay_service.resolve_provider_by_name", lambda _name: provider)
+    jobs = [row for row in list_retry_jobs(limit=500) if row["session_uid"] == session_uid]
+    assert jobs
+    replay_retry_job(jobs[0]["id"])
+
+    diagnostic = get_reisa_session_diagnostics(session_uid=session_uid, limit=50)
+    assert diagnostic["session"]["session_uid"] == session_uid
+    assert diagnostic["audit_events"]
+    assert diagnostic["retry_jobs"]
+    assert diagnostic["likely_next_operator_action"] in {
+        "wait_or_run_retry_due",
+        "review_latest_audit_and_replay",
+        "create_or_review_retry_job",
+        "investigate_session_context",
+    }
