@@ -8,6 +8,10 @@ from backend.models import Session
 from backend.models.setting_model import get_setting_value
 from backend.providers.base_provider import BaseProvider
 from backend.providers.local_provider import LocalProvider
+from backend.integrations.reisa_contract import (
+    REISA_ACTION_COMPLETION_DEFAULT,
+    REISA_ACTION_START_DEFAULT,
+)
 from backend.providers.reisa_provider import ReisaProvider
 
 
@@ -30,11 +34,15 @@ def _build_reisa_provider(db) -> ReisaProvider:
     bearer_token = get_setting_value(db, "reisa_bearer_token", "") or ""
     connect_timeout_ms = _to_int(get_setting_value(db, "reisa_connect_timeout_ms", "1500"), 1500)
     read_timeout_ms = _to_int(get_setting_value(db, "reisa_read_timeout_ms", "2500"), 2500)
+    action_start = get_setting_value(db, "reisa_action_start", REISA_ACTION_START_DEFAULT) or REISA_ACTION_START_DEFAULT
+    action_completion = get_setting_value(db, "reisa_action_completion", REISA_ACTION_COMPLETION_DEFAULT) or REISA_ACTION_COMPLETION_DEFAULT
     return ReisaProvider(
         base_url=base_url,
         bearer_token=bearer_token,
         connect_timeout_ms=connect_timeout_ms,
         read_timeout_ms=read_timeout_ms,
+        action_start=action_start,
+        action_completion=action_completion,
     )
 
 

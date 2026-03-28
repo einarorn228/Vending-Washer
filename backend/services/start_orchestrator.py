@@ -26,6 +26,10 @@ from backend.controllers.machine_control import (
     update_ui_state,
     write_scan_log,
 )
+from backend.integrations.reisa_contract import (
+    decode_provider_reference,
+    encode_provider_reference,
+)
 from backend.providers.base_provider import BaseProvider
 from backend.providers.provider_selector import resolve_provider, resolve_provider_for_session
 from backend.services.usage_session_service import (
@@ -39,6 +43,7 @@ from backend.services.usage_session_service import (
     get_usage_session,
     mark_committed,
     mark_completed_for_session,
+    mark_external_sync_failed,
     update_usage_session,
 )
 
@@ -81,6 +86,9 @@ def _lookup_mode(provider_name: str) -> str:
 
 
 def _provider_reference(entitlement: Any) -> Optional[str]:
+    provider = (getattr(entitlement, "provider", "") or "").strip().lower()
+    if provider == "reisa":
+        return encode_provider_reference(entitlement, fallback_identifier=getattr(entitlement, "code", None))
     token = getattr(entitlement, "token", None)
     if token:
         return token
@@ -272,6 +280,7 @@ def start_from_code(machine_id: Optional[str], raw_code: Optional[str]) -> Start
         entitlement = auth.entitlement
         provider_name = stable_provider_name
 
+    setattr(entitlement, "session_uid", session_uid)
     update_usage_session(session_uid, state=STATE_AUTHORIZED, machine_id=machine_id)
     ok, message = start_machine(entitlement, machine_id, session_uid=session_uid)
     if not ok:
@@ -334,6 +343,7 @@ def start_from_button(button_index: int) -> StartOutcome:
             return StartOutcome(success=False, message=auth.message, uses_left=None)
         entitlement = auth.entitlement
 
+    setattr(entitlement, "session_uid", session_uid)
     update_usage_session(session_uid, state=STATE_AUTHORIZED, machine_id=machine_id)
     ok, message = start_machine(entitlement, machine_id, session_uid=session_uid)
     uses_left = _uses_left(entitlement) if ok else None
@@ -431,6 +441,11 @@ def handle_run_completed(machine_id: str) -> None:
                 "message": completion.message,
             },
         )
+        mark_external_sync_failed(
+            getattr(session, "session_uid", None),
+            error_code="completion_sync_failed",
+            error_detail=completion.message,
+        )
         return
 
     updated = mark_completed_for_session(getattr(session, "session_uid", None))
@@ -449,37 +464,42 @@ def session_to_entitlement(session: Any) -> Any:
     if provider_name == "reisa":
         from backend.integrations.reisa_service import ReisaEntitlement
 
+        refs = decode_provider_reference(provider_reference)
         remaining = getattr(session, "remaining_after_commit", None)
         uses_left = int(remaining) if isinstance(remaining, int) else 0
-        return ReisaEntitlement(
+        entitlement = ReisaEntitlement(
             provider="reisa",
             lookup_mode="session",
-            external_id=provider_reference or (getattr(session, "session_uid", "") or ""),
-            code=provider_reference or "",
-            order_id=None,
+            external_id=refs.get("external_id") or (getattr(session, "session_uid", "") or ""),
+            code=refs.get("identifier") or refs.get("token") or "",
+            order_id=refs.get("booking_number") or refs.get("transaction_number"),
             usage_limit=max(uses_left, 0),
             current_usage=0,
             uses_left=max(uses_left, 0),
-            transaction_number=None,
-            booking_number=None,
-            service_id=None,
-            token=provider_reference or None,
-            pin_code=None,
+            transaction_number=refs.get("transaction_number"),
+            booking_number=refs.get("booking_number"),
+            service_id=refs.get("service_id"),
+            token=refs.get("token"),
+            pin_code=refs.get("pin_code"),
             customer_name=None,
             customer_email=None,
             metadata_last_used=None,
             raw={},
         )
+        setattr(entitlement, "session_uid", getattr(session, "session_uid", None))
+        return entitlement
 
     from backend.controllers.machine_control import ValidatedCode
 
-    return ValidatedCode(
+    entitlement = ValidatedCode(
         id=None,
         code=provider_reference or "",
         order_id=provider_reference or None,
         usage_limit=1,
         current_usage=0,
     )
+    setattr(entitlement, "session_uid", getattr(session, "session_uid", None))
+    return entitlement
 
 
 __all__ = [

@@ -16,6 +16,7 @@ from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
 from backend.setup.seed_settings import bootstrap_settings
 from backend.setup.seed_machines import bootstrap_devices_and_machines
+from backend.services.reisa_diagnostics_service import get_reisa_sync_diagnostics
 from backend.utils.logger import configure_logger
 from logging import getLogger
 import csv
@@ -173,6 +174,20 @@ def generate_code():
 def _normalise_labels(labels_tuple):
     return {k: v for k, v in labels_tuple}
 
+
+
+
+@app.route("/admin/reisa/sync_failures", methods=["GET"])
+@require_admin_auth
+def admin_reisa_sync_failures():
+    limit_raw = request.args.get("limit", "100")
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 100
+    payload = get_reisa_sync_diagnostics(limit=limit)
+    payload["limit"] = max(min(limit, 500), 1)
+    return jsonify(payload)
 
 @app.route("/admin/metrics", methods=["GET"])
 @require_admin_auth

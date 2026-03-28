@@ -21,6 +21,8 @@ STATE_COMPLETED = "completed"
 STATE_FAILED = "failed"
 STATE_TIMED_OUT = "timed_out"
 
+EXTERNAL_SYNC_ERROR_CODES = {"commit_failed", "commit_exception", "completion_sync_failed"}
+
 
 def _mask_identifier(value: Optional[str]) -> Optional[str]:
     raw = (value or "").strip()
@@ -275,3 +277,46 @@ def mark_completed_for_session(session_uid: Optional[str], *, completed_at: Opti
         return False
     finally:
         db.close()
+
+
+def list_external_sync_failed_sessions(limit: int = 100) -> list[UsageSession]:
+    """Return latest sessions where local lifecycle had external sync failures."""
+
+    db = _get_session()
+    try:
+        rows = (
+            db.query(UsageSession)
+            .filter(UsageSession.error_code.in_(list(EXTERNAL_SYNC_ERROR_CODES)))
+            .order_by(UsageSession.updated_at.desc(), UsageSession.id.desc())
+            .limit(max(min(int(limit), 500), 1))
+            .all()
+        )
+        for row in rows:
+            db.expunge(row)
+        return rows
+    finally:
+        db.close()
+
+
+def mark_external_sync_failed(
+    session_uid: Optional[str],
+    *,
+    error_code: str,
+    error_detail: Optional[str],
+) -> bool:
+    """Persist durable external-sync failure details without forcing a state transition."""
+
+    if not session_uid:
+        return False
+
+    if (error_code or "").strip() not in EXTERNAL_SYNC_ERROR_CODES:
+        logger.warning(
+            "Unexpected external sync error code",
+            extra={"session_uid": session_uid, "error_code": error_code},
+        )
+
+    return update_usage_session(
+        session_uid,
+        error_code=error_code,
+        error_detail=error_detail,
+    )
