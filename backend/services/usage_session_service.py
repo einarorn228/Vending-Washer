@@ -35,6 +35,21 @@ def _get_session():
     return Session()
 
 
+def get_usage_session(session_uid: Optional[str]) -> Optional[UsageSession]:
+    if not session_uid:
+        return None
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return None
+        db.expunge(row)
+        return row
+    finally:
+        db.close()
+
+
 def create_usage_session(
     *,
     provider: str,

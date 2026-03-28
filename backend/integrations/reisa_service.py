@@ -1,4 +1,4 @@
-"""Reisa service adapter for entitlement lookup normalization (read-only)."""
+"""Reisa service adapter for entitlement normalization and start-commit writes."""
 
 from __future__ import annotations
 
@@ -36,6 +36,12 @@ class ReisaEntitlement:
     raw: dict[str, Any]
 
 
+@dataclass
+class ReisaCommitStartResult:
+    uses_left: Optional[int]
+    raw: dict[str, Any]
+
+
 class ReisaService:
     """Maps raw Reisa payloads into app-friendly entitlement shapes."""
 
@@ -70,6 +76,25 @@ class ReisaService:
             return self.lookup_by_pin(value)
         except ReisaClientError as exc:
             raise ReisaServiceError(exc.message, retryable=exc.retryable) from exc
+
+    def post_start_status(self, uuid: str, *, action: str = "WASHING_MACHINE_START") -> dict[str, Any]:
+        try:
+            payload = self.client.post_status(uuid, action=action)
+        except ReisaClientError as exc:
+            raise ReisaServiceError(exc.message, retryable=exc.retryable) from exc
+        if isinstance(payload, dict):
+            return payload
+        return {}
+
+    def deduct_usage(self, uuid: str, *, quantity: int = 1) -> ReisaCommitStartResult:
+        try:
+            payload = self.client.post_deduct(uuid, quantity=quantity)
+        except ReisaClientError as exc:
+            raise ReisaServiceError(exc.message, retryable=exc.retryable) from exc
+
+        normalized_payload = payload if isinstance(payload, dict) else {}
+        uses_left = self._extract_remaining_quantity(normalized_payload)
+        return ReisaCommitStartResult(uses_left=uses_left, raw=normalized_payload)
 
     @staticmethod
     def _looks_like_uuid(value: str) -> bool:
@@ -155,3 +180,23 @@ class ReisaService:
         except ValueError:
             return text
         return text
+
+    @classmethod
+    def _extract_remaining_quantity(cls, payload: dict[str, Any]) -> Optional[int]:
+        for key in ("remainingQuantity", "remaining", "usesLeft"):
+            value = payload.get(key)
+            if value is not None:
+                return cls._as_non_negative_int(value)
+
+        details = payload.get("details")
+        if isinstance(details, dict):
+            total = details.get("totalQuantity")
+            used = details.get("usedQuantity")
+            if total is not None and used is not None:
+                return max(cls._as_non_negative_int(total) - cls._as_non_negative_int(used), 0)
+
+        total = payload.get("totalQuantity")
+        used = payload.get("usedQuantity")
+        if total is not None and used is not None:
+            return max(cls._as_non_negative_int(total) - cls._as_non_negative_int(used), 0)
+        return None

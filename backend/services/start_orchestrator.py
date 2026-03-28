@@ -27,7 +27,7 @@ from backend.controllers.machine_control import (
     write_scan_log,
 )
 from backend.providers.base_provider import BaseProvider
-from backend.providers.provider_selector import resolve_provider
+from backend.providers.provider_selector import resolve_provider, resolve_provider_for_session
 from backend.services.usage_session_service import (
     STATE_AUTHORIZED,
     STATE_FAILED,
@@ -35,6 +35,7 @@ from backend.services.usage_session_service import (
     STATE_START_CONFIRMED,
     STATE_START_REQUESTED,
     create_usage_session,
+    get_usage_session,
     mark_committed,
     mark_completed_for_machine,
     update_usage_session,
@@ -64,6 +65,16 @@ def _provider_for_request() -> tuple[str, BaseProvider]:
     return resolve_provider()
 
 
+def _provider_for_existing_scan(code: str) -> tuple[Optional[str], Optional[BaseProvider]]:
+    with _scan_session_lock:
+        session_uid = _scan_sessions.get(code)
+    session = get_usage_session(session_uid) if session_uid else None
+    if not session:
+        return None, None
+    name, provider = resolve_provider_for_session(getattr(session, "provider", None))
+    return name, provider
+
+
 def _lookup_mode(provider_name: str) -> str:
     return "auto" if provider_name == "reisa" else "local_code"
 
@@ -85,16 +96,21 @@ def _resolve_or_create_session_uid(
     scan_source: Optional[str],
     identifier_type: str,
     identifier_value: Optional[str],
-) -> str:
+) -> tuple[str, str, BaseProvider]:
     code = getattr(entitlement, "code", None)
     if code:
         with _scan_session_lock:
             existing = _scan_sessions.pop(code, None)
         if existing:
+            session = get_usage_session(existing)
+            stable_name = provider_name
+            stable_provider: BaseProvider = resolve_provider_for_session(stable_name)[1]
+            if session and getattr(session, "provider", None):
+                stable_name, stable_provider = resolve_provider_for_session(session.provider)
             update_usage_session(existing, machine_id=machine_id)
-            return existing
+            return existing, stable_name, stable_provider
 
-    return create_usage_session(
+    session_uid = create_usage_session(
         provider=provider_name,
         provider_reference=_provider_reference(entitlement),
         identifier_type=identifier_type,
@@ -104,6 +120,8 @@ def _resolve_or_create_session_uid(
         state=STATE_SCANNED,
         requested_quantity=1,
     )
+    stable_name, stable_provider = resolve_provider_for_session(provider_name)
+    return session_uid, stable_name, stable_provider
 
 
 def _uses_left(entitlement: Any) -> Optional[int]:
@@ -204,7 +222,9 @@ def start_from_code(machine_id: Optional[str], raw_code: Optional[str]) -> Start
     if not code or not machine_id:
         return StartOutcome(success=False, message="Missing data", uses_left=None)
 
-    provider_name, provider = _provider_for_request()
+    provider_name, provider = _provider_for_existing_scan(code)
+    if not provider:
+        provider_name, provider = _provider_for_request()
     lookup = provider.lookup(code, mode=_lookup_mode(provider_name))
     if not lookup.success:
         show_error_state(lookup.message)
@@ -216,7 +236,7 @@ def start_from_code(machine_id: Optional[str], raw_code: Optional[str]) -> Start
         return StartOutcome(success=False, message=auth.message, uses_left=None)
 
     entitlement = auth.entitlement
-    session_uid = _resolve_or_create_session_uid(
+    session_uid, stable_provider_name, stable_provider = _resolve_or_create_session_uid(
         entitlement,
         provider_name=provider_name,
         machine_id=machine_id,
@@ -224,6 +244,30 @@ def start_from_code(machine_id: Optional[str], raw_code: Optional[str]) -> Start
         identifier_type="uuid_or_pin" if provider_name == "reisa" else "code",
         identifier_value=code,
     )
+    if stable_provider_name != provider_name:
+        lookup = stable_provider.lookup(code, mode=_lookup_mode(stable_provider_name))
+        if not lookup.success or not lookup.entitlement:
+            show_error_state(lookup.message)
+            update_usage_session(
+                session_uid,
+                state=STATE_FAILED,
+                error_code="start_rejected",
+                error_detail=lookup.message,
+            )
+            return StartOutcome(success=False, message=lookup.message, uses_left=None)
+        auth = stable_provider.authorize(lookup.entitlement, machine_id=machine_id)
+        if not auth.authorized or not auth.entitlement:
+            show_error_state(auth.message)
+            update_usage_session(
+                session_uid,
+                state=STATE_FAILED,
+                error_code="start_rejected",
+                error_detail=auth.message,
+            )
+            return StartOutcome(success=False, message=auth.message, uses_left=None)
+        entitlement = auth.entitlement
+        provider_name = stable_provider_name
+
     update_usage_session(session_uid, state=STATE_AUTHORIZED, machine_id=machine_id)
     ok, message = start_machine(entitlement, machine_id, session_uid=session_uid)
     if not ok:
@@ -255,14 +299,17 @@ def start_from_button(button_index: int) -> StartOutcome:
             uses_left=None,
         )
 
-    provider_name, provider = _provider_for_request()
+    code_key = (getattr(code_info, "code", None) or "").strip()
+    provider_name, provider = _provider_for_existing_scan(code_key) if code_key else (None, None)
+    if not provider:
+        provider_name, provider = _provider_for_request()
     auth = provider.authorize(code_info, machine_id=machine_id)
     if not auth.authorized or not auth.entitlement:
         disarm_code()
         return StartOutcome(success=False, message=auth.message, uses_left=None)
 
     entitlement = auth.entitlement
-    session_uid = _resolve_or_create_session_uid(
+    session_uid, stable_provider_name, stable_provider = _resolve_or_create_session_uid(
         entitlement,
         provider_name=provider_name,
         machine_id=machine_id,
@@ -270,6 +317,19 @@ def start_from_button(button_index: int) -> StartOutcome:
         identifier_type="uuid_or_pin" if provider_name == "reisa" else "code",
         identifier_value=getattr(entitlement, "code", None),
     )
+    if stable_provider_name != provider_name:
+        auth = stable_provider.authorize(code_info, machine_id=machine_id)
+        if not auth.authorized or not auth.entitlement:
+            disarm_code()
+            update_usage_session(
+                session_uid,
+                state=STATE_FAILED,
+                error_code="start_rejected",
+                error_detail=auth.message,
+            )
+            return StartOutcome(success=False, message=auth.message, uses_left=None)
+        entitlement = auth.entitlement
+
     update_usage_session(session_uid, state=STATE_AUTHORIZED, machine_id=machine_id)
     ok, message = start_machine(entitlement, machine_id, session_uid=session_uid)
     uses_left = _uses_left(entitlement) if ok else None
@@ -300,7 +360,8 @@ def handle_start_confirmed(machine_id: str) -> None:
             started_at=datetime.utcnow(),
         )
 
-    provider_name, provider = _provider_for_request()
+    session = get_usage_session(pending.session_uid) if pending.session_uid else None
+    provider_name, provider = resolve_provider_for_session(getattr(session, "provider", None))
     try:
         commit = provider.commit_start(pending.code, quantity=1)
         if not commit.success:
@@ -319,12 +380,18 @@ def handle_start_confirmed(machine_id: str) -> None:
         uses_left = commit.uses_left
         if uses_left is None:
             uses_left = _uses_left(pending.code)
-        mark_committed(
+        committed = mark_committed(
             pending.session_uid,
             machine_id=machine_id,
             committed_quantity=1,
             remaining_after_commit=uses_left,
         )
+        if not committed and pending.session_uid:
+            logger.info(
+                "Skipping duplicate start finalization",
+                extra={"machine": machine_id, "session_uid": pending.session_uid},
+            )
+            return
         finalize_started_machine(machine_id, pending.code, uses_left)
     except Exception:
         logger.exception("Failed to finalize start", extra={"machine": machine_id, "provider": provider_name})
