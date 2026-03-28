@@ -320,3 +320,108 @@ def mark_external_sync_failed(
         error_code=error_code,
         error_detail=error_detail,
     )
+
+
+def clear_external_sync_error(
+    session_uid: Optional[str],
+    *,
+    allowed_codes: Optional[set[str]] = None,
+) -> bool:
+    """Clear external sync failure marker when it is stale/recovered."""
+
+    if not session_uid:
+        return False
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return False
+
+        current = (row.error_code or "").strip()
+        if not current:
+            return True
+
+        allowed = allowed_codes or EXTERNAL_SYNC_ERROR_CODES
+        if current not in allowed:
+            return False
+
+        row.error_code = None
+        row.error_detail = None
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to clear external sync error", extra={"session_uid": session_uid})
+        return False
+    finally:
+        db.close()
+
+
+def mark_commit_recovered(
+    session_uid: Optional[str],
+    *,
+    committed_quantity: int = 1,
+    remaining_after_commit: Optional[int] = None,
+) -> bool:
+    """Repair commit lifecycle state after successful external deduct replay."""
+
+    if not session_uid:
+        return False
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return False
+
+        row.state = STATE_COMMIT_OK
+        row.committed_quantity = max(int(committed_quantity), 0)
+        if remaining_after_commit is not None:
+            row.remaining_after_commit = max(int(remaining_after_commit), 0)
+
+        if (row.error_code or "").strip() in {"commit_failed", "commit_exception"}:
+            row.error_code = None
+            row.error_detail = None
+
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark commit recovered", extra={"session_uid": session_uid})
+        return False
+    finally:
+        db.close()
+
+
+def mark_completion_recovered(session_uid: Optional[str]) -> bool:
+    """Repair completion sync marker after successful completion replay."""
+
+    if not session_uid:
+        return False
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return False
+
+        if row.completed_at is None:
+            row.completed_at = datetime.utcnow()
+        row.state = STATE_COMPLETED
+
+        if (row.error_code or "").strip() == "completion_sync_failed":
+            row.error_code = None
+            row.error_detail = None
+
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark completion recovered", extra={"session_uid": session_uid})
+        return False
+    finally:
+        db.close()

@@ -23,6 +23,7 @@ def _register_models() -> None:
         setting_model,
         usage_session_model,
         reisa_audit_model,
+        reisa_retry_job_model,
     )
 
 

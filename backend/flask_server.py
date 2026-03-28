@@ -17,6 +17,8 @@ from backend.models.setting_model import get_setting_value, update_setting_value
 from backend.setup.seed_settings import bootstrap_settings
 from backend.setup.seed_machines import bootstrap_devices_and_machines
 from backend.services.reisa_diagnostics_service import get_reisa_sync_diagnostics
+from backend.services.reisa_replay_service import replay_due_jobs, replay_retry_job
+from backend.services.reisa_retry_service import list_retry_jobs
 from backend.utils.logger import configure_logger
 from logging import getLogger
 import csv
@@ -175,6 +177,52 @@ def _normalise_labels(labels_tuple):
     return {k: v for k, v in labels_tuple}
 
 
+
+
+@app.route("/admin/reisa/retry_jobs", methods=["GET"])
+@require_admin_auth
+def admin_reisa_retry_jobs():
+    limit_raw = request.args.get("limit", "100")
+    status = (request.args.get("status", "") or "").strip() or None
+    due_only_raw = (request.args.get("due_only", "false") or "").strip().lower()
+    due_only = due_only_raw in {"1", "true", "yes", "on"}
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 100
+    jobs = list_retry_jobs(limit=limit, status=status, due_only=due_only)
+    return jsonify({"limit": max(min(limit, 500), 1), "count": len(jobs), "jobs": jobs})
+
+
+@app.route("/admin/reisa/retry/<int:job_id>", methods=["POST"])
+@require_admin_auth
+def admin_reisa_retry_job(job_id):
+    outcome = replay_retry_job(job_id)
+    status_code = 200 if outcome.success else 500
+    return (
+        jsonify(
+            {
+                "job_id": job_id,
+                "success": outcome.success,
+                "status": outcome.status,
+                "message": outcome.message,
+            }
+        ),
+        status_code,
+    )
+
+
+@app.route("/admin/reisa/retry_due", methods=["POST"])
+@require_admin_auth
+def admin_reisa_retry_due_jobs():
+    limit_raw = request.args.get("limit", "20")
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 20
+    summary = replay_due_jobs(limit=limit)
+    summary["limit"] = max(min(limit, 200), 1)
+    return jsonify(summary)
 
 
 @app.route("/admin/reisa/sync_failures", methods=["GET"])
