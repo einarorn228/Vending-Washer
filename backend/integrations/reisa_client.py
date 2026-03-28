@@ -143,6 +143,9 @@ class ReisaClient:
             raise ReisaClientError("Missing status action", retryable=False)
         return self._post(f"/uuid/{value}/status", {"action": action_value})
 
+    def post_completion_status(self, uuid: str, *, action: str = "WASHING_MACHINE_COMPLETED") -> Any:
+        return self.post_status(uuid, action=action)
+
     def post_deduct(self, uuid: str, *, quantity: int) -> Any:
         value = (uuid or "").strip()
         if not value:

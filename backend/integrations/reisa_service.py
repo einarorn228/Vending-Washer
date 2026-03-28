@@ -96,6 +96,20 @@ class ReisaService:
         uses_left = self._extract_remaining_quantity(normalized_payload)
         return ReisaCommitStartResult(uses_left=uses_left, raw=normalized_payload)
 
+    def post_completion_status(
+        self,
+        uuid: str,
+        *,
+        action: str = "WASHING_MACHINE_COMPLETED",
+    ) -> dict[str, Any]:
+        try:
+            payload = self.client.post_completion_status(uuid, action=action)
+        except ReisaClientError as exc:
+            raise ReisaServiceError(exc.message, retryable=exc.retryable) from exc
+        if isinstance(payload, dict):
+            return payload
+        return {}
+
     @staticmethod
     def _looks_like_uuid(value: str) -> bool:
         try:

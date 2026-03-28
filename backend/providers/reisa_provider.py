@@ -112,5 +112,36 @@ class ReisaProvider(BaseProvider):
             )
 
     def mark_completion(self, entitlement, machine_id: Optional[str] = None) -> ProviderCompletionResult:
-        # Phase 5 is read-only. Completion/status posting intentionally not implemented.
-        return ProviderCompletionResult(success=True, message="Reisa completion deferred (read-only mode)")
+        if entitlement is None:
+            return ProviderCompletionResult(success=False, message="Invalid Reisa entitlement")
+
+        uuid = (getattr(entitlement, "token", None) or "").strip()
+        if not uuid:
+            return ProviderCompletionResult(
+                success=False,
+                message="Missing Reisa UUID/token for completion",
+            )
+
+        try:
+            self.service.post_completion_status(uuid, action="WASHING_MACHINE_COMPLETED")
+            return ProviderCompletionResult(success=True, message="")
+        except ReisaServiceError as exc:
+            logger.warning(
+                "Reisa completion status failed",
+                extra={
+                    "machine_id": machine_id,
+                    "external_id": getattr(entitlement, "external_id", None),
+                    "retryable": exc.retryable,
+                },
+            )
+            return ProviderCompletionResult(success=False, message=exc.message)
+        except ReisaClientError as exc:
+            logger.warning(
+                "Reisa completion status client failure",
+                extra={
+                    "machine_id": machine_id,
+                    "external_id": getattr(entitlement, "external_id", None),
+                    "retryable": exc.retryable,
+                },
+            )
+            return ProviderCompletionResult(success=False, message=exc.message)

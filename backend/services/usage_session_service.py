@@ -50,6 +50,31 @@ def get_usage_session(session_uid: Optional[str]) -> Optional[UsageSession]:
         db.close()
 
 
+def get_completion_candidate_for_machine(machine_id: Optional[str]) -> Optional[UsageSession]:
+    """Return latest non-completed committed/start-confirmed session for machine."""
+
+    if not machine_id:
+        return None
+
+    db = _get_session()
+    try:
+        row = (
+            db.query(UsageSession)
+            .filter(
+                UsageSession.machine_id == machine_id,
+                UsageSession.state.in_([STATE_COMMIT_OK, STATE_START_CONFIRMED]),
+            )
+            .order_by(UsageSession.updated_at.desc(), UsageSession.id.desc())
+            .first()
+        )
+        if not row:
+            return None
+        db.expunge(row)
+        return row
+    finally:
+        db.close()
+
+
 def create_usage_session(
     *,
     provider: str,
@@ -215,6 +240,38 @@ def mark_completed_for_machine(machine_id: Optional[str], *, completed_at: Optio
     except Exception:
         db.rollback()
         logger.exception("Failed to mark completed", extra={"machine_id": machine_id})
+        return False
+    finally:
+        db.close()
+
+
+def mark_completed_for_session(session_uid: Optional[str], *, completed_at: Optional[datetime] = None) -> bool:
+    """Mark a specific usage session as completed once."""
+
+    if not session_uid:
+        return False
+
+    db = _get_session()
+    try:
+        row = db.query(UsageSession).filter_by(session_uid=session_uid).first()
+        if not row:
+            return False
+
+        if row.state == STATE_COMPLETED or row.completed_at is not None:
+            logger.info(
+                "Ignoring duplicate completion transition",
+                extra={"session_uid": session_uid, "state": row.state},
+            )
+            return False
+
+        row.state = STATE_COMPLETED
+        row.completed_at = completed_at or datetime.utcnow()
+        row.updated_at = datetime.utcnow()
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        logger.exception("Failed to mark completed for session", extra={"session_uid": session_uid})
         return False
     finally:
         db.close()

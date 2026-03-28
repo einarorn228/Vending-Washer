@@ -35,9 +35,10 @@ from backend.services.usage_session_service import (
     STATE_START_CONFIRMED,
     STATE_START_REQUESTED,
     create_usage_session,
+    get_completion_candidate_for_machine,
     get_usage_session,
     mark_committed,
-    mark_completed_for_machine,
+    mark_completed_for_session,
     update_usage_session,
 )
 
@@ -80,6 +81,9 @@ def _lookup_mode(provider_name: str) -> str:
 
 
 def _provider_reference(entitlement: Any) -> Optional[str]:
+    token = getattr(entitlement, "token", None)
+    if token:
+        return token
     return (
         getattr(entitlement, "external_id", None)
         or getattr(entitlement, "booking_number", None)
@@ -407,12 +411,75 @@ def handle_start_confirmed(machine_id: str) -> None:
 def handle_run_completed(machine_id: str) -> None:
     """Persist completion lifecycle when telemetry reports run stopped."""
 
-    updated = mark_completed_for_machine(machine_id)
-    if not updated:
+    session = get_completion_candidate_for_machine(machine_id)
+    if not session:
         logger.debug(
-            "Run completion transition skipped",
+            "Run completion transition skipped (no eligible session)",
             extra={"machine": machine_id},
         )
+        return
+
+    provider_name, provider = resolve_provider_for_session(getattr(session, "provider", None))
+    completion = provider.mark_completion(session_to_entitlement(session), machine_id=machine_id)
+    if not completion.success:
+        logger.warning(
+            "Provider completion mark failed",
+            extra={
+                "machine": machine_id,
+                "session_uid": getattr(session, "session_uid", None),
+                "provider": provider_name,
+                "message": completion.message,
+            },
+        )
+        return
+
+    updated = mark_completed_for_session(getattr(session, "session_uid", None))
+    if not updated:
+        logger.debug(
+            "Run completion transition skipped (already completed)",
+            extra={"machine": machine_id, "session_uid": getattr(session, "session_uid", None)},
+        )
+
+
+def session_to_entitlement(session: Any) -> Any:
+    """Build minimal provider entitlement from persisted usage-session fields."""
+
+    provider_reference = (getattr(session, "provider_reference", None) or "").strip()
+    provider_name = (getattr(session, "provider", None) or "").strip().lower()
+    if provider_name == "reisa":
+        from backend.integrations.reisa_service import ReisaEntitlement
+
+        remaining = getattr(session, "remaining_after_commit", None)
+        uses_left = int(remaining) if isinstance(remaining, int) else 0
+        return ReisaEntitlement(
+            provider="reisa",
+            lookup_mode="session",
+            external_id=provider_reference or (getattr(session, "session_uid", "") or ""),
+            code=provider_reference or "",
+            order_id=None,
+            usage_limit=max(uses_left, 0),
+            current_usage=0,
+            uses_left=max(uses_left, 0),
+            transaction_number=None,
+            booking_number=None,
+            service_id=None,
+            token=provider_reference or None,
+            pin_code=None,
+            customer_name=None,
+            customer_email=None,
+            metadata_last_used=None,
+            raw={},
+        )
+
+    from backend.controllers.machine_control import ValidatedCode
+
+    return ValidatedCode(
+        id=None,
+        code=provider_reference or "",
+        order_id=provider_reference or None,
+        usage_limit=1,
+        current_usage=0,
+    )
 
 
 __all__ = [
