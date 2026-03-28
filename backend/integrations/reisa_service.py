@@ -7,6 +7,10 @@ from datetime import datetime
 from typing import Any, Optional
 
 from backend.integrations.reisa_client import ReisaClient, ReisaClientError
+from backend.integrations.reisa_contract import (
+    REISA_ACTION_COMPLETION_DEFAULT,
+    REISA_ACTION_START_DEFAULT,
+)
 
 
 @dataclass
@@ -77,7 +81,7 @@ class ReisaService:
         except ReisaClientError as exc:
             raise ReisaServiceError(exc.message, retryable=exc.retryable) from exc
 
-    def post_start_status(self, uuid: str, *, action: str = "WASHING_MACHINE_START") -> dict[str, Any]:
+    def post_start_status(self, uuid: str, *, action: str = REISA_ACTION_START_DEFAULT) -> dict[str, Any]:
         try:
             payload = self.client.post_status(uuid, action=action)
         except ReisaClientError as exc:
@@ -100,7 +104,7 @@ class ReisaService:
         self,
         uuid: str,
         *,
-        action: str = "WASHING_MACHINE_COMPLETED",
+        action: str = REISA_ACTION_COMPLETION_DEFAULT,
     ) -> dict[str, Any]:
         try:
             payload = self.client.post_completion_status(uuid, action=action)

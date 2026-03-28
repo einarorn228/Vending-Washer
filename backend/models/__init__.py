@@ -22,6 +22,7 @@ def _register_models() -> None:
         scan_log_model,
         setting_model,
         usage_session_model,
+        reisa_audit_model,
     )
 
 

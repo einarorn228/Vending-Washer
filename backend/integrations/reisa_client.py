@@ -8,6 +8,8 @@ from typing import Any, Optional
 
 import requests
 
+from backend.integrations.reisa_contract import REISA_ACTION_COMPLETION_DEFAULT
+
 logger = logging.getLogger(__name__)
 
 
@@ -143,7 +145,7 @@ class ReisaClient:
             raise ReisaClientError("Missing status action", retryable=False)
         return self._post(f"/uuid/{value}/status", {"action": action_value})
 
-    def post_completion_status(self, uuid: str, *, action: str = "WASHING_MACHINE_COMPLETED") -> Any:
+    def post_completion_status(self, uuid: str, *, action: str = REISA_ACTION_COMPLETION_DEFAULT) -> Any:
         return self.post_status(uuid, action=action)
 
     def post_deduct(self, uuid: str, *, quantity: int) -> Any:

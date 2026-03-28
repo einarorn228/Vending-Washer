@@ -24,6 +24,8 @@ DEFAULT_SETTINGS = {
     "reisa_bearer_token": "",
     "reisa_connect_timeout_ms": "1500",
     "reisa_read_timeout_ms": "2500",
+    "reisa_action_start": "WASHING_MACHINE_START",
+    "reisa_action_completion": "WASHING_MACHINE_COMPLETE",
 }
 
 

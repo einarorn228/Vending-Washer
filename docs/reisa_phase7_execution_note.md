@@ -13,7 +13,7 @@ Phase 7 adds provider-backed completion signaling when telemetry reports a run h
 1. `machine_control` continues to call `start_orchestrator.handle_run_completed(machine_id)` from the existing run-stopped listener path.
 2. Orchestrator selects the latest eligible session for that machine in `commit_ok`/`start_confirmed` state.
 3. Provider is resolved from the persisted session provider identity (session-bound).
-4. Reisa path calls `POST /uuid/{uuid}/status` with completion action `WASHING_MACHINE_COMPLETED`.
+4. Reisa path calls `POST /uuid/{uuid}/status` with completion action `WASHING_MACHINE_COMPLETE`.
 5. On provider success, local usage session is marked `completed` once.
 
 ## Provider consistency handling
