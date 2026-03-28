@@ -8,6 +8,7 @@ from backend.services.reisa_audit_service import (
     list_failed_reisa_audit_events,
     list_sessions_with_external_sync_failures,
 )
+from backend.services.reisa_retry_service import list_retry_jobs
 
 
 def get_reisa_sync_diagnostics(*, limit: int = 100) -> dict[str, list[dict[str, Any]]]:
@@ -17,4 +18,5 @@ def get_reisa_sync_diagnostics(*, limit: int = 100) -> dict[str, list[dict[str, 
     return {
         "failed_sessions": list_sessions_with_external_sync_failures(limit=bounded),
         "failed_audit_events": list_failed_reisa_audit_events(limit=bounded),
+        "retry_jobs": list_retry_jobs(limit=bounded),
     }

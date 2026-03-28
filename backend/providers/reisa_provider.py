@@ -146,7 +146,43 @@ class ReisaProvider(BaseProvider):
                 provider_reference=provider_reference,
                 request_payload={"action": self.action_start},
             )
+        except ReisaServiceError as exc:
+            logger.warning(
+                "Reisa start status failed",
+                extra={"external_id": entitlement.external_id, "retryable": exc.retryable},
+            )
+            record_reisa_audit(
+                session_uid=session_uid,
+                request_type=REQUEST_START_STATUS,
+                endpoint=f"/uuid/{uuid}/status",
+                method="POST",
+                result=RESULT_ERROR,
+                provider_reference=provider_reference,
+                request_payload={"action": self.action_start},
+                retryable=exc.retryable,
+                error_message=exc.message,
+            )
+            return ProviderCommitResult(success=False, message=exc.message, uses_left=None, retryable=exc.retryable)
+        except ReisaClientError as exc:
+            logger.warning(
+                "Reisa start status client failure",
+                extra={"external_id": entitlement.external_id, "retryable": exc.retryable},
+            )
+            record_reisa_audit(
+                session_uid=session_uid,
+                request_type=REQUEST_START_STATUS,
+                endpoint=f"/uuid/{uuid}/status",
+                method="POST",
+                result=RESULT_ERROR,
+                provider_reference=provider_reference,
+                request_payload={"action": self.action_start},
+                response_status_code=exc.status_code,
+                retryable=exc.retryable,
+                error_message=exc.message,
+            )
+            return ProviderCommitResult(success=False, message=exc.message, uses_left=None, retryable=exc.retryable)
 
+        try:
             deduct = self.service.deduct_usage(uuid, quantity=qty)
             record_reisa_audit(
                 session_uid=session_uid,
@@ -158,65 +194,43 @@ class ReisaProvider(BaseProvider):
                 request_payload={"quantity": qty},
                 response_payload=deduct.raw,
             )
-
             uses_left = deduct.uses_left if deduct.uses_left is not None else max(entitlement.uses_left - qty, 0)
-            return ProviderCommitResult(
-                success=True,
-                message="",
-                uses_left=uses_left,
-                retryable=False,
-            )
+            return ProviderCommitResult(success=True, message="", uses_left=uses_left, retryable=False)
         except ReisaServiceError as exc:
             logger.warning(
-                "Reisa commit_start failed",
-                extra={
-                    "external_id": entitlement.external_id,
-                    "retryable": exc.retryable,
-                },
+                "Reisa deduct failed",
+                extra={"external_id": entitlement.external_id, "retryable": exc.retryable},
             )
             record_reisa_audit(
                 session_uid=session_uid,
-                request_type=REQUEST_START_STATUS,
-                endpoint=f"/uuid/{uuid}/status+deduct",
+                request_type=REQUEST_DEDUCT,
+                endpoint=f"/uuid/{uuid}/deduct",
                 method="POST",
                 result=RESULT_ERROR,
                 provider_reference=provider_reference,
-                request_payload={"action": self.action_start, "quantity": qty},
+                request_payload={"quantity": qty},
                 retryable=exc.retryable,
                 error_message=exc.message,
             )
-            return ProviderCommitResult(
-                success=False,
-                message=exc.message,
-                uses_left=None,
-                retryable=exc.retryable,
-            )
+            return ProviderCommitResult(success=False, message=exc.message, uses_left=None, retryable=exc.retryable)
         except ReisaClientError as exc:
             logger.warning(
-                "Reisa commit_start client failure",
-                extra={
-                    "external_id": entitlement.external_id,
-                    "retryable": exc.retryable,
-                },
+                "Reisa deduct client failure",
+                extra={"external_id": entitlement.external_id, "retryable": exc.retryable},
             )
             record_reisa_audit(
                 session_uid=session_uid,
-                request_type=REQUEST_START_STATUS,
-                endpoint=f"/uuid/{uuid}/status+deduct",
+                request_type=REQUEST_DEDUCT,
+                endpoint=f"/uuid/{uuid}/deduct",
                 method="POST",
                 result=RESULT_ERROR,
                 provider_reference=provider_reference,
-                request_payload={"action": self.action_start, "quantity": qty},
+                request_payload={"quantity": qty},
                 response_status_code=exc.status_code,
                 retryable=exc.retryable,
                 error_message=exc.message,
             )
-            return ProviderCommitResult(
-                success=False,
-                message=exc.message,
-                uses_left=None,
-                retryable=exc.retryable,
-            )
+            return ProviderCommitResult(success=False, message=exc.message, uses_left=None, retryable=exc.retryable)
 
     def mark_completion(self, entitlement, machine_id: Optional[str] = None) -> ProviderCompletionResult:
         if entitlement is None:
