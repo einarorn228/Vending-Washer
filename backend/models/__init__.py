@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 # Create the engine (the connection to the database)
 engine = create_engine("sqlite:///codes.db", echo=False)
@@ -8,9 +7,12 @@ engine = create_engine("sqlite:///codes.db", echo=False)
 # Base class for models
 Base = declarative_base()
 
-# Session maker
+# Session factory for explicit short-lived sessions.
 Session = sessionmaker(bind=engine)
-session = Session()
+# Thread-local scoped session proxy used across existing call sites.
+ScopedSession = scoped_session(Session)
+# Backwards-compatible session proxy used across the codebase.
+session = ScopedSession
 
 
 def _register_models() -> None:
@@ -31,3 +33,8 @@ def init_db():
     """Create all tables."""
     _register_models()
     Base.metadata.create_all(bind=engine)
+
+
+def remove_session() -> None:
+    """Remove current thread/app-context scoped session."""
+    ScopedSession.remove()

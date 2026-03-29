@@ -10,11 +10,10 @@ from flask import Flask, Response, g, jsonify, request
 from flask_cors import CORS
 from backend.controllers.code_generator import generate_new_code
 from backend.controllers.ui_api import ui_api
-from backend.models import init_db, session
+from backend.models import init_db, remove_session, session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
-from backend.setup.seed_settings import bootstrap_settings
 from backend.setup.seed_machines import bootstrap_devices_and_machines
 from backend.services.reisa_audit_service import list_audit_events_for_session
 from backend.services.reisa_diagnostics_service import get_reisa_session_diagnostics, get_reisa_sync_diagnostics
@@ -28,7 +27,6 @@ from backend.metrics import inc, observe_ms, snapshot
 
 configure_logger()
 init_db()
-bootstrap_settings(logging.getLogger(__name__))
 bootstrap_devices_and_machines(logging.getLogger(__name__))
 
 logger = logging.getLogger(__name__)
@@ -90,6 +88,11 @@ def _log_request(resp):
     return resp
 
 
+@app.teardown_appcontext
+def _teardown_session(_exception=None):
+    remove_session()
+
+
 def check_admin_auth(auth_header):
     if not auth_header or not auth_header.startswith("Basic "):
         return False
@@ -109,6 +112,12 @@ def check_admin_auth(auth_header):
 
 def require_admin_auth(view_function):
     def decorated_function(*args, **kwargs):
+        header_key = request.headers.get("X-API-KEY")
+        db_key = get_setting_value(session, "api_key")
+        if not header_key or header_key != db_key:
+            resp = jsonify({"error": "Invalid or missing API key"})
+            resp.status_code = 401
+            return resp
         auth_header = request.headers.get("Authorization")
         if not check_admin_auth(auth_header):
             resp = jsonify({"error": "Admin authentication required"})
@@ -535,6 +544,7 @@ def get_code_info(code):
 
 
 @app.route("/admin/codes/<code>", methods=["DELETE"])
+@require_admin_auth
 def delete_code_by_code(code):
     """Delete a code by its code value."""
     code_obj = session.query(Code).filter(Code.code == code).first()
@@ -546,6 +556,7 @@ def delete_code_by_code(code):
 
 
 @app.route("/admin/codes/by_order_id/<order_id>", methods=["DELETE"])
+@require_admin_auth
 def delete_codes_by_order_id(order_id):
     """Delete all codes associated with a given order ID."""
     codes = session.query(Code).filter(Code.order_id == order_id).all()

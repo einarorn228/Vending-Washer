@@ -14,6 +14,7 @@ Touch-first washer vending prototype consisting of a Flask backend, a React touc
 - `backend/` Flask application, controllers, models, setup scripts, and logging utilities.
 - `backend/setup/seed_machines.py` Seeds devices/machines/config with default Shelly inventory.
 - `frontend/` Vite + React kiosk application.
+- `docs/` Structured documentation hub (architecture, operations, integrations, and project backlog).
 - `Testing_Files/` Ad hoc test scripts, HTTP collections, and database viewers.
 - `requirements.txt` Backend Python dependencies.
 
@@ -121,8 +122,9 @@ Machine definitions are read from the database (not hard-coded). Telemetry polli
 - Sample HTTP flows are available under `Testing_Files/*.http` (compatible with VS Code REST Client and Insomnia).
 
 ## Testing & Tooling
-- Python unit tests: `python -m unittest discover Testing_Files`.
-- Logging smoke test: `Testing_Files/test_logger.py`.
+- Python unit tests (default): `python -m unittest discover backend/tests`.
+- Legacy utility scripts remain in `Testing_Files/` (API samples, DB viewer).
+- Logging smoke test: `python -m unittest backend.tests.test_logger`.
 - Serial reader exercise: `python -m backend.controllers.qr_scanner` (adjust COM/TTY port).
 - Frontend linting/formatting can be added with `npm run lint` once a config is introduced (Prettier is included as a dev dependency).
 
@@ -133,7 +135,7 @@ Machine definitions are read from the database (not hard-coded). Telemetry polli
 - Enable debug logging (`LOG_LEVEL=DEBUG`) to capture serial failures, Shelly responses, and telemetry reads.
 
 ## Maintenance Notes
-- Track open bugs, follow-ups, and future optimizations in `issues and sejections.txt`. Update entries as fixes land; do not implement a suggestion until it is confirmed with the project owner.
+- Track open bugs, follow-ups, and future optimizations in `docs/project/future/backlog.md`. Update entries as fixes land; do not implement a suggestion until it is confirmed with the project owner.
 - Seed device and machine rows via `python -m backend.setup.seed_machines` whenever a new database is created or hardware inventory changes.
 - Replace placeholder IPs and button mappings in `backend/setup/seed_machines.py` before field trials.
 - Consider migrating to SQLAlchemy `scoped_session` or per-thread sessions before deploying multi-threaded or production workloads.
