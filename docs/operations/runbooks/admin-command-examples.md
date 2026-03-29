@@ -2,6 +2,12 @@
 
 Practical command reference for maintenance, configuration, and manual verification workflows.
 
+For complete install/update/recovery workflows, use:
+- `install-and-bootstrap.md`
+- `update-and-upgrade.md`
+- `recovery-and-rollback.md`
+- `troubleshooting-matrix.md`
+
 ## Conventions
 - Run commands from repository root.
 - Replace placeholders like `<ORDER_ID>` and `<CODE_VALUE>`.

@@ -11,6 +11,7 @@ This folder is the canonical documentation hub for Reisa integration work in thi
 - **Completed/executed work:** Phase 1 through Phase 10 (including Phase 2.5, 8.1, and 9.1 hardening updates) is documented under [`completed/`](./completed/README.md).
 - **Future/not-yet-done ideas:** prioritized validation and improvement backlog is under [`future/`](./future/README.md).
 - **History/reference material:** original planning snapshots and inventory artifacts are under [`archive/`](./archive/README.md).
+- **Operator guidance:** practical triage/replay workflows are under [`runbooks/`](./runbooks/reisa-operator-playbook.md).
 
 ## Where to find what
 - Implementation history by phase (detailed notes):
@@ -21,13 +22,16 @@ This folder is the canonical documentation hub for Reisa integration work in thi
   - [`future/README.md`](./future/README.md)
 - Planning snapshots and reference inventory:
   - [`archive/README.md`](./archive/README.md)
+- Operator playbook:
+  - [`runbooks/reisa-operator-playbook.md`](./runbooks/reisa-operator-playbook.md)
 
 ## Recommended reading order (human + Codex)
 1. Start with [`CODEX_GUIDE.md`](./CODEX_GUIDE.md) for orientation and guardrails.
-2. Read [`completed/README.md`](./completed/README.md) to understand what is already done.
-3. Read [`future/README.md`](./future/README.md) to identify the right next increment.
-4. Open only the needed phase execution notes under [`completed/phases/`](./completed/phases/) for implementation details.
-5. Consult [`archive/`](./archive/) only when historical design rationale or old snapshots are needed.
+2. For incidents/day-2 operations, read [`runbooks/reisa-operator-playbook.md`](./runbooks/reisa-operator-playbook.md) first.
+3. Read [`completed/README.md`](./completed/README.md) to understand what is already done.
+4. Read [`future/README.md`](./future/README.md) to identify the right next increment.
+5. Open only the needed phase execution notes under [`completed/phases/`](./completed/phases/) for implementation details.
+6. Consult [`archive/`](./archive/) only when historical design rationale or old snapshots are needed.
 
 ## Documentation conventions
 - New implementation-phase notes should go in `completed/phases/` using `phase-XX-execution-note.md` naming.

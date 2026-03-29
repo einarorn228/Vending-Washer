@@ -18,6 +18,16 @@ Touch-first washer vending prototype consisting of a Flask backend, a React touc
 - `Testing_Files/` Ad hoc test scripts, HTTP collections, and database viewers.
 - `requirements.txt` Backend Python dependencies.
 
+## Read this next (operator-critical docs)
+- Install/bootstrap runbook: `docs/operations/runbooks/install-and-bootstrap.md`
+- Update/upgrade runbook: `docs/operations/runbooks/update-and-upgrade.md`
+- Recovery/rollback runbook: `docs/operations/runbooks/recovery-and-rollback.md`
+- Troubleshooting matrix: `docs/operations/runbooks/troubleshooting-matrix.md`
+- Runtime lifecycle: `docs/architecture/runtime-lifecycle.md`
+- Settings catalog: `docs/reference/settings-catalog.md`
+- Reisa operator playbook: `docs/integrations/reisa/runbooks/reisa-operator-playbook.md`
+- AI orientation layer: `docs/ai/README.md`
+
 ## Quick Start
 All commands assume the repository root as the working directory.
 

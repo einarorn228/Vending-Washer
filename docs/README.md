@@ -15,7 +15,25 @@ Provide one predictable structure for:
 - [`architecture/`](./architecture/README.md) — current architecture and system-level references.
 - [`operations/`](./operations/README.md) — runbooks, diagnostics, and deployment/ops references.
 - [`integrations/`](./integrations/README.md) — integration-specific docs (including Reisa).
+- [`reference/`](./reference/settings-catalog.md) — canonical configuration/reference docs.
+- [`ai/`](./ai/README.md) — AI-oriented quick-orientation layer.
 - [`project/`](./project/README.md) — project-wide backlog and historical project notes.
+
+## Phase 1 foundation docs (current canonical)
+- Operations:
+  - [`operations/runbooks/install-and-bootstrap.md`](./operations/runbooks/install-and-bootstrap.md)
+  - [`operations/runbooks/update-and-upgrade.md`](./operations/runbooks/update-and-upgrade.md)
+  - [`operations/runbooks/recovery-and-rollback.md`](./operations/runbooks/recovery-and-rollback.md)
+  - [`operations/runbooks/troubleshooting-matrix.md`](./operations/runbooks/troubleshooting-matrix.md)
+- Architecture:
+  - [`architecture/runtime-lifecycle.md`](./architecture/runtime-lifecycle.md)
+- Reference:
+  - [`reference/settings-catalog.md`](./reference/settings-catalog.md)
+- Reisa operations:
+  - [`integrations/reisa/runbooks/reisa-operator-playbook.md`](./integrations/reisa/runbooks/reisa-operator-playbook.md)
+- AI orientation:
+  - [`ai/README.md`](./ai/README.md)
+  - [`ai/system-quick-map.md`](./ai/system-quick-map.md)
 
 ## Documentation conventions
 
