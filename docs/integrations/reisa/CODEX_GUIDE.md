@@ -3,9 +3,10 @@
 Use this file as the first stop before changing Reisa-related code.
 
 ## Read this first (required order)
-1. [`completed/README.md`](./completed/README.md)
-2. [`future/README.md`](./future/README.md)
-3. Only then open specific execution notes in [`completed/phases/`](./completed/phases/)
+1. [`runbooks/reisa-operator-playbook.md`](./runbooks/reisa-operator-playbook.md) (for current operations/triage)
+2. [`completed/README.md`](./completed/README.md)
+3. [`future/README.md`](./future/README.md)
+4. Only then open specific execution notes in [`completed/phases/`](./completed/phases/)
 
 ## Where completed work is documented
 - Summary: [`completed/README.md`](./completed/README.md)

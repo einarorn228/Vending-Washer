@@ -9,6 +9,8 @@ Use this order before making code changes.
    - architecture: [`architecture/README.md`](./architecture/README.md)
    - operations: [`operations/README.md`](./operations/README.md)
    - integrations: [`integrations/README.md`](./integrations/README.md)
+   - reference: [`reference/README.md`](./reference/README.md)
+   - AI layer: [`ai/README.md`](./ai/README.md)
    - project backlog: [`project/README.md`](./project/README.md)
 4. For Reisa tasks specifically:
    - [`integrations/reisa/CODEX_GUIDE.md`](./integrations/reisa/CODEX_GUIDE.md)

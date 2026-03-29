@@ -8,6 +8,7 @@ Integration-specific implementation history, backlog, and archive references.
 ## Conventions
 - Each integration should maintain:
   - `README.md` (entry and status)
+  - `runbooks/` (current operator-facing guidance)
   - `completed/` (executed work summaries + phase details)
   - `future/` (curated not-yet-done backlog)
   - `archive/` (plans/snapshots/reference history)
