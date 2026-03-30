@@ -95,6 +95,9 @@ Machine relay behavior:
 - controlled by setting `backend_relay_enabled`
 - if true, backend sends Shelly ON during start request
 - if false, backend skips relay command and still waits for telemetry confirmation
+- startup-path-dependent caveat:
+  - `backend.app` ensures missing `backend_relay_enabled=false`
+  - `backend.flask_server` does not run that ensure step, so missing-key fallback behavior can differ
 
 ## Failure scenarios and operator meaning
 

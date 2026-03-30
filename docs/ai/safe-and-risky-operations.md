@@ -71,6 +71,7 @@ Required before action:
 ## Mandatory warnings AI should include
 - Seed scripts are not migrations.
 - Startup overlap exists between `backend/app.py` and `backend/flask_server.py`.
+- `/api/*` currently accepts API key via query parameter (`api_key`) as well as header; query-string auth is leak-prone and should be avoided operationally.
 - Scanner settings require backend restart because serial config is import-time.
 - Root launcher virtualenv assumptions are inconsistent (`run-backend.sh` vs docs).
 - Frontend Pi launcher behavior is host-specific and currently launches Chromium twice.

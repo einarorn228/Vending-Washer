@@ -48,6 +48,8 @@ Run these checks before merging doc-sensitive changes:
 
 ```bash
 # Route inventory
+# WARNING: this imports backend.flask_server, which runs import-time init/bootstrap
+# side effects (DB init + device/machine bootstrap). Use only on local/disposable DB.
 python - <<'PY'
 from backend.flask_server import app
 for r in sorted(app.url_map.iter_rules(), key=lambda x: x.rule):

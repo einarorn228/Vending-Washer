@@ -118,3 +118,4 @@ npm run dev
 - Re-seed settings/machines after deleting `codes.db`.
 - Redistribute API/admin credential changes to kiosks/automation immediately.
 - Snapshot DB before destructive production operations.
+- `Testing_Files/test_api*.http` are legacy scratch files only; they are not authoritative command examples and may omit required auth headers.

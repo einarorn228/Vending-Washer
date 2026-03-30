@@ -164,6 +164,10 @@ Behavior:
 ## `Testing_Files/test_api_get.http`
 Status: Legacy but useful as request scratch files.
 
+Warning:
+- these files are not authoritative operational examples,
+- they may omit current required auth headers and modern runbook safety guidance.
+
 ## Script reality checks
 
 ## Verify script inventory

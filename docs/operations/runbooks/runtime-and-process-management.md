@@ -33,6 +33,8 @@ python -m backend.flask_server
 Important:
 - This starts Flask routes only.
 - It does not start the same background worker set as `backend.app`.
+- It does not run `bootstrap_settings()` (no first-run API key generation).
+- It does not run `ensure_backend_relay_setting_exists()` (relay setting missing-key behavior can differ from full runtime path).
 
 ## Frontend runtime
 Command:
@@ -108,6 +110,11 @@ tail -n 100 backend/logs/errors.log
 
 ## Startup overlap
 Both `backend/app.py` and `backend/flask_server.py` perform initialization/bootstrap actions. This overlap exists today and must be considered during process changes.
+
+## Startup mode delta (settings/auth readiness)
+- `backend.app`: includes settings bootstrap and relay-setting ensure behavior.
+- `backend.flask_server`: excludes both.
+- On fresh settings DB, use `python -m backend.app` first to guarantee API key creation and expected relay-setting row insertion.
 
 ## Scanner import-time behavior
 `backend/controllers/qr_scanner.py` reads serial settings and opens serial at import time. Scanner setting changes require backend restart.

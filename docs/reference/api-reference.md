@@ -12,11 +12,17 @@ Code source of truth:
 ## Authentication modes
 
 ### API key only
-Routes in `ui_api` and `/generate_code` require header:
+`/generate_code` requires API key in header:
 
 ```http
 X-API-KEY: <api_key_from_settings>
 ```
+
+For `ui_api` routes (`/api/*`), current code accepts either:
+- `X-API-KEY` header, or
+- `api_key` query parameter.
+
+**Security warning:** query-string API keys are discouraged for operational use. They are leak-prone in browser history, logs, proxies, and shared URLs. Use `X-API-KEY` header in production/operator workflows.
 
 ### API key + Basic auth
 All `/admin/*` routes require both:
@@ -45,7 +51,7 @@ Also includes `WWW-Authenticate: Basic realm="Admin Area"`.
 ## Public and UI routes
 
 ## `POST /generate_code`
-Auth: API key only.
+Auth: API key in `X-API-KEY` header.
 
 Purpose: create a new local code row.
 
@@ -95,7 +101,7 @@ Notes:
 ---
 
 ## `POST /api/scan_code`
-Auth: API key only.
+Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
 Purpose: ingest a scan event and arm a code for machine selection.
 
@@ -140,7 +146,7 @@ Notes:
 ---
 
 ## `POST /api/start_machine`
-Auth: API key only.
+Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
 Purpose: request start for a machine with explicit `code` + `machine_id`.
 
@@ -177,7 +183,7 @@ Notes:
 ---
 
 ## `POST /api/i4_event` and `GET /api/i4_event?button=<index>`
-Auth: API key only.
+Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
 Purpose: submit physical button index.
 
@@ -218,7 +224,7 @@ Auth failure (`401`):
 ---
 
 ## `GET /api/ui_state`
-Auth: API key only.
+Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
 Purpose: frontend polling endpoint.
 
