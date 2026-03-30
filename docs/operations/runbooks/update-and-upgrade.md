@@ -22,7 +22,7 @@ Use [`install-and-bootstrap.md`](./install-and-bootstrap.md) for brand-new setup
    ```
 4. Record critical settings values:
    ```bash
-   python Testing_Files/view_db.py --table settings
+   sqlite3 codes.db "SELECT key,value FROM settings ORDER BY key;"
    ```
 5. Ensure you can restore previous commit (`git reflog` / branch strategy).
 

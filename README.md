@@ -25,6 +25,10 @@ Touch-first washer vending prototype consisting of a Flask backend, a React touc
 - Troubleshooting matrix: `docs/operations/runbooks/troubleshooting-matrix.md`
 - Runtime lifecycle: `docs/architecture/runtime-lifecycle.md`
 - Settings catalog: `docs/reference/settings-catalog.md`
+- API reference: `docs/reference/api-reference.md`
+- Database schema/lifecycle: `docs/reference/database-schema-and-lifecycle.md`
+- Scripts/tools reference: `docs/reference/scripts-and-tools.md`
+- Runtime/process management: `docs/operations/runbooks/runtime-and-process-management.md`
 - Reisa operator playbook: `docs/integrations/reisa/runbooks/reisa-operator-playbook.md`
 - AI orientation layer: `docs/ai/README.md`
 
@@ -125,10 +129,10 @@ Machine definitions are read from the database (not hard-coded). Telemetry polli
 - **Cleanup scheduler** (`backend/app.py`) runs every 24 hours to purge expired codes and associated scan logs.
 
 ## Logging & Diagnostics
-- Logs are stored at `backend/logs/app.log` with rotation (5 MB, 3 backups) and mirrored to stdout.
+- Logs are stored at `backend/logs/app.log` with rotation (10 MB, 5 backups) and mirrored to stdout.
 - Event names include `SCAN received`, `START_PULSE_SENT`, `RUNSTATE_STARTED/STOPPED`, `BUTTON_BOX_ON/OFF`, and telemetry health markers.
 - Set `LOG_LEVEL` before launching the backend to override the stored setting (`export LOG_LEVEL=INFO`).
-- Use `Testing_Files/view_db.py` for quick database inspection from the command line.
+- Use `sqlite3 codes.db` commands for database inspection (see `docs/reference/database-schema-and-lifecycle.md`).
 - Sample HTTP flows are available under `Testing_Files/*.http` (compatible with VS Code REST Client and Insomnia).
 
 ## Testing & Tooling

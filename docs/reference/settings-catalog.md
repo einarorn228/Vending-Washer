@@ -77,7 +77,7 @@ General cautions:
 - Operator notes: too low => user timeouts; too high => stale armed windows.
 
 ## `selection_timeout_sec`
-- Default/seed: not in default seed map (code fallback exists)
+- Default/seed: not in `DEFAULT_SETTINGS`; runtime reads key with fallback from `backend/controllers/machine_control.py`
 - Consumed by: pending start timeout in `backend/controllers/machine_control.py`
 - Risk: **Medium**
 - Restart needed: No
@@ -232,3 +232,9 @@ Prefer API unless recovery constraints require direct DB intervention.
 - Runtime lifecycle: [`../architecture/runtime-lifecycle.md`](../architecture/runtime-lifecycle.md)
 - Install/bootstrap: [`../operations/runbooks/install-and-bootstrap.md`](../operations/runbooks/install-and-bootstrap.md)
 - Reisa operator playbook: [`../integrations/reisa/runbooks/reisa-operator-playbook.md`](../integrations/reisa/runbooks/reisa-operator-playbook.md)
+
+
+## Timeout key gotcha
+- `button_select_timeout_sec` and `selection_timeout_sec` are different settings with different code paths.
+- Only `button_select_timeout_sec` is seeded by default.
+- If you need non-default selection pending timeout, add/update `selection_timeout_sec` explicitly.

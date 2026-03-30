@@ -91,9 +91,9 @@ curl -X PUT -u admin:<password> -H "X-API-KEY: $API_KEY" \
 ## Utilities and smoke checks
 ```bash
 # DB inspection helpers
-python Testing_Files/view_db.py --table codes --limit 10
-python Testing_Files/view_db.py --table settings
-python Testing_Files/view_db.py --table scan_logs --limit 20
+sqlite3 codes.db "SELECT code,order_id,usage_limit,current_usage,expiration_date FROM codes LIMIT 10;"
+sqlite3 codes.db "SELECT key,value FROM settings ORDER BY key;"
+sqlite3 codes.db "SELECT id,code,order_id,timestamp,result,details FROM scan_logs ORDER BY id DESC LIMIT 20;"
 
 # Cleanup run (same logic as scheduler)
 python -c "from backend.controllers.code_cleanup import cleanup_expired_codes; cleanup_expired_codes()"

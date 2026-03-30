@@ -159,3 +159,5 @@ Operational implication: if frontend appears wrong, inspect backend `UI_STATE` a
 - Recovery/rollback: [`../operations/runbooks/recovery-and-rollback.md`](../operations/runbooks/recovery-and-rollback.md)
 - Troubleshooting matrix: [`../operations/runbooks/troubleshooting-matrix.md`](../operations/runbooks/troubleshooting-matrix.md)
 - AI quick map: [`../ai/system-quick-map.md`](../ai/system-quick-map.md)
+- Runtime/process ops: [`../operations/runbooks/runtime-and-process-management.md`](../operations/runbooks/runtime-and-process-management.md)
+- Auth/admin ops: [`../operations/runbooks/auth-and-admin-access.md`](../operations/runbooks/auth-and-admin-access.md)

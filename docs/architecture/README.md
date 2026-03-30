@@ -1,14 +1,12 @@
 # Architecture Documentation
 
-System-wide architecture references and high-level behavior notes.
+System-wide architecture references and behavior contracts.
 
-## Current state
-- Primary architecture references:
-  - Runtime lifecycle: [`runtime-lifecycle.md`](./runtime-lifecycle.md)
-  - Repository overview: [`../../README.md`](../../README.md)
+## Current references
+- Runtime lifecycle: [`runtime-lifecycle.md`](./runtime-lifecycle.md)
+- Hardware and telemetry: [`hardware-topology-and-telemetry.md`](./hardware-topology-and-telemetry.md)
+- UI state contract: [`ui-state-contract.md`](./ui-state-contract.md)
+- Repository overview: [`../../README.md`](../../README.md)
 
-## Future additions
-Add architecture decision records and system diagrams here when needed, for example:
-- runtime/lifecycle decisions,
-- data model evolution notes,
-- cross-subsystem interface contracts.
+## Notes
+- Runtime ownership currently overlaps between `backend/app.py` and `backend/flask_server.py`; treat this as a known design constraint.

@@ -35,6 +35,15 @@ Provide one predictable structure for:
   - [`ai/README.md`](./ai/README.md)
   - [`ai/system-quick-map.md`](./ai/system-quick-map.md)
 
+- Phase 2 core references:
+  - [`reference/api-reference.md`](./reference/api-reference.md)
+  - [`reference/database-schema-and-lifecycle.md`](./reference/database-schema-and-lifecycle.md)
+  - [`reference/scripts-and-tools.md`](./reference/scripts-and-tools.md)
+  - [`architecture/hardware-topology-and-telemetry.md`](./architecture/hardware-topology-and-telemetry.md)
+  - [`architecture/ui-state-contract.md`](./architecture/ui-state-contract.md)
+  - [`operations/runbooks/runtime-and-process-management.md`](./operations/runbooks/runtime-and-process-management.md)
+  - [`operations/runbooks/auth-and-admin-access.md`](./operations/runbooks/auth-and-admin-access.md)
+
 ## Documentation conventions
 
 ### 1) Where completed work docs go
