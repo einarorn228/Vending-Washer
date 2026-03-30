@@ -71,8 +71,8 @@ pip install -r requirements.txt
 ### 4) Seed/bootstrap issues
 - verify table contents:
 ```bash
-python Testing_Files/view_db.py --table settings
-python Testing_Files/view_db.py --table codes --limit 5
+sqlite3 codes.db "SELECT key,value FROM settings ORDER BY key;"
+sqlite3 codes.db "SELECT code,order_id,usage_limit,current_usage,expiration_date FROM codes LIMIT 5;"
 ```
 - remember `seed_machines` does not overwrite existing machines automatically.
 
