@@ -138,6 +138,10 @@ Expected behavior:
 - optional retry worker thread starts but is settings-gated,
 - scanner listener starts if serial is available.
 
+High-risk startup note:
+- for first bring-up, use `python -m backend.app` (not `python -m backend.flask_server`).
+- Flask-only startup does not run settings bootstrap and does not ensure `backend_relay_enabled` row creation.
+
 ### Terminal 2: frontend
 ```bash
 cd frontend

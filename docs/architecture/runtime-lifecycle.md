@@ -66,6 +66,24 @@ Operational implication: running `backend.flask_server` directly provides HTTP r
 
 ---
 
+## Startup mode delta (operator-critical)
+
+## `python -m backend.app`
+- runs settings bootstrap (`bootstrap_settings`) including first-run API key generation if missing,
+- runs `ensure_backend_relay_setting_exists` (inserts missing key as `false`),
+- launches full worker/thread set.
+
+## `python -m backend.flask_server`
+- does **not** run `bootstrap_settings`,
+- does **not** run `ensure_backend_relay_setting_exists`,
+- serves HTTP routes only.
+
+Operational implication:
+- on fresh/uninitialized settings, Flask-only startup can leave `api_key` missing (auth not ready for normal operation),
+- missing `backend_relay_enabled` key is interpreted via code fallback when machine-start path evaluates relay behavior.
+
+---
+
 ## Background worker/thread map
 
 ### From `backend.app`

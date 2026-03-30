@@ -84,11 +84,15 @@ General cautions:
 - Operator notes: if absent/invalid, code falls back to hardcoded default.
 
 ## `backend_relay_enabled`
-- Default/seed: ensured as `false` if missing by `ensure_backend_relay_setting_exists`
+- Default/seed:
+  - missing key is ensured as `false` by `ensure_backend_relay_setting_exists` in `backend.app` startup path
+  - read fallback in `is_backend_relay_enabled` is `"true"` if key is missing
 - Consumed by: machine start relay control branch (`backend/controllers/machine_control.py`)
 - Risk: **High** (real relay actuation behavior)
 - Restart needed: No
-- Operator notes: enabling causes backend to issue Shelly ON commands during start attempts.
+- Operator notes:
+  - enabling causes backend to issue Shelly ON commands during start attempts.
+  - startup path matters: `python -m backend.flask_server` does not call `ensure_backend_relay_setting_exists`, so a missing key can evaluate through fallback behavior.
 
 ## `provider_default`
 - Default/seed: `local`

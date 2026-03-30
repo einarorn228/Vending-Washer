@@ -7,9 +7,17 @@ Code source of truth:
 - `backend/scripts/get_api_key.py`
 
 ## Auth model summary
-- API/UI routes require `X-API-KEY`.
+- `/generate_code` requires `X-API-KEY`.
+- `/api/*` routes currently accept API key from either:
+  - `X-API-KEY` header, or
+  - `api_key` query parameter.
 - Admin routes require both `X-API-KEY` and HTTP Basic auth.
 - Basic auth password is checked by SHA-256 hash against `settings.admin_password_hash`.
+
+## Security warning: query-string API keys
+- Query-string API keys are supported by current `/api/*` code path for compatibility.
+- They are leak-prone (browser history, reverse-proxy/access logs, shared URLs, and screenshots).
+- Operational guidance: use `X-API-KEY` header only.
 
 ## Safe operation: retrieve current API key
 ```bash

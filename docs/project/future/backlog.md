@@ -9,11 +9,11 @@ Canonical project-level backlog for non-Reisa work and cross-cutting improvement
 
 ## Open issues (important next work)
 
-### 2) Duplicate settings bootstrap path
+### 2) Startup bootstrap ownership drift (app vs flask_server)
 - **Location:** `backend/app.py`, `backend/flask_server.py`
-- **Issue:** settings bootstrap was historically called from multiple startup paths.
-- **Impact:** startup duplication/noise and side-effect risk.
-- **Next action:** confirm current startup behavior and enforce one canonical bootstrap ownership path.
+- **Issue:** current risk is not duplicate settings bootstrap; instead startup paths have different bootstrap behavior (`backend.app` runs settings bootstrap + relay-setting ensure, `backend.flask_server` does not).
+- **Impact:** operator confusion and inconsistent first-run readiness/auth/relay-setting behavior.
+- **Next action:** define and enforce canonical startup ownership for bootstrap-sensitive behavior.
 
 ### 3) Shared SQLAlchemy session across threads
 - **Location:** `backend/models/__init__.py`
