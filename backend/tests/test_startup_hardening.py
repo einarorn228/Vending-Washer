@@ -1,4 +1,5 @@
 import importlib
+import sys
 import unittest
 from unittest.mock import Mock, patch
 
@@ -44,6 +45,43 @@ class ScannerImportSafetyTests(unittest.TestCase):
 
         serial_ctor.assert_called_once()
         fake_thread.start.assert_called_once()
+
+
+class SeedModuleImportSafetyTests(unittest.TestCase):
+    def setUp(self):
+        init_db()
+
+    def _reload_module_without_cache(self, module_name: str):
+        sys.modules.pop(module_name, None)
+        return importlib.import_module(module_name)
+
+    def test_importing_seed_settings_does_not_initialize_db(self):
+        with patch("backend.models.init_db") as init_db_mock:
+            self._reload_module_without_cache("backend.setup.seed_settings")
+
+        init_db_mock.assert_not_called()
+
+    def test_importing_seed_machines_does_not_initialize_db(self):
+        with patch("backend.models.init_db") as init_db_mock:
+            self._reload_module_without_cache("backend.setup.seed_machines")
+
+        init_db_mock.assert_not_called()
+
+    def test_bootstrap_settings_initializes_db_explicitly(self):
+        import backend.setup.seed_settings as seed_settings
+
+        with patch("backend.setup.seed_settings.init_db") as init_db_mock:
+            seed_settings.bootstrap_settings()
+
+        self.assertGreaterEqual(init_db_mock.call_count, 1)
+
+    def test_bootstrap_devices_and_machines_initializes_db_explicitly(self):
+        import backend.setup.seed_machines as seed_machines
+
+        with patch("backend.setup.seed_machines.init_db") as init_db_mock:
+            seed_machines.bootstrap_devices_and_machines()
+
+        self.assertGreaterEqual(init_db_mock.call_count, 1)
 
 
 class StartupIdempotencyTests(unittest.TestCase):
