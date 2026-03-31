@@ -11,27 +11,49 @@ from backend.services.start_orchestrator import ingest_scan
 logger = logging.getLogger(__name__)
 
 
-SERIAL_PORT = get_setting_value(session, "serial_port", default="/dev/ttyACM0")
-SERIAL_BAUDRATE = int(get_setting_value(session, "serial_baudrate", default=9600))
-SCAN_TIMEOUT = int(get_setting_value(session, "scan_timeout", default=1))
+SERIAL_PORT = "/dev/ttyACM0"
+SERIAL_BAUDRATE = 9600
+SCAN_TIMEOUT = 1
 EXPECTED_CODE_LENGTH = 8
 
 ser = None
 SERIAL_AVAILABLE = False
+_serial_init_lock = threading.Lock()
+_serial_initialized = False
 
-try:
-    ser = serial.Serial(
-        port=SERIAL_PORT,
-        baudrate=SERIAL_BAUDRATE,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        bytesize=serial.EIGHTBITS,
-        timeout=SCAN_TIMEOUT,
-    )
-    SERIAL_AVAILABLE = True
-    logger.info("Serial scanner available on %s", SERIAL_PORT)
-except Exception as exc:  # pragma: no cover - depends on hardware
-    logger.warning("Serial scanner not available: %s", exc)
+
+def _read_scanner_settings() -> tuple[str, int, int]:
+    port = get_setting_value(session, "serial_port", default="/dev/ttyACM0")
+    baud = get_setting_value(session, "serial_baudrate", default=9600)
+    timeout = get_setting_value(session, "scan_timeout", default=1)
+    return str(port), int(baud), int(timeout)
+
+
+def _ensure_serial_ready() -> bool:
+    global ser, SERIAL_AVAILABLE, SERIAL_PORT, SERIAL_BAUDRATE, SCAN_TIMEOUT, _serial_initialized
+
+    with _serial_init_lock:
+        if _serial_initialized:
+            return SERIAL_AVAILABLE and ser is not None
+
+        SERIAL_PORT, SERIAL_BAUDRATE, SCAN_TIMEOUT = _read_scanner_settings()
+        try:
+            ser = serial.Serial(
+                port=SERIAL_PORT,
+                baudrate=SERIAL_BAUDRATE,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE,
+                bytesize=serial.EIGHTBITS,
+                timeout=SCAN_TIMEOUT,
+            )
+            SERIAL_AVAILABLE = True
+            logger.info("Serial scanner available on %s", SERIAL_PORT)
+        except Exception as exc:  # pragma: no cover - depends on hardware
+            logger.warning("Serial scanner not available: %s", exc)
+            SERIAL_AVAILABLE = False
+            ser = None
+        _serial_initialized = True
+        return SERIAL_AVAILABLE and ser is not None
 
 
 def _valid_scan_string(value: str) -> bool:
@@ -103,7 +125,7 @@ def start_scanner_listener() -> None:
 
     global _scanner_thread
 
-    if not SERIAL_AVAILABLE:
+    if not _ensure_serial_ready():
         logger.warning("Scanner listener not started because serial is unavailable")
         return
 
@@ -124,6 +146,7 @@ def start_scanner_listener() -> None:
 def listen_for_scans() -> None:
     """Backward-compatible entrypoint to run the scanner loop in the foreground."""
 
+    _ensure_serial_ready()
     scanner_loop()
 
 

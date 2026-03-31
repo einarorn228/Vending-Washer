@@ -89,6 +89,8 @@ _machine_attempts = defaultdict(int)
 _machine_success = defaultdict(int)
 _pending_starts: Dict[str, PendingStart] = {}
 _armed_code: Optional[ArmedCode] = None
+_listeners_registered = False
+_listeners_lock = threading.Lock()
 
 PENDING_SCAN_TTL = 600.0  # seconds
 
@@ -531,9 +533,17 @@ def _on_device_offline(machine_id: str) -> None:
             update_ui_state({"machines": get_machine_snapshot()})
 
 
-_store.add_listener("runstate_started", _on_runstate_started)
-_store.add_listener("runstate_stopped", _on_runstate_stopped)
-_store.add_listener("device_offline", _on_device_offline)
+def register_store_listeners() -> None:
+    """Register telemetry listeners once for machine-control callbacks."""
+
+    global _listeners_registered
+    with _listeners_lock:
+        if _listeners_registered:
+            return
+        _store.add_listener("runstate_started", _on_runstate_started)
+        _store.add_listener("runstate_stopped", _on_runstate_stopped)
+        _store.add_listener("device_offline", _on_device_offline)
+        _listeners_registered = True
 
 
 def _selection_timeout_seconds() -> float:

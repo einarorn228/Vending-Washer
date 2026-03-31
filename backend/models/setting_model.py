@@ -27,7 +27,7 @@ def update_setting_value(session, key, value):
 
 
 def is_backend_relay_enabled(session=default_session) -> bool:
-    raw = get_setting_value(session, "backend_relay_enabled", default="true")
+    raw = get_setting_value(session, "backend_relay_enabled", default="false")
     return str(raw).lower() in ("1", "true", "yes")
 
 

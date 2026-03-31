@@ -20,6 +20,7 @@ DEFAULT_SETTINGS = {
     "button_select_timeout_sec": "45",
     "provider_default": "local",
     "provider_reisa_enabled": "false",
+    "backend_relay_enabled": "false",
     "reisa_base_url": "",
     "reisa_bearer_token": "",
     "reisa_connect_timeout_ms": "1500",
