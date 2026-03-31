@@ -26,6 +26,9 @@ RUNSTATE_AVAILABLE = "available"
 RUNSTATE_IN_USE = "in_use"
 RUNSTATE_OFFLINE = "offline"
 
+_poll_thread: Optional[threading.Thread] = None
+_poll_thread_lock = threading.Lock()
+
 
 @dataclass
 class DeviceInfo:
@@ -529,4 +532,10 @@ def start_telemetry_poll() -> None:
                 error_logger.exception("Telemetry polling failure")
             time.sleep(0.2)
 
-    threading.Thread(target=_poll_loop, daemon=True, name="telemetry-poll").start()
+    global _poll_thread
+    with _poll_thread_lock:
+        if _poll_thread and _poll_thread.is_alive():
+            logger.debug("Telemetry poll thread already running")
+            return
+        _poll_thread = threading.Thread(target=_poll_loop, daemon=True, name="telemetry-poll")
+        _poll_thread.start()

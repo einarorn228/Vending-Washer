@@ -5,41 +5,50 @@ import time
 import uuid
 from datetime import datetime
 from io import StringIO
+from typing import Optional
 
 from flask import Flask, Response, g, jsonify, request
 from flask_cors import CORS
 from backend.controllers.code_generator import generate_new_code
 from backend.controllers.ui_api import ui_api
-from backend.models import init_db, remove_session, session
+from backend.models import remove_session, session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
-from backend.setup.seed_machines import bootstrap_devices_and_machines
 from backend.services.reisa_audit_service import list_audit_events_for_session
 from backend.services.reisa_diagnostics_service import get_reisa_session_diagnostics, get_reisa_sync_diagnostics
 from backend.services.reisa_replay_service import replay_due_jobs, replay_retry_job
 from backend.services.reisa_retry_service import list_retry_jobs, list_retry_jobs_for_session
-from backend.utils.logger import configure_logger
 from logging import getLogger
 import csv
 
 from backend.metrics import inc, observe_ms, snapshot
-
-configure_logger()
-init_db()
-bootstrap_devices_and_machines(logging.getLogger(__name__))
 
 logger = logging.getLogger(__name__)
 root_logger = getLogger()
 
 app = Flask(__name__)
 
-# Configure dynamic CORS based on allowed origins stored in the DB
-allowed_origins = get_setting_value(session, "cors_allowed_origins", "")
-origins_list = [o.strip() for o in allowed_origins.split(",") if o.strip()]
-CORS(app, origins=origins_list)
-
 app.register_blueprint(ui_api, url_prefix="/api")
+
+
+def _load_cors_origins() -> list[str]:
+    try:
+        allowed_origins = get_setting_value(session, "cors_allowed_origins", "")
+    except Exception:
+        # Startup/import paths may read this module before DB init/bootstrap.
+        return []
+    return [o.strip() for o in str(allowed_origins).split(",") if o.strip()]
+
+
+def configure_flask_runtime(flask_app: Optional[Flask] = None) -> None:
+    """Apply runtime-only Flask configuration (safe to call multiple times)."""
+
+    target = flask_app or app
+    if getattr(target, "_cors_configured", False):
+        return
+    CORS(target, origins=_load_cors_origins())
+    setattr(target, "_cors_configured", True)
 
 
 @app.before_request
