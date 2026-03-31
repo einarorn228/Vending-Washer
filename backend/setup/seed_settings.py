@@ -10,7 +10,13 @@ from typing import Optional
 from backend.models import Session, init_db
 from backend.models.setting_model import Settings, get_setting_value, update_setting_value
 
-init_db()
+
+
+
+def _ensure_db_initialized() -> None:
+    """Initialize database tables before running seed operations."""
+
+    init_db()
 
 DEFAULT_SETTINGS = {
     "admin_username": "admin",
@@ -36,6 +42,7 @@ DEFAULT_SETTINGS = {
 def seed_settings() -> None:
     """Populate the database with baseline settings if they are missing."""
 
+    _ensure_db_initialized()
     session = Session()
     try:
         for key, value in DEFAULT_SETTINGS.items():
@@ -49,6 +56,7 @@ def seed_settings() -> None:
 def ensure_core_settings(logger: Optional[logging.Logger] = None) -> None:
     """Ensure that critical settings (log level, API key) are present."""
 
+    _ensure_db_initialized()
     session = Session()
     created_api_key: Optional[str] = None
     try:

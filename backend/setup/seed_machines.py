@@ -11,8 +11,14 @@ from backend.models import Session, init_db
 from backend.models.device_model import Device
 from backend.models.machine_model import Machine, MachineConfig
 
-init_db()
 
+
+
+
+def _ensure_db_initialized() -> None:
+    """Initialize database tables before running seed operations."""
+
+    init_db()
 
 DEFAULT_DEVICES = [
     {
@@ -109,6 +115,7 @@ def _get_device_map(db: SASession) -> Dict[str, Device]:
 
 
 def seed_devices(logger: Optional[logging.Logger] = None) -> None:
+    _ensure_db_initialized()
     db = Session()
     log = logger or logging.getLogger(__name__)
     try:
@@ -129,6 +136,7 @@ def seed_devices(logger: Optional[logging.Logger] = None) -> None:
 
 
 def seed_machines(logger: Optional[logging.Logger] = None) -> None:
+    _ensure_db_initialized()
     db = Session()
     log = logger or logging.getLogger(__name__)
     try:
