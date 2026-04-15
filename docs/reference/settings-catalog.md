@@ -86,13 +86,14 @@ General cautions:
 ## `backend_relay_enabled`
 - Default/seed:
   - missing key is ensured as `false` by `ensure_backend_relay_setting_exists` in `backend.app` startup path
-  - read fallback in `is_backend_relay_enabled` is `"true"` if key is missing
-- Consumed by: machine start relay control branch (`backend/controllers/machine_control.py`)
+  - `is_backend_relay_enabled` falls back to `"false"` when the key is missing (`backend/models/setting_model.py`)
+- Consumed by: Shelly actuation in `backend/controllers/machine_control.py` — washer/dryer start relay **and** button-box ON/OFF/pulse during armed scan window
 - Risk: **High** (real relay actuation behavior)
 - Restart needed: No
 - Operator notes:
-  - enabling causes backend to issue Shelly ON commands during start attempts.
-  - startup path matters: `python -m backend.flask_server` does not call `ensure_backend_relay_setting_exists`, so a missing key can evaluate through fallback behavior.
+  - When `false`, backend skips Shelly ON for machine start and skips button-box relay commands (UI/API simulation without firing hardware).
+  - When `true`, backend issues Shelly commands during start and while a code is armed for i4 selection.
+  - Startup path matters: `python -m backend.flask_server` does not call `ensure_backend_relay_setting_exists`, so ensure the key exists before relying on defaults.
 
 ## `provider_default`
 - Default/seed: `local`
@@ -176,7 +177,7 @@ General cautions:
 - Consumed by: `backend/controllers/qr_scanner.py`, `tools/test_scanner.py`
 - Risk: **Medium**
 - Restart needed: **Yes** for scanner module import-time initialization
-- Operator notes: set explicitly per host OS/device.
+- Operator notes: set explicitly per host OS/device. Newland FM3080 USB CDC on Pi: [`../operations/runbooks/scanner-newland-fm3080-cdc.md`](../operations/runbooks/scanner-newland-fm3080-cdc.md).
 
 ## `serial_baudrate`
 - Default/seed: not seeded; fallback `9600`

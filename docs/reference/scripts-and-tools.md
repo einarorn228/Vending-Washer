@@ -135,6 +135,9 @@ Requires:
 - serial device access
 - `serial_port`, `serial_baudrate`, `scan_timeout` settings (or defaults)
 
+See also:
+- Newland FM3080 USB CDC on Pi: [`../operations/runbooks/scanner-newland-fm3080-cdc.md`](../operations/runbooks/scanner-newland-fm3080-cdc.md)
+
 ## Testing_Files directory
 
 These files are legacy/ad hoc and should not be treated as primary operational tooling.

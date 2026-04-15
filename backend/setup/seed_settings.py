@@ -27,6 +27,7 @@ DEFAULT_SETTINGS = {
     "provider_default": "local",
     "provider_reisa_enabled": "false",
     "backend_relay_enabled": "false",
+    "telemetry_enabled": "true",
     "reisa_base_url": "",
     "reisa_bearer_token": "",
     "reisa_connect_timeout_ms": "1500",
@@ -36,6 +37,9 @@ DEFAULT_SETTINGS = {
     "reisa_retry_worker_enabled": "false",
     "reisa_retry_worker_interval_sec": "30",
     "reisa_retry_worker_batch_size": "20",
+    "serial_port": "/dev/ttyACM0",
+    "serial_baudrate": "9600",
+    "scan_timeout": "1",
 }
 
 

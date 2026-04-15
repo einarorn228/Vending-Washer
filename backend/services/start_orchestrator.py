@@ -381,7 +381,7 @@ def handle_start_confirmed(machine_id: str) -> None:
         if not commit.success:
             logger.error(
                 "Provider commit failed",
-                extra={"machine": machine_id, "message": commit.message, "provider": provider_name},
+                extra={"machine": machine_id, "detail": commit.message, "provider": provider_name},
             )
             update_usage_session(
                 pending.session_uid,
@@ -438,7 +438,7 @@ def handle_run_completed(machine_id: str) -> None:
                 "machine": machine_id,
                 "session_uid": getattr(session, "session_uid", None),
                 "provider": provider_name,
-                "message": completion.message,
+                "detail": completion.message,
             },
         )
         mark_external_sync_failed(

@@ -1,5 +1,6 @@
 import logging
 import threading
+import uuid
 from typing import Optional
 
 import serial
@@ -20,6 +21,24 @@ ser = None
 SERIAL_AVAILABLE = False
 _serial_init_lock = threading.Lock()
 _serial_initialized = False
+
+
+def _looks_like_scanner_token(value: str) -> bool:
+    """True for local kiosk codes, Reisa UUIDs, or 32-char hex UUIDs (no hyphens)."""
+
+    v = (value or "").strip()
+    if not v:
+        return False
+    try:
+        uuid.UUID(v)
+        return True
+    except ValueError:
+        pass
+    if len(v) == 32 and all(c in "0123456789abcdefABCDEF" for c in v):
+        return True
+    if len(v) == EXPECTED_CODE_LENGTH and v.isalnum():
+        return True
+    return False
 
 
 def _read_scanner_settings() -> tuple[str, int, int]:
@@ -46,6 +65,7 @@ def _ensure_serial_ready() -> bool:
                 bytesize=serial.EIGHTBITS,
                 timeout=SCAN_TIMEOUT,
             )
+            ser.reset_input_buffer()
             SERIAL_AVAILABLE = True
             logger.info("Serial scanner available on %s", SERIAL_PORT)
         except Exception as exc:  # pragma: no cover - depends on hardware
@@ -57,24 +77,28 @@ def _ensure_serial_ready() -> bool:
 
 
 def _valid_scan_string(value: str) -> bool:
-    """Return True if the scanned string meets basic expectations."""
+    """Return True if the scanned string may be a local code or external entitlement id."""
 
-    if len(value) < EXPECTED_CODE_LENGTH:
-        logger.debug("Ignoring scan '%s': reason=too short", value)
-        return False
-    if len(value) > EXPECTED_CODE_LENGTH:
-        logger.debug("Ignoring scan '%s': reason=too long", value)
-        return False
-    if not value.isalnum():
-        logger.debug("Ignoring scan '%s': reason=invalid format", value)
-        return False
-    return True
+    if _looks_like_scanner_token(value):
+        return True
+    v = (value or "").strip()
+    logger.debug(
+        "Ignoring scan %r: expected %d-char alphanumeric local code or UUID",
+        v,
+        EXPECTED_CODE_LENGTH,
+    )
+    return False
 
 
 def _handle_scanned_value(decoded: str) -> None:
     """Invoke the shared scan handler with logging around outcomes."""
 
     if not _valid_scan_string(decoded):
+        if decoded:
+            logger.info(
+                "Scanner line ignored (expected 8-char local code or UUID): %r",
+                decoded[:128],
+            )
         return
 
     try:
@@ -110,6 +134,12 @@ def scanner_loop() -> None:
 
         decoded = raw.decode("utf-8", errors="ignore").strip()
         if not decoded:
+            if raw:
+                logger.info(
+                    "Scanner received %d byte(s) but nothing left after decode/strip: %r",
+                    len(raw),
+                    raw[:64],
+                )
             continue
 
         logger.debug("Decoded scan string: '%s'", decoded)

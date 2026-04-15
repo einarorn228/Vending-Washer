@@ -15,6 +15,8 @@ Code source of truth:
 
 ## Scanner troubleshooting
 
+Newland **FM3080** on Raspberry Pi (USB CDC, `ttyACM0`, programming barcodes, `lsusb` IDs): see **[`scanner-newland-fm3080-cdc.md`](./scanner-newland-fm3080-cdc.md)**.
+
 ## Symptom: scanner events never appear
 Checks:
 ```bash
@@ -37,12 +39,12 @@ High-risk gotcha:
 - changing scanner settings requires backend restart.
 
 ## Symptom: scans ignored
-`qr_scanner.py` accepts only exactly 8-char alphanumeric values.
+`qr_scanner.py` filters payloads via `_looks_like_scanner_token` (see code). Accepted shapes include, for example:
 
-Rejected examples:
-- too short (<8)
-- too long (>8)
-- non-alphanumeric
+- 8-character alphanumeric “local kiosk” codes
+- UUID strings (with hyphens) and 32-character hex (no hyphens)
+
+If `tools/test_scanner.py` prints a `DECODED` value but the backend ignores it, compare the string against that helper.
 
 ## Serial configuration issues
 

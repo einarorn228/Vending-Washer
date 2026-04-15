@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
 from pathlib import Path
 
 import serial
+from serial.tools import list_ports
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -19,8 +21,29 @@ from backend.models.setting_model import get_setting_value
 logger = logging.getLogger(__name__)
 
 
+def _print_list_ports() -> None:
+    ports = list(list_ports.comports())
+    if not ports:
+        print("No serial ports found.")
+        return
+    for p in ports:
+        print(f"{p.device}\t{p.description or ''}\t{getattr(p, 'hwid', '') or ''}")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Test USB serial QR scanner")
+    parser.add_argument(
+        "--list-ports",
+        action="store_true",
+        help="List serial devices and exit (use device path in settings serial_port)",
+    )
+    args = parser.parse_args()
+
     configure_logger()
+
+    if args.list_ports:
+        _print_list_ports()
+        return
 
     port = get_setting_value(session, "serial_port", default="/dev/ttyACM0")
     baudrate = int(get_setting_value(session, "serial_baudrate", default=9600))

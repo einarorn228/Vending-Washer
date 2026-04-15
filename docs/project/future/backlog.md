@@ -28,8 +28,10 @@ Canonical project-level backlog for non-Reisa work and cross-cutting improvement
 - **Benefit:** smoother UX and fewer reload race conditions.
 
 ### B) Service packaging for kiosk deployments
-- **Idea:** package backend launcher as system service (`systemd`/Windows service).
-- **Benefit:** reliable reboot/start behavior in field deployments.
+- **Idea:** package backend (and optionally frontend) as supervised services (`systemd` on Linux; Windows service if ever needed).
+- **Benefit:** reliable reboot/start behavior in field deployments; processes are not tied to SSH/desktop session lifetime.
+- **Code vs ops:** baseline needs **no app code** — unit files + install docs are enough. Optional hardening (e.g. `debug=False`, production `npm` script without Pi opener, example units in-repo) is separate.
+- **Note:** see [`production-process-management.md`](./production-process-management.md) and the runbook [`runtime-and-process-management.md`](../../operations/runbooks/runtime-and-process-management.md).
 
 ## Resolved
 - **2026-03-29:** Admin DELETE endpoints auth gap item closed; both delete routes are protected by `@require_admin_auth` and covered by `backend/tests/test_admin_auth.py`.

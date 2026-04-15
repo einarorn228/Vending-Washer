@@ -13,6 +13,7 @@ from sqlalchemy.orm import joinedload
 
 from backend.metrics import set_gauge
 from backend.models import Session
+from backend.models.setting_model import is_telemetry_enabled
 from backend.models.device_model import Device
 from backend.models.machine_model import Machine
 from backend.utils.logger import get_error_logger, get_event_logger
@@ -25,6 +26,12 @@ error_logger = get_error_logger()
 RUNSTATE_AVAILABLE = "available"
 RUNSTATE_IN_USE = "in_use"
 RUNSTATE_OFFLINE = "offline"
+
+# Shelly HTTP reads; slightly above Wi‑Fi jitter to cut avoidable read timeouts.
+_HTTP_TIMEOUT_SEC = 5.0
+# Avoid flooding events.log with TELEMETRY_READ while a device is flaky (errors.log still has detail).
+_TELEMETRY_FAIL_EVENT_LOG_MIN_INTERVAL_SEC = 30.0
+_last_telemetry_fail_event_log: Dict[str, float] = {}
 
 _poll_thread: Optional[threading.Thread] = None
 _poll_thread_lock = threading.Lock()
@@ -371,6 +378,22 @@ def _classify_band(value: float, config: MachineConfigInfo) -> str:
     return "mid"
 
 
+def _log_telemetry_read_failure(slug: str) -> None:
+    now = time.monotonic()
+    last = _last_telemetry_fail_event_log.get(slug, 0.0)
+    if now - last >= _TELEMETRY_FAIL_EVENT_LOG_MIN_INTERVAL_SEC:
+        _last_telemetry_fail_event_log[slug] = now
+        events_logger.warning(
+            "TELEMETRY_READ",
+            extra={"machine": slug, "status": "error", "value": None},
+        )
+    else:
+        logger.debug(
+            "TELEMETRY_READ error (rate-limited in events log)",
+            extra={"machine": slug},
+        )
+
+
 def _read_metric(device: DeviceInfo) -> Optional[float]:
     channel = device.relay_channel or 0
     metric = (device.metric_source or "").lower()
@@ -378,13 +401,13 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
     try:
         if metric == "power":
             url = f"http://{device.ip}/rpc/Switch.GetStatus?id={channel}"
-            resp = requests.get(url, timeout=3)
+            resp = requests.get(url, timeout=_HTTP_TIMEOUT_SEC)
             if resp.status_code == 200:
                 data = resp.json()
                 value = data.get("apower")
                 if value is not None:
                     return float(value)
-            status_resp = requests.get(f"http://{device.ip}/status", timeout=3)
+            status_resp = requests.get(f"http://{device.ip}/status", timeout=_HTTP_TIMEOUT_SEC)
             if status_resp.status_code == 200:
                 data = status_resp.json()
                 meters = data.get("meters")
@@ -400,7 +423,7 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
 
         elif metric == "adc":
             url = f"http://{device.ip}/rpc/Adc.GetStatus?id={channel}"
-            resp = requests.get(url, timeout=3)
+            resp = requests.get(url, timeout=_HTTP_TIMEOUT_SEC)
             if resp.status_code == 200:
                 data = resp.json()
                 if "voltage" in data:
@@ -411,7 +434,7 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
         elif metric == "digital":
             input_channel = device.input_channel or 0
             url = f"http://{device.ip}/rpc/Input.GetStatus?id={input_channel}"
-            resp = requests.get(url, timeout=3)
+            resp = requests.get(url, timeout=_HTTP_TIMEOUT_SEC)
             if resp.status_code == 200:
                 data = resp.json()
                 state = data.get("state")
@@ -424,7 +447,7 @@ def _read_metric(device: DeviceInfo) -> Optional[float]:
             # floating-point voltage value. If the request fails or the field is missing,
             # treat the device as offline so telemetry can recover gracefully.
             url = f"http://{device.ip}/rpc/Voltmeter.GetStatus?id=100"
-            resp = requests.get(url, timeout=3)
+            resp = requests.get(url, timeout=_HTTP_TIMEOUT_SEC)
             if resp.status_code == 200:
                 data = resp.json()
                 if "voltage" in data:
@@ -448,11 +471,9 @@ def _handle_poll(store: MachineStateStore, ctx: MachinePollContext) -> None:
     value = _read_metric(ctx.uni_device)
     success = value is not None
     if not success:
-        events_logger.warning(
-            "TELEMETRY_READ",
-            extra={"machine": ctx.slug, "status": "error", "value": value},
-        )
+        _log_telemetry_read_failure(ctx.slug)
     else:
+        _last_telemetry_fail_event_log.pop(ctx.slug, None)
         current_band = _classify_band(value, ctx.config)
         if previous_value is None:
             logger.info(
@@ -524,6 +545,14 @@ def start_telemetry_poll() -> None:
                 machines = _load_definitions()
                 devices = _load_devices_by_role()
                 store.update_definitions(machines, devices)
+                db = Session()
+                try:
+                    polls_on = is_telemetry_enabled(db)
+                finally:
+                    db.close()
+                if not polls_on:
+                    time.sleep(0.2)
+                    continue
                 now = time.monotonic()
                 contexts = store.get_poll_contexts(now)
                 for ctx in contexts:

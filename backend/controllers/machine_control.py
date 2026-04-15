@@ -13,7 +13,11 @@ from backend.controllers.telemetry import MachineStateStore
 from backend.metrics import inc, observe_ms, set_gauge
 from backend.models import Session
 from backend.models.scan_log_model import ScanLog
-from backend.models.setting_model import get_setting_value, is_backend_relay_enabled
+from backend.models.setting_model import (
+    get_setting_value,
+    is_backend_relay_enabled,
+    is_telemetry_enabled,
+)
 from backend.providers.local_provider import LocalProvider
 from backend.services.usage_session_service import (
     STATE_FAILED,
@@ -39,6 +43,8 @@ STARTING_INSTRUCTION_TEMPLATE = (
 RUNNING_NOTICE_TEMPLATE = "{machine} started. You have {uses_left} uses left."
 SELECTION_NOTICE_SECONDS = 3.0
 STARTED_NOTICE_SECONDS = 3.0
+# After start is confirmed, simulated “program finished” delay when telemetry is off (bench / no hardware).
+BENCH_SIMULATED_PROGRAM_SECONDS = 1.2
 SELECTION_TIMEOUT_SECONDS = 600.0
 SELECTION_TIMEOUT_MESSAGE = "Selection timed out. Please scan again."
 
@@ -272,6 +278,15 @@ def _get_session():
     return Session()
 
 
+def _backend_relay_allows_actuation() -> bool:
+    """When false, skip all Shelly relay ON/OFF/pulse (simulation / dry-run)."""
+    db = _get_session()
+    try:
+        return is_backend_relay_enabled(db)
+    finally:
+        db.close()
+
+
 def validate_code(code: str) -> Tuple[Optional[ValidatedCode], str]:
     """Return ValidatedCode if valid and not expired/overused."""
 
@@ -317,7 +332,7 @@ def handle_scanned_code(
         )
         inc("scan_total", outcome="rejected", reason="missing_code", source=source)
         write_scan_log("", None, "invalid", source, details="missing_code")
-        update_ui_state({"state": "error", "message": "Missing code"})
+        show_error_state("Missing code")
         return False, "Missing code", None
 
     code_info, msg = validate_code(code)
@@ -335,6 +350,7 @@ def handle_scanned_code(
         update_ui_state({"state": "error", "message": msg})
         inc("scan_total", outcome="rejected", reason=reason, source=source)
         write_scan_log(code, None, "invalid", source, details=reason)
+        show_error_state(msg)
         return False, msg, None
 
     events_logger.info(
@@ -441,9 +457,20 @@ def finalize_started_machine(
             "machine": machine_id,
             "code": code_info.code,
             "uses_left": uses_left,
-            "message": message,
+            "notice": message,
         },
     )
+    db_bench = _get_session()
+    try:
+        schedule_bench_completion = not is_telemetry_enabled(db_bench)
+    finally:
+        db_bench.close()
+    if schedule_bench_completion:
+        events_logger.info(
+            "BENCH_RUN_COMPLETED_SCHEDULED",
+            extra={"machine": machine_id, "delay_sec": BENCH_SIMULATED_PROGRAM_SECONDS},
+        )
+        _schedule_bench_run_completed(machine_id)
 
 
 def _handle_successful_start(machine_id: str, code_info: ValidatedCode) -> None:
@@ -573,9 +600,49 @@ def _button_timeout_seconds() -> int:
         return 45
 
 
+def _schedule_bench_start_confirm(machine_id: str) -> None:
+    """Confirm pending start in-process when Shelly actuation and telemetry are both off."""
+
+    def _run():
+        time.sleep(0.35)
+        from backend.services.start_orchestrator import handle_start_confirmed
+
+        handle_start_confirmed(machine_id)
+
+    threading.Thread(
+        target=_run,
+        daemon=True,
+        name=f"bench-start-confirm-{machine_id}",
+    ).start()
+
+
+def _schedule_bench_run_completed(machine_id: str) -> None:
+    """Call provider completion after a short delay when there is no telemetry run-stop signal."""
+
+    delay = max(BENCH_SIMULATED_PROGRAM_SECONDS, 0.1)
+
+    def _run():
+        time.sleep(delay)
+        from backend.services.start_orchestrator import handle_run_completed
+
+        handle_run_completed(machine_id)
+
+    threading.Thread(
+        target=_run,
+        daemon=True,
+        name=f"bench-run-complete-{machine_id}",
+    ).start()
+
+
 def _deactivate_button_box() -> None:
     device = _store.get_device_by_role("button_box")
     if not device:
+        return
+    if not _backend_relay_allows_actuation():
+        events_logger.info(
+            "BUTTON_BOX_OFF skipped (backend_relay_enabled=false)",
+            extra={"device": device.name},
+        )
         return
     if device.metric_source == "pulse":
         ok = send_shelly_pulse(device.ip, relay=device.relay_channel or 0, duration=1)
@@ -590,6 +657,12 @@ def _deactivate_button_box() -> None:
 def _activate_button_box() -> None:
     device = _store.get_device_by_role("button_box")
     if not device:
+        return
+    if not _backend_relay_allows_actuation():
+        events_logger.info(
+            "BUTTON_BOX_ON skipped (backend_relay_enabled=false)",
+            extra={"device": device.name},
+        )
         return
     if shelly_switch_on(device):
         events_logger.info("BUTTON_BOX_ON")
@@ -775,6 +848,17 @@ def start_machine(
             "MACHINE backend relay disabled; skipping Shelly command",
             extra={"machine": machine_id, "backend_relay": False},
         )
+        db_te = _get_session()
+        try:
+            bench_mode = not is_telemetry_enabled(db_te)
+        finally:
+            db_te.close()
+        if bench_mode:
+            events_logger.info(
+                "BENCH_START_CONFIRM_SCHEDULED",
+                extra={"machine": machine_id},
+            )
+            _schedule_bench_start_confirm(machine_id)
 
     timer = threading.Timer(_selection_timeout_seconds(), _selection_timeout, args=[machine_id])
     timer.start()

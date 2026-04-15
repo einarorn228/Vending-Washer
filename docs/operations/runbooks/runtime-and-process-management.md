@@ -11,6 +11,32 @@ Source of truth:
 
 ## Process ownership summary
 
+Processes started manually in an SSH session or a desktop terminal are tied to that **login session**. When the session ends (logout, laptop sleep, SSH disconnect, closing the terminal window), **systemd-logind** typically tears down the session scope and **stops child processes**. That can look like a mysterious overnight shutdown even though nobody intentionally stopped the app.
+
+For development this is fine. For **production** and for **systems sold to customers**, treat session-bound processes as temporary.
+
+## Production persistence (do this before go-live)
+
+Not implemented in-repo yet; capture this checklist when you are ready to ship or hand off hardware.
+
+1. **Prefer systemd (or an equivalent supervisor)**  
+   - Run backend (`python -m backend.app` or `run-backend.sh`) under a **system** or **user** unit with `Restart=on-failure` or `Restart=always` and a sane `RestartSec=`.  
+   - If using **user** units on a headless Pi, enable **lingering** so services survive logout: `loginctl enable-linger <deploy-user>`.
+
+2. **Frontend**  
+   - For kiosk/Pi: either a **static build** served by nginx/Caddy (or similar) plus the backend API, or a dedicated unit that runs `npm run dev` / `vite` only if you accept dev-server semantics in the field.  
+   - Review `npm run dev` side effects (Pi browser opener); production may want a stripped `npm run` script without kiosk automation.
+
+3. **Logging and support**  
+   - Operators should know where logs live (`backend/logs/*.log`) and how to `journalctl -u <unit>` if you move stdout/stderr to the journal.
+
+4. **Lighter alternatives** (acceptable for single-site pilots, weaker for sold systems)  
+   - `tmux` / `screen` so SSH can drop without killing the process group.  
+   - `nohup … &` / `disown` — simple but easy to misconfigure and hard to support remotely.
+
+5. **Document for the buyer**  
+   - How services are named, how to restart after power loss, where the venv and repo live, and that **API keys / DB paths must not be reset** by accidental “fresh clone” reinstalls.
+
 ## Backend full runtime (recommended)
 Command:
 ```bash
@@ -131,4 +157,4 @@ Starting only `backend.flask_server` and assuming full machine-control behavior 
 - CORS behavior changes for consistent effect
 
 ## Unknown / requires verification from code
-- No repository-provided systemd/supervisor unit files are present for production process management.
+- No repository-provided systemd/supervisor unit files are present yet; see **Production persistence** above when you add them.

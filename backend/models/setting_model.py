@@ -31,6 +31,13 @@ def is_backend_relay_enabled(session=default_session) -> bool:
     return str(raw).lower() in ("1", "true", "yes")
 
 
+def is_telemetry_enabled(session=default_session) -> bool:
+    """When false, Shelly telemetry HTTP polls are skipped (dev / no-hardware)."""
+
+    raw = get_setting_value(session, "telemetry_enabled", default="true")
+    return str(raw).lower() in ("1", "true", "yes", "on")
+
+
 def ensure_backend_relay_setting_exists(session_factory=Session) -> None:
     """Ensure backend_relay_enabled exists in the DB with a default value."""
 
