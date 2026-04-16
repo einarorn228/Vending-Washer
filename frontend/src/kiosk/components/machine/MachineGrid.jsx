@@ -1,7 +1,7 @@
 import React from 'react';
 import MachineCard from './MachineCard.jsx';
 
-export default function MachineGrid({ machines, isInteractive, onSelect }) {
+export default function MachineGrid({ machines, isInteractive, onSelect, variant = 'default' }) {
   if (!machines?.length) {
     return (
       <section className="machine-grid machine-grid--empty" aria-live="polite">
@@ -11,13 +11,14 @@ export default function MachineGrid({ machines, isInteractive, onSelect }) {
   }
 
   return (
-    <section className="machine-grid" aria-live="polite">
+    <section className={`machine-grid machine-grid--${variant}`} aria-live="polite">
       {machines.map((machine) => (
         <MachineCard
           key={machine.id}
           machine={machine}
           isInteractive={isInteractive}
           onSelect={onSelect}
+          variant={variant}
         />
       ))}
     </section>

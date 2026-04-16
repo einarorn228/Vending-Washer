@@ -5,10 +5,10 @@ export default function MachineStatusBadge({ status }) {
   const normalizedStatus = normalizeMachineStatus(status);
 
   const labelByStatus = {
-    available: 'AVAILABLE',
-    busy: 'IN USE',
-    reserved: 'RESERVED',
-    error: 'ERROR',
+    available: 'Available',
+    busy: 'In use',
+    reserved: 'Reserved',
+    error: 'Error',
   };
 
   const a11yByStatus = {
