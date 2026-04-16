@@ -15,6 +15,20 @@ The implementation goal is **close visual parity** with those supplied artifacts
 - No contract-breaking backend edits yet.
 - This document is implementation-oriented prep only.
 
+### Input mode requirement (new, explicit)
+The kiosk UI must support two operation modes while keeping the visual design essentially the same:
+
+1. **Touch mode**
+   - User interacts directly with on-screen controls.
+   - Machine selection and other actions can be triggered from touchscreen UI.
+2. **Hardware button mode**
+   - UI visuals remain nearly identical to touch mode.
+   - User does **not** drive flow through touchscreen interactions.
+   - Existing physical button box / hardware controls drive state and actions.
+   - Screen acts as a visual guide + status display for backend/hardware-driven events.
+
+Core rule for all phases in this plan: **layout and visual hierarchy should stay consistent across modes; only the action/input source changes.**
+
 ---
 
 ## 1) Current architecture baseline
@@ -86,6 +100,18 @@ Current frontend rendering depends on:
 | Distinct visual treatment for starting vs in-use | currently same `ResultScreen` | split to dedicated state screens | `state` + machine context | Missing |
 | Graceful stale/offline indicator | banner flag in `App.jsx` | reusable stale-state indicator + timestamp | frontend polling metadata | Partially supported |
 
+### 2.4 Input mode screen behavior mapping (touch vs hardware button)
+
+| Screen/state | Touch mode behavior | Hardware button mode behavior | Shared visual requirement |
+|---|---|---|---|
+| Home (`waiting_for_code`) | Optional touch affordance can remain inert or active for scan/help actions if defined. | No primary control via touch; wait for scan/hardware/backend events. | Same headline, branding, and status framing. |
+| Machine select (`choose_machine`) | User taps a machine card/button to request selection. | Cards are non-interactive; selection/highlight follows backend-reported active selection and hardware navigation. | Same grid/card layout and status badges. |
+| Starting (`machine_starting`) | Touch may allow safe secondary actions only if backend permits (generally read-only). | Fully read-only; backend/hardware events progress state. | Same progress/status panel and machine context. |
+| In use (`machine_in_use`) | Mostly read-only; touch actions only if explicitly backend-authorized. | Read-only visual guidance driven by backend updates. | Same status/info hierarchy. |
+| Error (`error`) | Touch retry/ack only if backend contract explicitly supports it. | Read-only until backend/hardware clears/resets state. | Same error prominence and instruction block. |
+
+Instruction text should remain very similar between modes, with only targeted wording changes where needed (for example: “Tap a machine” vs “Use hardware buttons to choose a machine”).
+
 ---
 
 ## 3) Styling strategy decision (for supplied design parity)
@@ -137,8 +163,34 @@ Reason: safer rollout, easier debugging, and fewer moving parts while backend co
 | Poll staleness timestamp | none | Frontend can track local last success | No (optional) | local-only acceptable for connectivity UX. |
 | Machine sort/display order | none explicit | Not safely if order must be fixed by backend | **Yes (likely)** | Add backend display ordering if design requires deterministic order. |
 | Machine icon/metadata | none | No | Maybe | Needed only if supplied design includes per-machine art/icon semantics. |
+| Input mode (`touch` or `hardware_buttons`) | none | No | **Yes (recommended)** | Should be backend-provided to keep kiosk behavior fleet-configurable and authoritative. |
+| Hardware selection cursor/current focus | none explicit | Not safely | **Yes (likely)** | Needed in hardware mode so frontend can highlight currently selected machine without local guesswork. |
+| Per-screen interaction permissions | none explicit | Not safely | Maybe | Optional field set if backend must dynamically disable/enable specific touch actions. |
 
 **Contract principle:** backend remains source of truth; frontend should not invent machine operational states.
+
+### 4.1 Input mode source-of-truth decision and gap closure
+
+**Recommended source of truth:** backend configuration exposed in `/api/ui_state` (or a closely related config endpoint consumed alongside it).
+
+Why this is safest:
+- Prevents frontend divergence from deployed hardware capabilities.
+- Supports mixed fleet rollout (some kiosks touch-enabled, others hardware-button-only) without rebuilding frontend.
+- Keeps control behavior aligned with the same authority that already drives UI state transitions.
+
+Recommended payload additions (minimum viable):
+- `input_mode`: enum string (`"touch"` or `"hardware_buttons"`).
+- `interaction`: optional object for explicit gating, e.g.:
+  - `allow_touch_machine_select` (bool)
+  - `allow_touch_secondary_actions` (bool)
+- `selection_context` (optional, primarily for hardware mode):
+  - `active_machine_id` (string)
+  - `selection_hint` (string; optional instruction override)
+
+Fallback policy if fields are temporarily absent during rollout:
+1. Default to safest behavior (`hardware_buttons`-style read-only interactions).
+2. Continue rendering same layouts.
+3. Log/telemetry warning for missing mode field.
 
 ---
 
@@ -160,6 +212,9 @@ frontend/src/
       useUiStatePolling.js
     adapters/
       uiStateAdapter.js
+      inputModeAdapter.js
+    interaction/
+      createInteractionPolicy.js
     screens/
       HomeScreen.jsx
       SelectMachineScreen.jsx
@@ -184,6 +239,20 @@ frontend/src/
 ```
 
 This split keeps behavior wiring separate from visual composition, improving rollout safety.
+
+### 5.1 Input-mode-aware interaction layer (avoid scattered conditionals)
+
+To avoid spreading `if (inputMode === ...)` checks across every component:
+
+1. Normalize backend payload once in `inputModeAdapter.js` and `uiStateAdapter.js`.
+2. Build a centralized interaction policy (`createInteractionPolicy.js`) that outputs a small capability object, e.g.:
+   - `canTapMachine`
+   - `canTapPrimaryAction`
+   - `isReadOnlyGuidance`
+3. Pass this policy down via router/screen props (or a focused context) so leaf components only consume booleans and labels.
+4. Keep screens structurally identical; only interactive props (`onClick`, `disabled`, focus highlight source, helper copy) differ by policy.
+
+This preserves visual parity while making input source behavior explicit, testable, and maintainable.
 
 ---
 
@@ -244,7 +313,29 @@ This split keeps behavior wiring separate from visual composition, improving rol
 - Existing state flow still works through new shell.
 - No regression in backend-unreachable handling.
 
-## Phase 3 — Screen-by-screen parity migration
+## Phase 3 — Dual-mode foundation before full screen migration
+**Goal**
+- Add input mode contract handling + interaction policy plumbing before migrating all screens.
+
+**Files likely touched**
+- `frontend/src/kiosk/adapters/uiStateAdapter.js`
+- `frontend/src/kiosk/adapters/inputModeAdapter.js`
+- `frontend/src/kiosk/interaction/createInteractionPolicy.js`
+- `frontend/src/kiosk/KioskRouter.jsx`
+- `docs/architecture/ui-state-contract.md`
+- `backend/controllers/ui_api.py` (if adding `input_mode` now)
+
+**Exact deliverables**
+- Normalized input mode available at router level.
+- Centralized interaction policy provided to screen layer.
+- Backend/config contract decision implemented or explicitly staged with fallback.
+
+**Acceptance criteria**
+- Touch/hardware mode behavior differences are represented in one policy layer, not scattered screen code.
+- Default-safe behavior defined when mode is missing.
+- Ready for screen migration with dual-mode support from first migrated screen.
+
+## Phase 4 — Screen-by-screen parity migration (built dual-mode from day one)
 **Goal**
 - Replace legacy screens with design-matching screens in controlled order.
 
@@ -259,12 +350,15 @@ This split keeps behavior wiring separate from visual composition, improving rol
 **Exact deliverables**
 - Home, select, starting/in-use, error screens with near-parity structure and styling.
 - machine cards/badges driven by backend payload.
+- each screen supports both input modes without major layout divergence.
+- mode-aware instruction copy variants integrated where needed.
 
 **Acceptance criteria**
 - All backend states render distinct intended screens.
 - Visual parity acceptable against supplied screenshots.
+- Machine selection behavior is tap-driven in touch mode and backend/hardware-driven in hardware button mode.
 
-## Phase 4 — Backend contract extensions (only if required)
+## Phase 5 — Backend contract extensions (only if required)
 **Goal**
 - Add minimal API fields needed for strict parity where frontend cannot safely derive values.
 
@@ -283,7 +377,7 @@ This split keeps behavior wiring separate from visual composition, improving rol
 - Backward compatibility preserved.
 - New fields covered by safe frontend fallbacks.
 
-## Phase 5 — Cutover and legacy cleanup
+## Phase 6 — Cutover and legacy cleanup
 **Goal**
 - Make new kiosk UI default and remove outdated paths.
 
@@ -327,21 +421,41 @@ This split keeps behavior wiring separate from visual composition, improving rol
 - connection banner still appears on failures
 - typography/layout consistent in kiosk viewport
 
-### Phase 3 (screen parity)
+### Phase 3 (dual-mode foundation)
+- input mode is normalized once and available at router/screen boundary
+- interaction capability policy is centralized and unit-testable
+- missing input mode falls back to safe read-only interaction policy
+- no visual layout branching introduced solely by input mode
+
+### Phase 4 (screen parity)
 - `waiting_for_code` matches home screenshot intent
 - `choose_machine` matches select screenshot intent and machine availability truth
+- `choose_machine` tap-to-select works in touch mode
+- `choose_machine` renders non-tappable cards + backend-driven highlight/instructions in hardware mode
 - `machine_starting` and `machine_in_use` visually distinct and correct
 - `error` remains prominent and resets correctly
 
-### Phase 4 (contract changes if any)
+### Phase 5 (contract changes if any)
 - each new backend field appears in `/api/ui_state` as documented
 - frontend falls back safely when field absent
 - no regressions to existing API clients
 
-### Phase 5 (cutover)
+### Phase 6 (cutover)
 - full flow: valid scan -> select -> start -> in_use -> reset
 - invalid scan -> error -> reset
 - busy scan rejection and timeout paths remain user-clear
+
+---
+
+## 9) Short decision: best representation of input mode in code
+
+**Decision:** represent input mode as a backend-provided enum (`input_mode`) that is normalized into a typed frontend domain value and converted into a centralized interaction capability policy.
+
+**Why this approach**
+- Preserves backend authority and operational safety.
+- Keeps screens mostly presentation-focused and visually consistent.
+- Avoids widespread conditional logic and regression-prone ad-hoc checks.
+- Supports phased rollout with safe default behavior when config is incomplete.
 
 ---
 
@@ -377,3 +491,16 @@ Before coding starts, execute this exact prep checklist.
 - Backend contract gap table approved (must-have vs optional fields).
 - Phase-1 file plan approved (hook/router/adapter only, no behavior drift).
 - Agreement that backend remains source of truth and JSX is preferred over TypeScript.
+
+## Next implementation step after this planning update
+
+Once this plan revision is approved, the immediate next implementation step is:
+
+1. **Contract-first kickoff (no visual migration yet)**
+   - Finalize where `input_mode` is configured (backend config source + API exposure path).
+   - Confirm fallback behavior when mode is absent.
+2. **Implement Phase 3 dual-mode foundation first**
+   - Add adapter + interaction policy layer.
+   - Wire router to pass mode-aware capabilities to screens.
+3. **Only then begin Phase 4 screen migration**
+   - Build each new screen with dual-mode behavior from initial implementation, avoiding later retrofits.
