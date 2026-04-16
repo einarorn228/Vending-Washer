@@ -129,6 +129,63 @@ body {
   background: rgba(244, 248, 255, 0.08);
 }
 
+.kiosk-progress__step--complete .kiosk-progress__dot {
+  color: #a7f3d0;
+  border-color: rgba(52, 211, 153, 0.24);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.kiosk-progress__line--complete {
+  background: rgba(52, 211, 153, 0.4);
+}
+
+.kiosk-progress__check {
+  width: 20px;
+  height: 20px;
+}
+
+.kiosk-shell--scan-focus .kiosk-progress {
+  gap: 0.75rem;
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__step {
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__dot {
+  width: 40px;
+  height: 40px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__label {
+  font-size: 0.875rem;
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__line {
+  width: 48px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__step--active {
+  color: #ffffff;
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__step--complete {
+  color: #bbf7d0;
+}
+
+.kiosk-shell--scan-focus .kiosk-progress__step--active .kiosk-progress__dot {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .kiosk-shell__content {
   flex: 1;
   padding: clamp(0.95rem, 2.5vw, 1.8rem);
