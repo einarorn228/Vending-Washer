@@ -6,15 +6,17 @@ import KioskProgressSteps from './components/chrome/KioskProgressSteps.jsx';
 import './styles/kiosk.css';
 
 export default function KioskAppShell({ backendUnreachable, currentState, children }) {
+  const isWaitingForCode = currentState === 'waiting_for_code';
+
   return (
-    <div className="kiosk-shell">
+    <div className={`kiosk-shell ${isWaitingForCode ? 'kiosk-shell--scan-focus' : ''}`}>
       <ConnectionBanner visible={backendUnreachable} />
-      <KioskHeader />
+      {!isWaitingForCode ? <KioskHeader /> : null}
       <div className="kiosk-shell__topbar">
         <KioskProgressSteps currentState={currentState} />
       </div>
       <main className="kiosk-shell__content">{children}</main>
-      <KioskFooter />
+      {!isWaitingForCode ? <KioskFooter /> : null}
     </div>
   );
 }
