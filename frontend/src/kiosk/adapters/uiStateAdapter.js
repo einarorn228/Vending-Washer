@@ -7,5 +7,6 @@ export function adaptUiState(rawUiState) {
     ...rawUiState,
     state: typeof rawUiState.state === 'string' ? rawUiState.state : '',
     message: typeof rawUiState.message === 'string' ? rawUiState.message : '',
+    input_mode: typeof rawUiState.input_mode === 'string' ? rawUiState.input_mode : undefined,
   };
 }

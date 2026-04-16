@@ -21,6 +21,19 @@ ui_api = Blueprint("ui_api", __name__)
 API_KEY_HEADER = "X-API-KEY"
 
 
+INPUT_MODE_TOUCH = "touch"
+INPUT_MODE_HARDWARE_BUTTONS = "hardware_buttons"
+
+
+def _resolve_input_mode() -> str:
+    raw_mode = get_setting_value(session, "kiosk_input_mode", default=INPUT_MODE_HARDWARE_BUTTONS)
+    mode = str(raw_mode or "").strip().lower()
+    if mode == INPUT_MODE_TOUCH:
+        return INPUT_MODE_TOUCH
+    return INPUT_MODE_HARDWARE_BUTTONS
+
+
+
 @ui_api.before_request
 def check_api_key():
     key = request.headers.get(API_KEY_HEADER) or request.args.get("api_key")
@@ -78,6 +91,7 @@ def start_machine_endpoint():
 def ui_state():
     state = UI_STATE.copy()
     state["machines"] = list_machines()
+    state["input_mode"] = _resolve_input_mode()
     return jsonify(state)
 
 
