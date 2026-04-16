@@ -35,7 +35,9 @@ export default function KioskProgressSteps({ currentState }) {
               className={`kiosk-progress__step ${isComplete ? 'kiosk-progress__step--complete' : ''} ${isActive ? 'kiosk-progress__step--active' : ''}`}
               aria-current={isActive ? 'step' : undefined}
             >
-              <span className="kiosk-progress__dot" aria-hidden="true" />
+              <span className="kiosk-progress__dot" aria-hidden="true">
+                {index + 1}
+              </span>
               <span className="kiosk-progress__label">{step}</span>
             </div>
             {index < STEPS.length - 1 ? <span className="kiosk-progress__line" aria-hidden="true" /> : null}

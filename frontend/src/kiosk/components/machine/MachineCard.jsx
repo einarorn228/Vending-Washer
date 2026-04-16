@@ -19,11 +19,17 @@ function resolveHint(status, isInteractive) {
   }
 }
 
-export default function MachineCard({ machine, isInteractive, onSelect }) {
+function resolveMachineType(machineName) {
+  return machineName.toLowerCase().includes('dryer') ? 'dryer' : 'washer';
+}
+
+export default function MachineCard({ machine, isInteractive, onSelect, variant = 'default' }) {
   const machineName = machine?.name || machine?.id || 'Machine';
   const status = normalizeMachineStatus(machine);
   const isAvailable = status === 'available';
   const isCardInteractive = isInteractive && isAvailable;
+  const machineType = resolveMachineType(machineName);
+  const isScanVariant = variant === 'scan';
 
   function handleCardActivate() {
     if (isCardInteractive) {
@@ -44,7 +50,7 @@ export default function MachineCard({ machine, isInteractive, onSelect }) {
 
   return (
     <article
-      className={`machine-card machine-card--${status} ${isCardInteractive ? 'machine-card--interactive' : 'machine-card--readonly'}`}
+      className={`machine-card machine-card--${variant} machine-card--${status} ${isCardInteractive ? 'machine-card--interactive' : 'machine-card--readonly'}`}
       onClick={handleCardActivate}
       onKeyDown={handleCardKeyDown}
       role={isCardInteractive ? 'button' : undefined}
@@ -52,15 +58,17 @@ export default function MachineCard({ machine, isInteractive, onSelect }) {
       aria-label={isCardInteractive ? `Select ${machineName}` : undefined}
       aria-disabled={isInteractive && !isAvailable ? true : undefined}
     >
-      <div className="machine-card__content">
-        <p className="machine-card__label">Machine</p>
-        <h3 className="machine-card__title">{machineName}</h3>
-        <p className="machine-card__id">ID: {machine?.id || 'Unknown'}</p>
-      </div>
+      {isScanVariant ? (
+        <div className="machine-card__icon-wrap" aria-hidden="true">
+          <span className={`machine-card__icon machine-card__icon--${machineType}`} />
+        </div>
+      ) : null}
 
-      <div className="machine-card__actions">
+      <div className="machine-card__content">
+        {!isScanVariant ? <p className="machine-card__label">Machine</p> : null}
+        <h3 className="machine-card__title">{machineName}</h3>
         <MachineStatusBadge status={status} />
-        <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p>
+        {!isScanVariant ? <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p> : null}
       </div>
     </article>
   );
