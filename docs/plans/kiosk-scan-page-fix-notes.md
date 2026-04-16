@@ -41,3 +41,16 @@
 ## Remaining tiny differences from screenshot
 - The exact top-right debug controls in the screenshot are outside the scan-page component itself and were not reimplemented as part of this focused page correction.
 - Minor font/rendering differences may still exist depending on runtime font availability and viewport scaling.
+
+## Final micro-refinement pass (focused)
+- Reduced app-shell chrome on `waiting_for_code` by hiding `KioskHeader` and `KioskFooter` in that state, and tightening top/content spacing so the stepper + scan card + machine cards dominate the page.
+- Lightened the top 3-step progress visuals with smaller circles, lighter connector lines, and reduced label scale/spacing while keeping the same structure (`Scan / Select / Start`).
+- Reworked the CSS-only scan icon into a cleaner QR-like module layout (finder blocks + simple dots/lines) for a more premium, less improvised look.
+- Polished scan-page machine cards via subtle spacing/size tuning:
+  - slightly quieter dark surfaces and shadow,
+  - rebalanced icon container + icon stroke weights,
+  - slightly reduced badge and title dominance for closer screenshot proportion.
+
+### Acceptance assessment
+- The waiting-for-code scan page is now visually much closer to the supplied screenshot and should be acceptable for this pass.
+- Remaining differences are mostly minor runtime/font rendering nuance rather than layout/component mismatch.
