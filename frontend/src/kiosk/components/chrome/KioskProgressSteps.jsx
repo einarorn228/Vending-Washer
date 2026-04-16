@@ -36,11 +36,33 @@ export default function KioskProgressSteps({ currentState }) {
               aria-current={isActive ? 'step' : undefined}
             >
               <span className="kiosk-progress__dot" aria-hidden="true">
-                {index + 1}
+                {isComplete ? (
+                  <svg
+                    className="kiosk-progress__check"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M20 6L9 17L4 12"
+                      stroke="currentColor"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  index + 1
+                )}
               </span>
               <span className="kiosk-progress__label">{step}</span>
             </div>
-            {index < STEPS.length - 1 ? <span className="kiosk-progress__line" aria-hidden="true" /> : null}
+            {index < STEPS.length - 1 ? (
+              <span
+                className={`kiosk-progress__line ${isComplete ? 'kiosk-progress__line--complete' : ''}`}
+                aria-hidden="true"
+              />
+            ) : null}
           </React.Fragment>
         );
       })}
