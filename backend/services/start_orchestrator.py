@@ -304,6 +304,21 @@ def start_from_button(button_index: int) -> StartOutcome:
     if not machine_id:
         return StartOutcome(success=False, message="Unknown button.", uses_left=None)
 
+    return _start_from_machine(machine_id=machine_id, scan_source="button")
+
+
+def start_from_touch(machine_id: Optional[str]) -> StartOutcome:
+    """Start flow for touch-select callbacks using backend-held armed scan context."""
+
+    machine = (machine_id or "").strip()
+    if not machine:
+        return StartOutcome(success=False, message="Missing machine_id", uses_left=None)
+    return _start_from_machine(machine_id=machine, scan_source="touch")
+
+
+def _start_from_machine(machine_id: str, scan_source: str) -> StartOutcome:
+    """Shared machine-start flow for button and touch selection paths."""
+
     code_info = get_button_start_code(machine_id)
     if not code_info:
         return StartOutcome(
@@ -326,7 +341,7 @@ def start_from_button(button_index: int) -> StartOutcome:
         entitlement,
         provider_name=provider_name,
         machine_id=machine_id,
-        scan_source="button",
+        scan_source=scan_source,
         identifier_type="uuid_or_pin" if provider_name == "reisa" else "code",
         identifier_value=getattr(entitlement, "code", None),
     )
@@ -512,4 +527,5 @@ __all__ = [
     "ingest_scan",
     "start_from_button",
     "start_from_code",
+    "start_from_touch",
 ]

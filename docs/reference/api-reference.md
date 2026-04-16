@@ -182,6 +182,64 @@ Notes:
 
 ---
 
+## `POST /api/touch_select_machine`
+Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
+
+Purpose: request machine selection/start in touch mode using backend-held armed scan context (no raw `code` in request).
+
+Request body:
+```json
+{"machine_id":"washer1"}
+```
+
+Success (`200`):
+```json
+{
+  "success":true,
+  "message":"Washer 1 is powered on. Select a program on the machine (max 10 minutes).",
+  "uses_left":1,
+  "state":"machine_starting"
+}
+```
+
+Failure responses:
+- Missing `machine_id` (`400`):
+```json
+{"success":false,"message":"Missing machine_id"}
+```
+- Invalid `machine_id` (`400`):
+```json
+{"success":false,"message":"Invalid machine_id"}
+```
+- Touch mode disabled (`409`):
+```json
+{"success":false,"message":"Touch selection is disabled."}
+```
+- Wrong UI state (must be `choose_machine`) (`409`):
+```json
+{"success":false,"message":"Machine selection is not active.","state":"waiting_for_code"}
+```
+- No armed/pending scan or start conflict (`409`):
+```json
+{"success":false,"message":"No valid scan in progress.","uses_left":null,"state":"choose_machine"}
+```
+or
+```json
+{"success":false,"message":"Machine not available.","uses_left":null,"state":"choose_machine"}
+```
+
+Preconditions:
+- `kiosk_input_mode` resolves to `touch`.
+- Current backend UI state is `choose_machine`.
+- Backend has an armed, valid scan/session context.
+- Target machine exists and can be started.
+
+Notes:
+- This endpoint is additive and does not replace `/api/i4_event`.
+- Hardware-button flow remains unchanged.
+
+---
+
 ## `POST /api/i4_event` and `GET /api/i4_event?button=<index>`
 Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
@@ -235,6 +293,7 @@ Success (`200`) example:
   "message":"Scan your code to start",
   "uses_left":null,
   "current_machine":null,
+  "input_mode":"hardware_buttons",
   "machines":[{"id":"washer1","name":"Washer 1","available":true}]
 }
 ```

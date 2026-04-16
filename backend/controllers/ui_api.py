@@ -14,6 +14,7 @@ from backend.services.start_orchestrator import (
     ingest_scan,
     start_from_button,
     start_from_code,
+    start_from_touch,
 )
 
 ui_api = Blueprint("ui_api", __name__)
@@ -69,6 +70,10 @@ def list_machines():
     return get_machine_snapshot()
 
 
+def _machine_exists(machine_id: str) -> bool:
+    return any(machine.get("id") == machine_id for machine in list_machines())
+
+
 @ui_api.route("/start_machine", methods=["POST"])
 def start_machine_endpoint():
     data = request.get_json(force=True)
@@ -84,6 +89,37 @@ def start_machine_endpoint():
             "uses_left": outcome.uses_left,
             "message": outcome.message,
         }
+    )
+
+
+@ui_api.route("/touch_select_machine", methods=["POST"])
+def touch_select_machine_endpoint():
+    data = request.get_json(force=True, silent=True) or {}
+    machine_id = (data.get("machine_id") or "").strip()
+    if not machine_id:
+        return jsonify({"success": False, "message": "Missing machine_id"}), 400
+    if not _machine_exists(machine_id):
+        return jsonify({"success": False, "message": "Invalid machine_id"}), 400
+    if _resolve_input_mode() != INPUT_MODE_TOUCH:
+        return jsonify({"success": False, "message": "Touch selection is disabled."}), 409
+    if UI_STATE.get("state") != "choose_machine":
+        return (
+            jsonify({"success": False, "message": "Machine selection is not active.", "state": UI_STATE.get("state")}),
+            409,
+        )
+
+    outcome = start_from_touch(machine_id=machine_id)
+    status = 200 if outcome.success else 409
+    return (
+        jsonify(
+            {
+                "success": outcome.success,
+                "message": outcome.message,
+                "uses_left": outcome.uses_left,
+                "state": UI_STATE.get("state"),
+            }
+        ),
+        status,
     )
 
 
