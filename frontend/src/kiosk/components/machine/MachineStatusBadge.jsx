@@ -1,15 +1,29 @@
 import React from 'react';
+import { normalizeMachineStatus } from './normalizeMachineStatus.js';
 
-export default function MachineStatusBadge({ available }) {
-  const isAvailable = Boolean(available);
-  const label = isAvailable ? 'AVAILABLE' : 'IN USE';
+export default function MachineStatusBadge({ status }) {
+  const normalizedStatus = normalizeMachineStatus(status);
+
+  const labelByStatus = {
+    available: 'AVAILABLE',
+    busy: 'IN USE',
+    reserved: 'RESERVED',
+    error: 'ERROR',
+  };
+
+  const a11yByStatus = {
+    available: 'Available',
+    busy: 'In use',
+    reserved: 'Reserved',
+    error: 'Error',
+  };
 
   return (
     <span
-      className={`machine-status-badge ${isAvailable ? 'machine-status-badge--available' : 'machine-status-badge--busy'}`}
-      aria-label={`Machine status: ${isAvailable ? 'Available' : 'In use'}`}
+      className={`machine-status-badge machine-status-badge--${normalizedStatus}`}
+      aria-label={`Machine status: ${a11yByStatus[normalizedStatus]}`}
     >
-      {label}
+      {labelByStatus[normalizedStatus]}
     </span>
   );
 }

@@ -6,17 +6,24 @@ export default function HomeScreen({ message, inputMode }) {
   return (
     <section className="kiosk-screen kiosk-screen--home">
       <div className="kiosk-hero kiosk-hero--home">
+        <div className="kiosk-scan-mark" aria-hidden="true">
+          <span className="kiosk-scan-mark__frame" />
+          <span className="kiosk-scan-mark__frame" />
+          <span className="kiosk-scan-mark__frame" />
+          <span className="kiosk-scan-mark__frame" />
+          <span className="kiosk-scan-mark__code" />
+        </div>
         <p className="kiosk-hero__eyebrow">Ready to start</p>
         <h2 className="kiosk-hero__title">Scan your code</h2>
-        <p className="kiosk-hero__message">{message || 'Scan your code to start your wash.'}</p>
+        <p className="kiosk-hero__message">{message || 'Hold your code in front of the scanner.'}</p>
       </div>
 
       <div className="kiosk-detail-card kiosk-detail-card--home">
         <p className="kiosk-detail-card__title">Next step</p>
         <p className="kiosk-detail-card__text">
           {isTouchMode
-            ? 'After scanning, choose your machine directly on this screen.'
-            : 'After scanning, use the hardware buttons to choose your machine.'}
+            ? 'After scanning, choose your machine on the screen.'
+            : 'After scanning, choose your machine with the hardware buttons.'}
         </p>
       </div>
     </section>
