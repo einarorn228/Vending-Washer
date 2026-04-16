@@ -49,5 +49,9 @@ export default function KioskRouter({ uiState, backendUnreachable }) {
       break;
   }
 
-  return <KioskAppShell backendUnreachable={backendUnreachable}>{content}</KioskAppShell>;
+  return (
+    <KioskAppShell backendUnreachable={backendUnreachable} currentState={uiState.state}>
+      {content}
+    </KioskAppShell>
+  );
 }

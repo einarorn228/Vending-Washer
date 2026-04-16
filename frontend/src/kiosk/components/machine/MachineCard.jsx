@@ -1,9 +1,28 @@
 import React from 'react';
 import MachineStatusBadge from './MachineStatusBadge.jsx';
+import { normalizeMachineStatus } from './normalizeMachineStatus.js';
+
+function resolveHint(status, isInteractive) {
+  if (!isInteractive) {
+    return 'Use hardware buttons';
+  }
+
+  switch (status) {
+    case 'available':
+      return 'Tap to select';
+    case 'reserved':
+      return 'Reserved';
+    case 'error':
+      return 'Needs service';
+    default:
+      return 'Currently unavailable';
+  }
+}
 
 export default function MachineCard({ machine, isInteractive, onSelect }) {
   const machineName = machine?.name || machine?.id || 'Machine';
-  const isAvailable = Boolean(machine?.available);
+  const status = normalizeMachineStatus(machine);
+  const isAvailable = status === 'available';
   const isCardInteractive = isInteractive && isAvailable;
 
   function handleCardActivate() {
@@ -25,7 +44,7 @@ export default function MachineCard({ machine, isInteractive, onSelect }) {
 
   return (
     <article
-      className={`machine-card machine-card--${isAvailable ? 'available' : 'busy'} ${isCardInteractive ? 'machine-card--interactive' : 'machine-card--readonly'}`}
+      className={`machine-card machine-card--${status} ${isCardInteractive ? 'machine-card--interactive' : 'machine-card--readonly'}`}
       onClick={handleCardActivate}
       onKeyDown={handleCardKeyDown}
       role={isCardInteractive ? 'button' : undefined}
@@ -36,18 +55,12 @@ export default function MachineCard({ machine, isInteractive, onSelect }) {
       <div className="machine-card__content">
         <p className="machine-card__label">Machine</p>
         <h3 className="machine-card__title">{machineName}</h3>
-        <p className="machine-card__id">{machine?.id || 'Unknown ID'}</p>
+        <p className="machine-card__id">ID: {machine?.id || 'Unknown'}</p>
       </div>
 
       <div className="machine-card__actions">
-        <MachineStatusBadge available={isAvailable} />
-        <p className="machine-card__hint">
-          {isInteractive
-            ? isAvailable
-              ? 'Tap to select'
-              : 'Currently unavailable'
-            : 'Use hardware buttons'}
-        </p>
+        <MachineStatusBadge status={status} />
+        <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p>
       </div>
     </article>
   );

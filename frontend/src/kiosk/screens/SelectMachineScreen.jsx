@@ -14,12 +14,12 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
     }
 
     setIsSubmitting(true);
-    setSelectionMessage('Selecting machine…');
+    setSelectionMessage('Selecting machine...');
 
     const result = await touchSelectMachine(machine.id);
 
     if (result?.success) {
-      setSelectionMessage(result.message || 'Machine selected. Waiting for backend update…');
+      setSelectionMessage(result.message || 'Machine enabled. Waiting for backend update...');
     } else {
       setSelectionMessage(result?.message || 'Unable to select machine right now.');
     }
@@ -35,7 +35,7 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         <p className="kiosk-hero__message">
           {message ||
             (isTouchSelectable
-              ? 'Tap an available machine card to start.'
+              ? 'Tap an available machine to continue.'
               : 'Use the hardware buttons to choose an available machine.')}
         </p>
       </div>
@@ -46,14 +46,11 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         onSelect={handleMachineSelect}
       />
 
-      <div className="kiosk-detail-card kiosk-detail-card--status">
-        <p className="kiosk-detail-card__title">Selection status</p>
-        <p className="kiosk-detail-card__text">
-          {selectionMessage ||
-            (isTouchSelectable
-              ? 'Touch mode is active. Tap a machine to continue.'
-              : 'Hardware mode is active. Use machine buttons to continue.')}
-        </p>
+      <div className="kiosk-toast" role="status" aria-live="polite">
+        {selectionMessage ||
+          (isTouchSelectable
+            ? 'Touch mode active. Tap a machine card to continue.'
+            : 'Hardware mode active. Screen is read-only in this step.')}
       </div>
     </section>
   );
