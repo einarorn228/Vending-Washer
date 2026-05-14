@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ScanScreen from './components/ScanScreen.jsx';
 import MachineSelectScreen from './components/MachineSelectScreen.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
-import { pollState } from './api/backend.js';
+import { pollState, isApiKeyConfigured } from './api/backend.js';
 
 const connectionBannerStyle = {
   background: '#3d2914',
@@ -32,14 +32,33 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const banner = backendUnreachable ? (
+  const missingKeyBanner = !isApiKeyConfigured() ? (
     <div style={connectionBannerStyle}>
-      Ekki náð í bakenda (API / net). Athugaðu að Flask keyri á port 5000, réttan{' '}
-      <code style={{ color: '#ffe0b2' }}>VITE_API_KEY</code> eða{' '}
-      <code style={{ color: '#ffe0b2' }}>localStorage API_KEY</code>, og að{' '}
-      <code style={{ color: '#ffe0b2' }}>/api</code> sé proxy-að í Vite.
+      Enginn API lykill í þessum vafra. Bættu við{' '}
+      <code style={{ color: '#ffe0b2' }}>VITE_API_KEY</code> í skrána{' '}
+      <code style={{ color: '#ffe0b2' }}>frontend/.env</code> (sami gildi og í gagnagrunninum:{' '}
+      <code style={{ color: '#ffe0b2' }}>python backend/scripts/get_api_key.py</code>
+      ) og endurræstu Vite. Eftir hreinsun á Chromium kiosk er{' '}
+      <code style={{ color: '#ffe0b2' }}>localStorage</code> autt — .env er venjulega einfaldasta leiðin á Pi.
     </div>
   ) : null;
+
+  const connectionBanner =
+    isApiKeyConfigured() && backendUnreachable ? (
+      <div style={connectionBannerStyle}>
+        Ekki náð í bakenda (API / net). Athugaðu að Flask keyri á port 5000, réttan{' '}
+        <code style={{ color: '#ffe0b2' }}>X-API-KEY</code>, og að{' '}
+        <code style={{ color: '#ffe0b2' }}>/api</code> sé proxy-að í Vite (tóm{' '}
+        <code style={{ color: '#ffe0b2' }}>VITE_API_BASE_URL</code> á sama vélar localhost).
+      </div>
+    ) : null;
+
+  const banner = (
+    <>
+      {missingKeyBanner}
+      {connectionBanner}
+    </>
+  );
 
   switch (uiState.state) {
     case 'waiting_for_code':

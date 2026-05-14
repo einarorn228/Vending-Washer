@@ -11,6 +11,7 @@ Operational docs for admins/operators: command recipes, diagnostics workflows, a
 - [`runbooks/runtime-and-process-management.md`](./runbooks/runtime-and-process-management.md)
 - [`runbooks/auth-and-admin-access.md`](./runbooks/auth-and-admin-access.md)
 - [`runbooks/hardware-and-scanner-troubleshooting.md`](./runbooks/hardware-and-scanner-troubleshooting.md)
+- [`runbooks/kiosk-and-e2e-testing.md`](./runbooks/kiosk-and-e2e-testing.md) — Pi kiosk, Vite, API key, Reisa full-stack, Shelly relay enablement, single-backend hygiene
 - [`runbooks/scanner-newland-fm3080-cdc.md`](./runbooks/scanner-newland-fm3080-cdc.md) — Newland FM3080 USB CDC + Pi verification
 - [`runbooks/logging-metrics-diagnostics.md`](./runbooks/logging-metrics-diagnostics.md)
 - [`runbooks/maintenance-tasks.md`](./runbooks/maintenance-tasks.md)
