@@ -63,13 +63,17 @@ Status: Supported
 Status: Supported (preview mode)
 
 ## `frontend/scripts/open-pi-browser.sh`
-Status: Legacy / Pi-specific
+Status: Supported on the intended Raspberry Pi kiosk host
+
+Behavior (current):
+- launches a **single** Chromium or `chromium-browser` instance in kiosk mode,
+- optional `KIOSK_URL` (default `http://localhost:3000/`),
+- optional `KIOSK_DISABLE_GPU` (default enables `--disable-gpu` for blank-window mitigation on some Pi stacks).
 
 Gotchas:
-- Starts Chromium twice (two launch commands in file).
-- hardcoded `/home/hamrar/*` paths.
+- hardcoded X11 paths for user `hamrar` — adjust on other accounts.
 
-Use only when running on the intended Raspberry Pi environment.
+See also: [`../operations/runbooks/kiosk-and-e2e-testing.md`](../operations/runbooks/kiosk-and-e2e-testing.md).
 
 ## Backend helper scripts
 
@@ -108,6 +112,38 @@ python -m backend.setup.seed_machines
 
 High-risk note:
 - Not a migration tool.
+
+## `backend/setup/configure_reisa.py`
+Status: Supported
+
+Purpose:
+- writes Reisa provider settings into `settings` (`provider_default`, `provider_reisa_enabled`, `reisa_base_url`, `reisa_bearer_token`, action names).
+
+Commands:
+```bash
+export REISA_BEARER_TOKEN='…'
+python -m backend.setup.configure_reisa
+python -m backend.setup.configure_reisa --full-stack
+```
+
+`--full-stack` additionally enables `backend_relay_enabled`, `telemetry_enabled`, `reisa_retry_worker_enabled`, and expands `cors_allowed_origins` for local Vite/kiosk. Optional: `CORS_EXTRA_ORIGINS`, `--cors-origins`, `--base-url`, `--dry-run`.
+
+Restart backend after CORS changes.
+
+## `backend/setup/enable_hardware_e2e.py`
+Status: Supported
+
+Purpose:
+- set `backend_relay_enabled=true`, `telemetry_enabled=true`, and `scan_timeout=3` for real Shelly/button-box testing (does **not** change Reisa secrets).
+
+Command:
+```bash
+python -m backend.setup.enable_hardware_e2e
+```
+
+Restart backend after running (serial `scan_timeout` is applied when the scanner port opens).
+
+See: [`../operations/runbooks/kiosk-and-e2e-testing.md`](../operations/runbooks/kiosk-and-e2e-testing.md).
 
 ## `backend/setup/setup_logs.py`
 Status: Legacy utility

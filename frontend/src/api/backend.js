@@ -3,15 +3,20 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 function getApiKey() {
   const envKey = import.meta.env.VITE_API_KEY;
-  if (envKey) return envKey;
+  if (envKey && String(envKey).trim()) return String(envKey).trim();
 
   if (typeof window !== 'undefined') {
     const storedKey = window.localStorage.getItem(STORAGE_KEY);
-    if (storedKey) return storedKey;
+    if (storedKey && String(storedKey).trim()) return String(storedKey).trim();
   }
 
   console.warn('No API key configured. Set VITE_API_KEY or localStorage API_KEY.');
   return null;
+}
+
+/** True if the UI can attach X-API-KEY (env at Vite start, or localStorage). */
+export function isApiKeyConfigured() {
+  return getApiKey() != null;
 }
 
 async function request(path, options = {}) {

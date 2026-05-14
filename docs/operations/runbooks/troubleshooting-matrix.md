@@ -32,6 +32,10 @@ Use this during outages or failed setup/update validation.
 | Machine stuck in starting/error loop | telemetry confirmation missing, timeout settings too strict, pending state race | `events.log` for `SELECTION_TIMEOUT`/runstate events, timeout settings | tune `selection_timeout_sec` / thresholds, verify telemetry transitions, clear root cause then retry |
 | Reisa sync failures increasing | upstream timeout/auth/action mismatch | `/admin/reisa/sync_failures`, audit events categories, retry jobs | fix root cause (token/url/action/network), then replay targeted jobs |
 | Replay jobs stuck pending/retrying | worker disabled, due jobs not replayed, repeat transient failures | `/admin/reisa/retry_jobs?due_only=true`, retry worker settings | run manual `/admin/reisa/retry_due`, or enable worker cautiously |
+| `BUTTON_BOX_* skipped (backend_relay_enabled=false)` in `events.log` | relay simulation mode; setting is `false` | `settings.backend_relay_enabled`, [`enable_hardware_e2e.py`](../../../backend/setup/enable_hardware_e2e.py) | run `python -m backend.setup.enable_hardware_e2e`, restart backend; confirm intent before enabling real hardware |
+| Kiosk / browser UI blank or empty | Vite not running, Chromium GPU quirk, or wrong URL | `ss -tlnp` for port 3000, kiosk script, [`kiosk-and-e2e-testing.md`](./kiosk-and-e2e-testing.md) | start `npx vite --host --port 3000`, try `KIOSK_DISABLE_GPU=0` on Chromium if needed, open `http://localhost:3000` or correct LAN URL |
+| UI banner “Ekki náð í bakenda” on Pi only | missing `VITE_API_KEY` / `localStorage` after Chromium profile wipe; or backend down | `frontend/.env`, `get_api_key.py`, port 5000 | add `VITE_API_KEY` to `.env`, restart Vite; ensure `.venv/bin/python -m backend.app` on Pi |
+| Odd duplicate scans / flaky UUID | USB framing; see scanner runbook | `app.log` scanner lines, [`hardware-and-scanner-troubleshooting.md`](./hardware-and-scanner-troubleshooting.md) | tune `scan_timeout`, verify baud; read USB fragment mitigation section |
 
 ---
 

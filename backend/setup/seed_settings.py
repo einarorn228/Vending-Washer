@@ -21,7 +21,7 @@ def _ensure_db_initialized() -> None:
 DEFAULT_SETTINGS = {
     "admin_username": "admin",
     "admin_password_hash": hashlib.sha256(b"admin").hexdigest(),
-    "cors_allowed_origins": "http://localhost",
+    "cors_allowed_origins": "http://localhost,http://localhost:3000,http://127.0.0.1:3000",
     "log_level": "INFO",
     "button_select_timeout_sec": "45",
     "kiosk_input_mode": "hardware_buttons",
@@ -40,7 +40,7 @@ DEFAULT_SETTINGS = {
     "reisa_retry_worker_batch_size": "20",
     "serial_port": "/dev/ttyACM0",
     "serial_baudrate": "9600",
-    "scan_timeout": "1",
+    "scan_timeout": "3",
 }
 
 

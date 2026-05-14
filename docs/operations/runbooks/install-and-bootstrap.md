@@ -150,6 +150,8 @@ npm run dev
 
 Frontend expected at `http://localhost:3000`.
 
+For **Raspberry Pi kiosk**, Reisa, Shelly relays, and “real user” testing in one place, follow **[`kiosk-and-e2e-testing.md`](./kiosk-and-e2e-testing.md)** (API key in `frontend/.env`, enable hardware script, single-backend hygiene).
+
 ---
 
 ## 8) First verification checklist (must pass)

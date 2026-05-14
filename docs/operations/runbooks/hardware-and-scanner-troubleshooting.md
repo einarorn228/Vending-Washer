@@ -43,8 +43,20 @@ High-risk gotcha:
 
 - 8-character alphanumeric “local kiosk” codes
 - UUID strings (with hyphens) and 32-character hex (no hyphens)
+- **4–12 digit PIN** strings (Reisa `lookup_auto` path)
 
 If `tools/test_scanner.py` prints a `DECODED` value but the backend ignores it, compare the string against that helper.
+
+### USB CDC: split frames and “late first byte”
+Some USB serial scanners deliver one logical barcode as **multiple reads** (for example the UUID body first, then one or two hex characters that belong at the **start** of the string). The backend mitigates this by:
+
+- reading with **`inter_byte_timeout`** and a short **coalesce tail** read (see `INTER_BYTE_TIMEOUT_SEC`, `_read_full_frame` in `qr_scanner.py`),
+- **buffering** a UUID-shaped “tail” briefly and **prepending** a following 1–3 hex fragment when it completes a valid UUID,
+- **suffix recovery** against the **last successfully ingested UUID** within a TTL when bytes are dropped from the **left** of the whole string (same QR rescanned).
+
+If fragments still appear in `app.log`, increase `scan_timeout` (requires backend restart) and confirm baud rate matches the scanner datasheet.
+
+End-to-end Pi + hardware checklist: [`kiosk-and-e2e-testing.md`](./kiosk-and-e2e-testing.md).
 
 ## Serial configuration issues
 

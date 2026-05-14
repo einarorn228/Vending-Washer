@@ -22,6 +22,7 @@ Provide one predictable structure for:
 ## Phase 1 foundation docs (current canonical)
 - Operations:
   - [`operations/runbooks/install-and-bootstrap.md`](./operations/runbooks/install-and-bootstrap.md)
+  - [`operations/runbooks/kiosk-and-e2e-testing.md`](./operations/runbooks/kiosk-and-e2e-testing.md) — Pi kiosk, API key, Shelly / full-stack Reisa
   - [`operations/runbooks/update-and-upgrade.md`](./operations/runbooks/update-and-upgrade.md)
   - [`operations/runbooks/recovery-and-rollback.md`](./operations/runbooks/recovery-and-rollback.md)
   - [`operations/runbooks/troubleshooting-matrix.md`](./operations/runbooks/troubleshooting-matrix.md)
@@ -43,6 +44,7 @@ Provide one predictable structure for:
   - [`architecture/ui-state-contract.md`](./architecture/ui-state-contract.md)
   - [`operations/runbooks/runtime-and-process-management.md`](./operations/runbooks/runtime-and-process-management.md)
   - [`operations/runbooks/auth-and-admin-access.md`](./operations/runbooks/auth-and-admin-access.md)
+  - [`operations/runbooks/kiosk-and-e2e-testing.md`](./operations/runbooks/kiosk-and-e2e-testing.md)
 
 ## Documentation conventions
 

@@ -94,6 +94,7 @@ General cautions:
   - When `false`, backend skips Shelly ON for machine start and skips button-box relay commands (UI/API simulation without firing hardware).
   - When `true`, backend issues Shelly commands during start and while a code is armed for i4 selection.
   - Startup path matters: `python -m backend.flask_server` does not call `ensure_backend_relay_setting_exists`, so ensure the key exists before relying on defaults.
+  - For kiosk / E2E testing, use `python -m backend.setup.enable_hardware_e2e` then restart backend; see [`../operations/runbooks/kiosk-and-e2e-testing.md`](../operations/runbooks/kiosk-and-e2e-testing.md).
 
 ## `provider_default`
 - Default/seed: `local`
