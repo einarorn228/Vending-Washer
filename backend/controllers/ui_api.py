@@ -128,7 +128,11 @@ def ui_state():
     state = UI_STATE.copy()
     state["machines"] = list_machines()
     state["input_mode"] = _resolve_input_mode()
-    return jsonify(state)
+    response = jsonify(state)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 @ui_api.route("/i4_event", methods=["POST", "GET"])

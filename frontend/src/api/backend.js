@@ -32,7 +32,12 @@ async function request(path, options = {}) {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+    const fetchOptions = {
+      ...options,
+      headers,
+      cache: 'no-store'
+    };
+    const response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
