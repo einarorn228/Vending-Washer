@@ -790,17 +790,73 @@ body {
 }
 
 .kiosk-preview-page {
-  display: grid;
-  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  display: flex;
   min-height: 100%;
   background: #e9edf4;
+  overflow-x: hidden;
 }
 
 .kiosk-preview-controls {
-  padding: 1rem;
+  flex-shrink: 0;
+  width: min(300px, 100vw);
   background: #0f172a;
   color: #e2e8f0;
   border-right: 1px solid #1e293b;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kiosk-preview-page--sidebar-closed .kiosk-preview-controls {
+  margin-left: -300px;
+}
+
+.kiosk-preview-controls__inner {
+  padding: 1rem;
+  width: 100%;
+}
+
+.kiosk-preview-controls__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kiosk-preview-toggle-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.2rem;
+  transition: color 0.2s ease;
+}
+
+.kiosk-preview-toggle-btn:hover {
+  color: #e2e8f0;
+}
+
+.kiosk-preview-toggle-btn--floating {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kiosk-preview-toggle-btn--floating:hover {
+  background: rgba(15, 23, 42, 1);
+  color: #fff;
 }
 
 .kiosk-preview-controls__title {
@@ -840,6 +896,8 @@ body {
 }
 
 .kiosk-preview-canvas {
+  flex-grow: 1;
+  position: relative;
   min-height: 100%;
 }
 
@@ -857,11 +915,20 @@ body {
 
 @media (max-width: 900px) {
   .kiosk-preview-page {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .kiosk-preview-controls {
+    width: 100%;
     border-right: none;
     border-bottom: 1px solid #1e293b;
+    transition: margin-top 0.3s ease;
+  }
+  
+  .kiosk-preview-page--sidebar-closed .kiosk-preview-controls {
+    margin-left: 0;
+    margin-top: -100vh;
+    height: 0;
+    overflow: hidden;
   }
 }

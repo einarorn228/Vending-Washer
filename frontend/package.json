@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k \"vite --host --port 3000 --strictPort\" \"npm:open:pi\"",
+    "dev": "concurrently \"vite --host --port 3000 --strictPort\" \"npm:open:pi\"",
     "open:pi": "wait-on http://localhost:3000 && bash ./scripts/open-pi-browser.sh",
     "build": "vite build",
     "start": "vite preview --host --port 3000"
