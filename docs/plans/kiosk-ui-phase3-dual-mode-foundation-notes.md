@@ -1,5 +1,8 @@
 # Kiosk UI Phase 3 — Dual-Mode Foundation Notes
 
+> **Status note (updated May 15, 2026):** This plan/note contains historical references to the older dual-mode model. Current behavior is touch-first with optional button-box input via `button_box_enabled`; `kiosk_input_mode`/`input_mode` are legacy compatibility metadata only. See `docs/reference/api-reference.md`, `docs/reference/settings-catalog.md`, and `docs/architecture/ui-state-contract.md` for the current contract.
+
+
 ## Scope completed
 This phase adds contract and plumbing for dual input modes without migrating the current screen set.
 

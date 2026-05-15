@@ -116,7 +116,7 @@ Success response (`200`):
   "success":true,
   "uses_left":1,
   "machines":[{"id":"washer1","name":"Washer 1","available":true}],
-  "message":"Select a machine using the physical buttons"
+  "message":"Choose an available machine to continue."
 }
 ```
 
@@ -185,7 +185,7 @@ Notes:
 ## `POST /api/touch_select_machine`
 Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
-Purpose: request machine selection/start in touch mode using backend-held armed scan context (no raw `code` in request).
+Purpose: request machine selection/start from the touchscreen using backend-held armed scan context (no raw `code` in request).
 
 Request body:
 ```json
@@ -211,10 +211,6 @@ Failure responses:
 ```json
 {"success":false,"message":"Invalid machine_id"}
 ```
-- Touch mode disabled (`409`):
-```json
-{"success":false,"message":"Touch selection is disabled."}
-```
 - Wrong UI state (must be `choose_machine`) (`409`):
 ```json
 {"success":false,"message":"Machine selection is not active.","state":"waiting_for_code"}
@@ -229,21 +225,20 @@ or
 ```
 
 Preconditions:
-- `kiosk_input_mode` resolves to `touch`.
 - Current backend UI state is `choose_machine`.
 - Backend has an armed, valid scan/session context.
 - Target machine exists and can be started.
 
 Notes:
-- This endpoint is additive and does not replace `/api/i4_event`.
-- Hardware-button flow remains unchanged.
+- Not blocked by `kiosk_input_mode`/`input_mode` legacy metadata.
+- Uses the shared backend start validation path (same safety checks as button-box selection).
 
 ---
 
 ## `POST /api/i4_event` and `GET /api/i4_event?button=<index>`
 Auth: API key (`X-API-KEY` header recommended; `api_key` query parameter also accepted by current code).
 
-Purpose: submit physical button index.
+Purpose: submit button-box button index as an optional secondary input source.
 
 POST request body example:
 ```json
@@ -273,6 +268,10 @@ Failure responses:
 ```json
 {"success":false,"message":"Unknown button.","uses_left":null}
 ```
+- Button box disabled (`409`, representative):
+```json
+{"success":false,"message":"Button box input is disabled."}
+```
 
 Auth failure (`401`):
 ```json
@@ -294,6 +293,7 @@ Success (`200`) example:
   "uses_left":null,
   "current_machine":null,
   "input_mode":"hardware_buttons",
+  "button_box_enabled":false,
   "machines":[{"id":"washer1","name":"Washer 1","available":true}]
 }
 ```
@@ -305,6 +305,8 @@ Auth failure (`401`):
 
 Notes:
 - Backend is source of truth for UI state.
+- `input_mode` is legacy compatibility metadata (do not use it to disable touchscreen machine selection).
+- `button_box_enabled` indicates whether button-box input is currently accepted.
 
 ---
 

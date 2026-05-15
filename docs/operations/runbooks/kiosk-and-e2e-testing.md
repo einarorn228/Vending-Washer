@@ -140,6 +140,56 @@ Optional environment variables are documented in the script header (`KIOSK_URL`,
 
 ---
 
+## 5.1) Kiosk UI preview (dev-only, no hardware required)
+
+Use this when iterating UI safely without scanner, backend polling, or machine hardware.
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open:
+- `/dev/kiosk-preview`
+- `/dev/kiosk-preview?scenario=scan-screen`
+- `/dev/kiosk-preview?scenario=touch-only-select-machine`
+- `/dev/kiosk-preview?scenario=touch-and-button-box-select-machine`
+- `/dev/kiosk-preview?scenario=machine-in-use`
+- `/dev/kiosk-preview?scenario=backend-unreachable`
+
+Key behavior notes:
+- The preview uses fake scenario payloads from `frontend/src/kiosk/dev/kioskPreviewScenarios.js`.
+- Rendering still uses the real kiosk UI routing path via `frontend/src/kiosk/KioskRouter.jsx`.
+- UI component/style edits affect both production kiosk UI and this preview route.
+- Backend/API behavior changes affect normal kiosk mode unless equivalent mock updates are added to preview scenarios.
+
+---
+
+## 5.2) Backend + input architecture regression checks
+
+Backend test commands:
+
+```bash
+python -m pytest backend/tests/test_ui_api.py
+python -m pytest backend/tests/test_machine_control.py
+python -m pytest backend/tests/test_flask_startup_bootstrap.py
+```
+
+Manual behavior checklist:
+- With `button_box_enabled=false`:
+  - touchscreen selection still works in `choose_machine`
+  - `/api/i4_event` rejects button input
+  - button box is not activated after scan
+- With `button_box_enabled=true`:
+  - touchscreen selection still works
+  - button-box input works if a valid scan/session is active
+- With no valid scan/session:
+  - touch and button-box starts fail safely
+- With busy/unavailable machine:
+  - touch and button-box starts fail safely
+
+---
+
 ## 6) Device IPs and topology
 
 Default seeded IPs live in `backend/setup/seed_machines.py`. If your Shellys use another subnet, update the `devices` table (or re-seed on a fresh DB) so telemetry and relays hit real hardware.

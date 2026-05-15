@@ -1,5 +1,8 @@
 # Kiosk UI Phase 4 — Screen Migration Notes
 
+> **Status note (updated May 15, 2026):** This plan/note contains historical references to the older dual-mode model. Current behavior is touch-first with optional button-box input via `button_box_enabled`; `kiosk_input_mode`/`input_mode` are legacy compatibility metadata only. See `docs/reference/api-reference.md`, `docs/reference/settings-catalog.md`, and `docs/architecture/ui-state-contract.md` for the current contract.
+
+
 ## Scope completed
 Phase 4 replaces legacy kiosk screen components in router flow with new design-specific screen components while preserving backend authority and dual-mode behavior.
 
