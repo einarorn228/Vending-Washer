@@ -36,7 +36,7 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
           {message ||
             (isTouchSelectable
               ? 'Tap an available machine to continue.'
-              : 'Use the hardware buttons to choose an available machine.')}
+              : 'Tap an available machine to continue.')}
         </p>
       </div>
 
@@ -49,8 +49,8 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
       <div className="kiosk-toast" role="status" aria-live="polite">
         {selectionMessage ||
           (isTouchSelectable
-            ? 'Touch mode active. Tap a machine card to continue.'
-            : 'Hardware mode active. Screen is read-only in this step.')}
+            ? 'Tap a machine card to continue.'
+            : 'Touch selection is available.')}
       </div>
     </section>
   );

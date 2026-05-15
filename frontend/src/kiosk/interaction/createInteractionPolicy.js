@@ -9,9 +9,10 @@ export default function createInteractionPolicy({ inputMode, isFallback }) {
     isFallback,
     isTouchMode,
     isHardwareButtonsMode,
-    // Centralized defaults: keep kiosk safe/read-only unless explicitly in touch mode.
+    // Touch machine selection is always enabled when the screen state allows it.
+    // Legacy inputMode is preserved for compatibility and display only.
     allowTouchPrimaryActions: isTouchMode,
-    allowTouchMachineSelect: isTouchMode,
+    allowTouchMachineSelect: true,
     allowTouchSecondaryActions: false,
   };
 }

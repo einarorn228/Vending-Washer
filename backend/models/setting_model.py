@@ -26,16 +26,27 @@ def update_setting_value(session, key, value):
     session.commit()
 
 
+def parse_setting_bool(raw, *, default: bool = False) -> bool:
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
+
 def is_backend_relay_enabled(session=default_session) -> bool:
     raw = get_setting_value(session, "backend_relay_enabled", default="false")
-    return str(raw).lower() in ("1", "true", "yes")
+    return parse_setting_bool(raw, default=False)
+
+
+def is_button_box_enabled(session=default_session) -> bool:
+    raw = get_setting_value(session, "button_box_enabled", default="false")
+    return parse_setting_bool(raw, default=False)
 
 
 def is_telemetry_enabled(session=default_session) -> bool:
     """When false, Shelly telemetry HTTP polls are skipped (dev / no-hardware)."""
 
     raw = get_setting_value(session, "telemetry_enabled", default="true")
-    return str(raw).lower() in ("1", "true", "yes", "on")
+    return parse_setting_bool(raw, default=True)
 
 
 def ensure_backend_relay_setting_exists(session_factory=Session) -> None:

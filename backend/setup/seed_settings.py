@@ -25,6 +25,7 @@ DEFAULT_SETTINGS = {
     "log_level": "INFO",
     "button_select_timeout_sec": "45",
     "kiosk_input_mode": "hardware_buttons",
+    "button_box_enabled": "false",
     "provider_default": "local",
     "provider_reisa_enabled": "false",
     "backend_relay_enabled": "false",

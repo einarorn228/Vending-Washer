@@ -24,6 +24,7 @@ export const kioskPreviewScenarios = [
       uses_left: null,
       current_machine: null,
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -37,6 +38,36 @@ export const kioskPreviewScenarios = [
       uses_left: 2,
       current_machine: null,
       input_mode: 'touch',
+      button_box_enabled: false,
+    },
+  },
+
+  {
+    id: 'touch-only-select-machine',
+    label: 'Touch only / no button box',
+    backendUnreachable: false,
+    uiState: {
+      state: 'choose_machine',
+      message: 'Code accepted. Touch is active; button box is disabled.',
+      machines: baseMachines,
+      uses_left: 2,
+      current_machine: null,
+      input_mode: 'hardware_buttons',
+      button_box_enabled: false,
+    },
+  },
+  {
+    id: 'touch-and-button-box-select-machine',
+    label: 'Touch + button box enabled',
+    backendUnreachable: false,
+    uiState: {
+      state: 'choose_machine',
+      message: 'Code accepted. Touch is active; button box is also enabled.',
+      machines: baseMachines,
+      uses_left: 2,
+      current_machine: null,
+      input_mode: 'hardware_buttons',
+      button_box_enabled: true,
     },
   },
   {
@@ -50,6 +81,7 @@ export const kioskPreviewScenarios = [
       uses_left: null,
       current_machine: null,
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -63,6 +95,7 @@ export const kioskPreviewScenarios = [
       uses_left: 1,
       current_machine: 'wm-01',
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -76,6 +109,7 @@ export const kioskPreviewScenarios = [
       uses_left: 1,
       current_machine: 'wm-01',
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -89,6 +123,7 @@ export const kioskPreviewScenarios = [
       uses_left: 2,
       current_machine: null,
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -102,6 +137,7 @@ export const kioskPreviewScenarios = [
       uses_left: 0,
       current_machine: 'dr-01',
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
   {
@@ -115,6 +151,7 @@ export const kioskPreviewScenarios = [
       uses_left: null,
       current_machine: null,
       input_mode: 'touch',
+      button_box_enabled: false,
     },
   },
 ];

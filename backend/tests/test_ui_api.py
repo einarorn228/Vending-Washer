@@ -20,6 +20,7 @@ class UiApiScanTests(unittest.TestCase):
         session.commit()
         update_setting_value(session, "api_key", "test-key")
         update_setting_value(session, "kiosk_input_mode", "hardware_buttons")
+        update_setting_value(session, "button_box_enabled", "false")
         machine_control.cancel_reset_timer()
         machine_control.update_ui_state(
             {"state": "waiting_for_code", "message": "Scan your code to start"}
@@ -70,15 +71,13 @@ class UiApiScanTests(unittest.TestCase):
         self.assertEqual(resp.get_json()["message"], "Invalid machine_id")
 
     @patch("backend.controllers.ui_api._machine_exists", return_value=True)
-    def test_touch_select_machine_requires_touch_mode(self, _machine_exists_mock):
+    @patch("backend.controllers.ui_api.start_from_touch")
+    def test_touch_select_machine_works_when_button_box_disabled(self, start_from_touch_mock, _machine_exists_mock):
         machine_control.update_ui_state({"state": "choose_machine"})
-        resp = self.client.post(
-            "/touch_select_machine",
-            json={"machine_id": "washer1"},
-            headers=self.headers,
-        )
-        self.assertEqual(resp.status_code, 409)
-        self.assertEqual(resp.get_json()["message"], "Touch selection is disabled.")
+        start_from_touch_mock.return_value = StartOutcome(success=True, message="ok", uses_left=1)
+        resp = self.client.post("/touch_select_machine", json={"machine_id": "washer1"}, headers=self.headers)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()["success"])
 
     @patch("backend.controllers.ui_api._machine_exists", return_value=True)
     def test_touch_select_machine_requires_choose_machine_state(self, _machine_exists_mock):
@@ -98,6 +97,7 @@ class UiApiScanTests(unittest.TestCase):
     @patch("backend.controllers.ui_api.start_from_touch")
     def test_touch_select_machine_success(self, start_from_touch_mock, _machine_exists_mock):
         update_setting_value(session, "kiosk_input_mode", "touch")
+        update_setting_value(session, "button_box_enabled", "true")
         machine_control.update_ui_state({"state": "choose_machine"})
         start_from_touch_mock.return_value = StartOutcome(
             success=True,
@@ -123,6 +123,7 @@ class UiApiScanTests(unittest.TestCase):
         self, start_from_touch_mock, _machine_exists_mock
     ):
         update_setting_value(session, "kiosk_input_mode", "touch")
+        update_setting_value(session, "button_box_enabled", "true")
         machine_control.update_ui_state({"state": "choose_machine"})
         start_from_touch_mock.return_value = StartOutcome(
             success=False,
@@ -140,6 +141,42 @@ class UiApiScanTests(unittest.TestCase):
         self.assertFalse(payload["success"])
         self.assertEqual(payload["message"], "No valid scan in progress.")
 
+    @patch("backend.controllers.ui_api.start_from_button")
+    def test_i4_event_rejected_when_button_box_disabled(self, start_from_button_mock):
+        update_setting_value(session, "button_box_enabled", "false")
+        resp = self.client.post("/i4_event", json={"button": 1}, headers=self.headers)
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.get_json()["message"], "Button box input is disabled.")
+        start_from_button_mock.assert_not_called()
+
+    @patch("backend.controllers.ui_api.start_from_button")
+    def test_i4_event_works_when_button_box_enabled(self, start_from_button_mock):
+        update_setting_value(session, "button_box_enabled", "true")
+        start_from_button_mock.return_value = StartOutcome(success=True, message="ok", uses_left=1)
+        resp = self.client.post("/i4_event", json={"button": 1}, headers=self.headers)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()["success"])
+
+    def test_ui_state_includes_button_box_enabled(self):
+        update_setting_value(session, "button_box_enabled", "true")
+        resp = self.client.get("/ui_state", headers=self.headers)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()["button_box_enabled"])
+
+    @patch("backend.controllers.ui_api._machine_exists", return_value=True)
+    @patch("backend.controllers.ui_api.start_from_touch")
+    def test_touch_busy_machine_returns_409(self, start_from_touch_mock, _machine_exists_mock):
+        machine_control.update_ui_state({"state": "choose_machine"})
+        start_from_touch_mock.return_value = StartOutcome(success=False, message="Machine is busy.", uses_left=None)
+        resp = self.client.post("/touch_select_machine", json={"machine_id": "washer1"}, headers=self.headers)
+        self.assertEqual(resp.status_code, 409)
+
+    @patch("backend.controllers.ui_api.start_from_button")
+    def test_button_busy_machine_returns_409(self, start_from_button_mock):
+        update_setting_value(session, "button_box_enabled", "true")
+        start_from_button_mock.return_value = StartOutcome(success=False, message="Machine is busy.", uses_left=None)
+        resp = self.client.post("/i4_event", json={"button": 1}, headers=self.headers)
+        self.assertEqual(resp.status_code, 409)
 
 if __name__ == "__main__":  # pragma: no cover - convenience
     unittest.main()
