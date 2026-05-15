@@ -1,4 +1,5 @@
 """Flask routes for touchscreen UI."""
+import logging
 from flask import Blueprint, jsonify, request
 
 from backend.controllers.machine_control import (
@@ -7,7 +8,7 @@ from backend.controllers.machine_control import (
     SELECT_MACHINE_MESSAGE,
 )
 from backend.models import session
-from backend.models.setting_model import get_setting_value
+from backend.models.setting_model import get_setting_value, is_button_box_enabled
 from backend.metrics import inc
 from backend.services.start_orchestrator import (
     SCAN_BUSY_MESSAGE,
@@ -24,6 +25,8 @@ API_KEY_HEADER = "X-API-KEY"
 
 INPUT_MODE_TOUCH = "touch"
 INPUT_MODE_HARDWARE_BUTTONS = "hardware_buttons"
+
+_log = logging.getLogger(__name__)
 
 
 def _resolve_input_mode() -> str:
@@ -100,8 +103,6 @@ def touch_select_machine_endpoint():
         return jsonify({"success": False, "message": "Missing machine_id"}), 400
     if not _machine_exists(machine_id):
         return jsonify({"success": False, "message": "Invalid machine_id"}), 400
-    if _resolve_input_mode() != INPUT_MODE_TOUCH:
-        return jsonify({"success": False, "message": "Touch selection is disabled."}), 409
     if UI_STATE.get("state") != "choose_machine":
         return (
             jsonify({"success": False, "message": "Machine selection is not active.", "state": UI_STATE.get("state")}),
@@ -128,6 +129,7 @@ def ui_state():
     state = UI_STATE.copy()
     state["machines"] = list_machines()
     state["input_mode"] = _resolve_input_mode()
+    state["button_box_enabled"] = is_button_box_enabled(session)
     response = jsonify(state)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
@@ -148,6 +150,9 @@ def i4_event():
         index = int(button)
     except (TypeError, ValueError):
         return jsonify({"success": False, "message": "Invalid button index"}), 400
+    if not is_button_box_enabled(session):
+        _log.info("I4_BUTTON_IGNORED", extra={"reason": "button_box_disabled", "button": index})
+        return jsonify({"success": False, "message": "Button box input is disabled."}), 409
     outcome = start_from_button(index)
     status = 200 if outcome.success else 409
     return jsonify(

@@ -11,11 +11,12 @@ from typing import Dict, Optional, Tuple
 
 from backend.controllers.telemetry import MachineStateStore
 from backend.metrics import inc, observe_ms, set_gauge
-from backend.models import Session
+from backend.models import Session, session
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import (
     get_setting_value,
     is_backend_relay_enabled,
+    is_button_box_enabled,
     is_telemetry_enabled,
 )
 from backend.providers.local_provider import LocalProvider
@@ -36,7 +37,7 @@ events_logger = get_event_logger()
 error_logger = get_error_logger()
 
 SCAN_BUSY_MESSAGE = "System busy. Please wait."
-SELECT_MACHINE_MESSAGE = "Select a machine using the physical buttons"
+SELECT_MACHINE_MESSAGE = "Choose an available machine to continue"
 STARTING_INSTRUCTION_TEMPLATE = (
     "{machine} is powered on. Select a program on the machine (max 10 minutes)."
 )
@@ -698,7 +699,10 @@ def arm_code(code_info: ValidatedCode) -> None:
         timer = threading.Timer(timeout, _timeout)
         _armed_code = ArmedCode(code=code_info, expires_at=expires_at, timer=timer)
         timer.start()
-    _activate_button_box()
+    if is_button_box_enabled(session):
+        _activate_button_box()
+    else:
+        events_logger.info("BUTTON_BOX_ARM_SKIPPED", extra={"reason": "button_box_disabled"})
 
 
 def disarm_code() -> None:
