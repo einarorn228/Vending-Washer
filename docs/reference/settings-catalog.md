@@ -96,6 +96,31 @@ General cautions:
   - Startup path matters: `python -m backend.flask_server` does not call `ensure_backend_relay_setting_exists`, so ensure the key exists before relying on defaults.
   - For kiosk / E2E testing, use `python -m backend.setup.enable_hardware_e2e` then restart backend; see [`../operations/runbooks/kiosk-and-e2e-testing.md`](../operations/runbooks/kiosk-and-e2e-testing.md).
 
+## `button_box_enabled`
+- Default/seed: `false`
+- Type: bool-like string setting
+- Accepted true values: `"true"`, `"1"`, `"yes"`, `"on"` (case-insensitive)
+- False examples: `"false"`, `"0"`, `"no"`, `"off"`, empty string, or missing key
+- Consumed by:
+  - button-box input acceptance in `backend/controllers/ui_api.py` (`/api/i4_event`)
+  - button-box arming/activation in `backend/controllers/machine_control.py` (`arm_code`)
+- Risk: **High** (changes accepted kiosk input paths)
+- Restart needed: No
+- Operator notes:
+  - Controls whether the physical button box is accepted/activated as a **secondary** machine-selection source.
+  - Touchscreen machine selection is still available during `choose_machine` regardless of this setting.
+  - Separate from `backend_relay_enabled`: this setting gates button-box input behavior, while `backend_relay_enabled` gates real relay/Shelly actuation.
+
+## `kiosk_input_mode` (legacy compatibility metadata)
+- Default/seed: may exist in older deployments as `touch` or `hardware_buttons`
+- Consumed by: legacy/compatibility metadata in `/api/ui_state` (`input_mode`)
+- Risk: **Low/Medium**
+- Restart needed: No
+- Operator notes:
+  - Keep for compatibility; do not use as the source of truth for touchscreen interactivity.
+  - Touchscreen selection remains enabled in `choose_machine` even if this value is `hardware_buttons`.
+  - New deployments should prefer `button_box_enabled` for button-box enablement control.
+
 ## `provider_default`
 - Default/seed: `local`
 - Consumed by: provider selection (`backend/providers/provider_selector.py`)

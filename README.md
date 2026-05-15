@@ -2,6 +2,24 @@
 
 Touch-first washer vending prototype consisting of a Flask backend, a React touchscreen UI, and hardware integrations for QR scanners, Shelly relays, and telemetry-backed machine availability.
 
+## Kiosk input architecture (current)
+- Touchscreen selection is the primary/default machine selection method in `choose_machine`.
+- Physical button-box input is optional and controlled by setting `button_box_enabled`.
+- `kiosk_input_mode`/`input_mode` remains legacy compatibility metadata and must not be used to disable touch selection.
+- Both touch and button-box selection paths use the same backend start validation flow.
+
+## Dev UI preview route (current)
+- Route: `/dev/kiosk-preview`
+- Purpose: develop kiosk UI without QR scan, backend polling, machine hardware, or Shelly triggers.
+- Scenario source: `frontend/src/kiosk/dev/kioskPreviewScenarios.js`
+- Real UI rendering path: `frontend/src/kiosk/KioskRouter.jsx`
+- URL scenario examples:
+  - `/dev/kiosk-preview?scenario=scan-screen`
+  - `/dev/kiosk-preview?scenario=touch-only-select-machine`
+  - `/dev/kiosk-preview?scenario=touch-and-button-box-select-machine`
+  - `/dev/kiosk-preview?scenario=machine-in-use`
+  - `/dev/kiosk-preview?scenario=backend-unreachable`
+
 ## Overview
 - QR codes are generated per order and stored in SQLite (`codes.db`).
 - A background listener accepts scans from a USB serial scanner (or manual input fallback) and records every attempt to `scan_logs`.
@@ -91,6 +109,7 @@ Defaults live in `backend/setup/seed_settings.py` and are persisted in the `sett
 | `api_key` | Kiosk/API authentication key | generated at first run |
 | `log_level` | Global log level (overridden by `LOG_LEVEL` env) | `INFO` |
 | `button_select_timeout_sec` | Timeout for waiting on i4 button selection after a scan | `45` |
+| `button_box_enabled` | Enables optional button-box selection input (`true/1/yes/on`) | `false` |
 
 Use `backend/models/setting_model.py:update_setting_value` or the admin REST endpoints to modify values.
 
@@ -102,7 +121,8 @@ Public endpoints require `X-API-KEY` unless noted otherwise.
 | `/generate_code` | POST | Create a new QR code for an order. Body: `order_id`, `usage_limit`. |
 | `/api/scan_code` | POST | Validate a scanned code, arm it for selection, and return machine availability. Writes to `scan_logs`. |
 | `/api/start_machine` | POST | Trigger a machine start for the provided code/machine_id; debit occurs after telemetry confirms. |
-| `/api/i4_event` | POST | Receive a Shelly i4 button press (`{"button": <index>}`) and start the mapped machine for the armed code. |
+| `/api/touch_select_machine` | POST | Start selected machine from touchscreen during `choose_machine` using active backend scan/session context. |
+| `/api/i4_event` | POST | Receive optional button-box i4 input (accepted only when `button_box_enabled=true`) and start mapped machine for the armed code. |
 | `/api/ui_state` | GET | Poll current UI state for the kiosk (includes machine snapshot). |
 | `/admin/codes` | GET | List all codes (admin auth required). |
 | `/admin/codes/<code>` | GET/DELETE | Inspect or delete a single code. |
@@ -116,7 +136,7 @@ Admin routes enforce HTTP Basic auth using the credentials stored in the `settin
 
 ## Touchscreen & Hardware Flow
 1. `waiting_for_code` - Idle screen instructing the user to scan.
-2. `choose_machine` - Displays configured machines and telemetry-backed availability; armed code stored for selection.
+2. `choose_machine` - Displays configured machines and telemetry-backed availability; users can tap an available machine to continue.
 3. `machine_starting` - A start pulse was sent; telemetry confirmation will debit usage and return UI to idle.
 4. `error` - Signals invalid codes, selection timeouts, or hardware failures; auto-resets to idle.
 
@@ -141,6 +161,15 @@ Machine definitions are read from the database (not hard-coded). Telemetry polli
 - Logging smoke test: `python -m unittest backend.tests.test_logger`.
 - Serial reader exercise: `python -m backend.controllers.qr_scanner` (adjust COM/TTY port).
 - Frontend linting/formatting can be added with `npm run lint` once a config is introduced (Prettier is included as a dev dependency).
+
+Backend regression checks:
+- `python -m pytest backend/tests/test_ui_api.py`
+- `python -m pytest backend/tests/test_machine_control.py`
+- `python -m pytest backend/tests/test_flask_startup_bootstrap.py`
+
+Frontend preview checks:
+- `cd frontend && npm run dev`
+- Open `/dev/kiosk-preview` and scenario URLs listed above.
 
 ## Troubleshooting
 - Confirm the backend created `codes.db` in the repository root. Deleting it will reset all codes, settings, device inventory, and machine configs (rerun seed scripts afterward).

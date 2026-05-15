@@ -43,6 +43,13 @@ Frontend handling in `App.jsx`:
 - `uses_left`: numeric remaining uses when known, else `null`
 - `current_machine`: selected/running machine slug or `null`
 - `machines`: array of `{id,name,available}` from telemetry store
+- `input_mode`: legacy compatibility metadata; may still appear in `/api/ui_state`
+- `button_box_enabled`: backend boolean flag for button-box input enablement
+
+Interaction rules:
+- `choose_machine` means touchscreen machine cards are interactive.
+- `input_mode` must not be treated as source-of-truth for touch interactivity.
+- `button_box_enabled` is useful for diagnostics/display but is not required for touch selection.
 
 ## Transition map
 
@@ -51,12 +58,12 @@ Trigger:
 - successful scan ingest (`/api/scan_code` or scanner listener)
 
 Effects:
-- code armed for button selection
+- code/session armed for machine selection
 - machine snapshot attached
 
 ## `choose_machine` -> `machine_starting`
 Trigger:
-- start request accepted (`/api/start_machine` or `/api/i4_event`)
+- start request accepted (`/api/start_machine`, `/api/touch_select_machine`, or `/api/i4_event`)
 
 Effects:
 - pending start set
@@ -136,6 +143,7 @@ Check:
 ## Symptom: choose screen shown but button press rejected
 Likely cause:
 - armed code timed out
+- `button_box_enabled` is false
 - wrong button index mapping
 
 Check:

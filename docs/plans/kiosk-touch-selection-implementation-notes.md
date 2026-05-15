@@ -1,5 +1,8 @@
 # Kiosk touch selection backend contract — implementation notes
 
+> **Status note (updated May 15, 2026):** This plan/note contains historical references to the older dual-mode model. Current behavior is touch-first with optional button-box input via `button_box_enabled`; `kiosk_input_mode`/`input_mode` are legacy compatibility metadata only. See `docs/reference/api-reference.md`, `docs/reference/settings-catalog.md`, and `docs/architecture/ui-state-contract.md` for the current contract.
+
+
 ## Scope completed
 Implemented the smallest additive backend contract for touch-mode machine selection without sending raw scan code from frontend.
 

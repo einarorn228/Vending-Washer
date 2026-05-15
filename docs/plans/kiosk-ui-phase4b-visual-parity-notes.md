@@ -1,5 +1,8 @@
 # Kiosk UI Phase 4b — Visual parity refinement notes
 
+> **Status note (updated May 15, 2026):** This plan/note contains historical references to the older dual-mode model. Current behavior is touch-first with optional button-box input via `button_box_enabled`; `kiosk_input_mode`/`input_mode` are legacy compatibility metadata only. See `docs/reference/api-reference.md`, `docs/reference/settings-catalog.md`, and `docs/architecture/ui-state-contract.md` for the current contract.
+
+
 ## Scope completed
 This pass refines visual/layout fidelity of the new kiosk screens while preserving all Phase 4 behavior and contracts.
 

@@ -1,5 +1,8 @@
 # Kiosk UI Final Polish Notes
 
+> **Status note (updated May 15, 2026):** This plan/note contains historical references to the older dual-mode model. Current behavior is touch-first with optional button-box input via `button_box_enabled`; `kiosk_input_mode`/`input_mode` are legacy compatibility metadata only. See `docs/reference/api-reference.md`, `docs/reference/settings-catalog.md`, and `docs/architecture/ui-state-contract.md` for the current contract.
+
+
 ## Files changed
 - `frontend/src/kiosk/KioskRouter.jsx`
 - `frontend/src/kiosk/KioskAppShell.jsx`
