@@ -19,7 +19,12 @@ function resolveHint(status, isInteractive) {
   }
 }
 
-function resolveMachineType(machineName) {
+function resolveMachineType(machine) {
+  if (machine?.type === 'washer' || machine?.type === 'dryer') {
+    return machine.type;
+  }
+
+  const machineName = machine?.name || '';
   return machineName.toLowerCase().includes('dryer') ? 'dryer' : 'washer';
 }
 
@@ -28,7 +33,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
   const status = normalizeMachineStatus(machine);
   const isAvailable = status === 'available';
   const isCardInteractive = isInteractive && isAvailable;
-  const machineType = resolveMachineType(machineName);
+  const machineType = resolveMachineType(machine);
   const isScanVariant = variant === 'scan';
 
   function handleCardActivate() {

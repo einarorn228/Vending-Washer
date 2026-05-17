@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import KioskRouter from '../KioskRouter.jsx';
+import MachineSettingsModal from './MachineSettingsModal.jsx';
 import {
   defaultKioskPreviewScenarioId,
   getKioskPreviewScenarioById,
@@ -17,11 +18,38 @@ function getInitialScenarioId() {
   return getKioskPreviewScenarioById(scenarioFromUrl).id;
 }
 
+function getScenarioMachines(scenario) {
+  return scenario?.uiState?.machines || [];
+}
+
 export default function KioskPreviewPage() {
   const [scenarioId, setScenarioId] = useState(getInitialScenarioId);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const activeScenario = useMemo(() => getKioskPreviewScenarioById(scenarioId), [scenarioId]);
+  const [previewMachines, setPreviewMachines] = useState(() => getScenarioMachines(activeScenario));
+
+  const effectiveUiState = useMemo(() => {
+    const scenarioUiState = activeScenario.uiState || {};
+    const machines = previewMachines?.length ? previewMachines : getScenarioMachines(activeScenario);
+    const nextUiState = {
+      ...scenarioUiState,
+      machines,
+    };
+
+    if (scenarioUiState.currentMachine || scenarioUiState.current_machine) {
+      const existingCurrentMachine = scenarioUiState.currentMachine || scenarioUiState.current_machine;
+      const machineById = machines.find((machine) => machine.id === existingCurrentMachine?.id);
+      const fallbackMachine = machines.find((machine) => machine.status === 'available') || machines[0] || null;
+      const nextCurrentMachine = machineById || fallbackMachine;
+
+      nextUiState.currentMachine = nextCurrentMachine;
+      nextUiState.current_machine = nextCurrentMachine;
+    }
+
+    return nextUiState;
+  }, [activeScenario, previewMachines]);
 
   function handleScenarioSelect(nextScenarioId) {
     setScenarioId(nextScenarioId);
@@ -29,6 +57,11 @@ export default function KioskPreviewPage() {
     const url = new URL(window.location.href);
     url.searchParams.set('scenario', nextScenarioId);
     window.history.replaceState(null, '', url.toString());
+  }
+
+  function handleMachineSettingsSave(nextMachines) {
+    setPreviewMachines(nextMachines);
+    setIsSettingsOpen(false);
   }
 
   return (
@@ -56,23 +89,37 @@ export default function KioskPreviewPage() {
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="kiosk-preview-settings-button"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            Machine Settings
+          </button>
         </div>
       </aside>
 
       <div className="kiosk-preview-canvas">
         {!isSidebarOpen && (
-          <button 
-            className="kiosk-preview-toggle-btn kiosk-preview-toggle-btn--floating" 
+          <button
+            className="kiosk-preview-toggle-btn kiosk-preview-toggle-btn--floating"
             onClick={() => setIsSidebarOpen(true)}
           >
             <span aria-hidden="true">☰</span> Menu
           </button>
         )}
         <KioskRouter
-          uiState={activeScenario.uiState}
+          uiState={effectiveUiState}
           backendUnreachable={activeScenario.backendUnreachable}
         />
       </div>
+
+      <MachineSettingsModal
+        isOpen={isSettingsOpen}
+        initialMachines={previewMachines}
+        onClose={() => setIsSettingsOpen(false)}
+        onSave={handleMachineSettingsSave}
+      />
     </div>
   );
 }
