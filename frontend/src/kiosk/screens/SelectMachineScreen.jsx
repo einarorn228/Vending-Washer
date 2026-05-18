@@ -29,14 +29,14 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
 
   return (
     <section className="kiosk-screen kiosk-screen--select-machine">
-      <div className="kiosk-hero kiosk-hero--compact">
+      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-hero kiosk-hero--compact">
         <p className="kiosk-hero__eyebrow">Machine selection</p>
         <h2 className="kiosk-hero__title">Choose your machine</h2>
         <p className="kiosk-hero__message">
           {message ||
             (isTouchSelectable
-              ? 'Tap an available machine to continue.'
-              : 'Tap an available machine to continue.')}
+              ? 'Code accepted. Choose any available machine.'
+              : 'Code accepted. Ask an attendant to choose an available machine.')}
         </p>
       </div>
 
@@ -46,11 +46,11 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         onSelect={handleMachineSelect}
       />
 
-      <div className="kiosk-toast" role="status" aria-live="polite">
+      <div className="kiosk-stage-card kiosk-support-card kiosk-toast" role="status" aria-live="polite">
         {selectionMessage ||
           (isTouchSelectable
             ? 'Tap a machine card to continue.'
-            : 'Touch selection is available.')}
+            : 'Waiting for assisted machine selection.')}
       </div>
     </section>
   );

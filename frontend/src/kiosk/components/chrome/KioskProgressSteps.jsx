@@ -17,14 +17,14 @@ function resolveActiveIndex(currentState) {
 }
 
 export default function KioskProgressSteps({ currentState }) {
-  if (currentState === 'error') {
-    return null;
-  }
-
   const activeIndex = resolveActiveIndex(currentState);
+  const isError = currentState === 'error';
 
   return (
-    <nav className="kiosk-progress" aria-label="Kiosk progress">
+    <nav
+      className={`kiosk-progress ${isError ? 'kiosk-progress--subdued' : ''}`}
+      aria-label="Kiosk progress"
+    >
       {STEPS.map((step, index) => {
         const isComplete = activeIndex !== null && index < activeIndex;
         const isActive = activeIndex !== null && index === activeIndex;
