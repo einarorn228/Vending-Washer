@@ -1,34 +1,68 @@
 import React from 'react';
+import MachineCard from '../components/machine/MachineCard.jsx';
 
-function resolveMachineLabel(currentMachine, machines) {
-  if (typeof currentMachine !== 'string' || !currentMachine.trim()) {
-    return 'Selected machine';
-  }
+function resolveSelectedMachine(currentMachine, machines) {
+  const machineId =
+    typeof currentMachine === 'string'
+      ? currentMachine.trim()
+      : typeof currentMachine?.id === 'string'
+        ? currentMachine.id
+        : '';
+  const machineNameFromCurrent =
+    typeof currentMachine?.name === 'string' && currentMachine.name.trim()
+      ? currentMachine.name
+      : '';
 
-  const match = Array.isArray(machines)
-    ? machines.find((machine) => machine?.id === currentMachine && typeof machine?.name === 'string')
+  const matchedMachine = Array.isArray(machines)
+    ? machines.find((machine) => machine?.id === machineId) ||
+      machines.find((machine) => machine?.name === machineNameFromCurrent)
     : null;
 
-  return match?.name || currentMachine;
+  const selectedMachine = matchedMachine || (currentMachine && typeof currentMachine === 'object' ? currentMachine : null);
+  const machineLabel =
+    selectedMachine?.name ||
+    machineNameFromCurrent ||
+    matchedMachine?.id ||
+    machineId ||
+    'Selected machine';
+
+  return {
+    machineId: selectedMachine?.id || machineId || 'selected-machine',
+    machineLabel,
+    selectedMachine,
+  };
 }
 
 export default function StartingScreen({ message, currentMachine, machines, usesLeft }) {
-  const machineLabel = resolveMachineLabel(currentMachine, machines);
+  const { machineId, machineLabel, selectedMachine } = resolveSelectedMachine(currentMachine, machines);
+  const focusStatus = selectedMachine?.status === 'error' ? 'error' : 'reserved';
+  const focusMachine = {
+    ...(selectedMachine || {}),
+    id: selectedMachine?.id || machineId,
+    name: selectedMachine?.name || machineLabel,
+    status: focusStatus,
+  };
 
   return (
     <section className="kiosk-screen kiosk-screen--starting">
-      <div className="kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
+      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
         <p className="kiosk-hero__eyebrow">Start confirmed</p>
         <h2 className="kiosk-hero__title">Machine enabled</h2>
         <p className="kiosk-hero__message">
-          {message || 'Load laundry, choose a program, and press Start on the machine.'}
+          {message || `${machineLabel} is now enabled. Press Start on the machine.`}
         </p>
       </div>
 
-      <div className="kiosk-detail-card kiosk-detail-card--confirmation kiosk-detail-card--machine">
-        <p className="kiosk-detail-card__title">Machine</p>
-        <p className="kiosk-machine-label">{machineLabel}</p>
-        <p className="kiosk-detail-card__text">Uses left: {usesLeft ?? '—'}</p>
+      <div className="kiosk-machine-focus">
+        <MachineCard
+          machine={focusMachine}
+          isInteractive={false}
+          variant="focus"
+        />
+        <div className="kiosk-stage-card kiosk-support-card">
+          <p className="kiosk-detail-card__title">Session</p>
+          <p className="kiosk-detail-card__text">Uses left: {usesLeft ?? '—'}</p>
+        </div>
       </div>
     </section>
   );

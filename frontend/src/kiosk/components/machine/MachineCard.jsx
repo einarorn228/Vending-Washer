@@ -36,6 +36,8 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
   const isCardInteractive = isInteractive && isAvailable;
   const machineType = resolveMachineType(machine);
   const isScanVariant = variant === 'scan';
+  const isFocusVariant = variant === 'focus';
+  const showsMachineIcon = isScanVariant || isFocusVariant;
 
   function handleCardActivate() {
     if (isCardInteractive) {
@@ -64,7 +66,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
       aria-label={isCardInteractive ? `Select ${machineName}` : undefined}
       aria-disabled={isInteractive && !isAvailable ? true : undefined}
     >
-      {isScanVariant ? (
+      {showsMachineIcon ? (
         <div className="machine-card__icon-wrap" aria-hidden="true">
           <MachineIcon type={machineType} className="machine-card__icon" />
         </div>
@@ -74,7 +76,9 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
         {!isScanVariant ? <p className="machine-card__label">Machine</p> : null}
         <h3 className="machine-card__title">{machineName}</h3>
         <MachineStatusBadge status={status} />
-        {!isScanVariant ? <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p> : null}
+        {!isScanVariant && !isFocusVariant ? (
+          <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p>
+        ) : null}
       </div>
     </article>
   );
