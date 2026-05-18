@@ -1,5 +1,6 @@
 import React from 'react';
 import MachineStatusBadge from './MachineStatusBadge.jsx';
+import MachineIcon from './MachineIcon.jsx';
 import { normalizeMachineStatus } from './normalizeMachineStatus.js';
 
 function resolveHint(status, isInteractive) {
@@ -65,7 +66,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
     >
       {isScanVariant ? (
         <div className="machine-card__icon-wrap" aria-hidden="true">
-          <span className={`machine-card__icon machine-card__icon--${machineType}`} />
+          <MachineIcon type={machineType} className="machine-card__icon" />
         </div>
       ) : null}
 

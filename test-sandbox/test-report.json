@@ -1,0 +1,406 @@
+{
+  "failed": 0,
+  "total": 80,
+  "results": [
+    {
+      "viewport": "1920x1080",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1920x1080",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1440x900",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1366x768",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1280x720",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1280x640",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1024x768",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "1024x640",
+      "scenario": "backend-unreachable",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "default",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "valid-code",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "touch-only-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "touch-and-button-box-select-machine",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "invalid-code",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "starting-machine",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "machine-in-use",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "all-busy",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "thank-you",
+      "passed": true
+    },
+    {
+      "viewport": "900x640",
+      "scenario": "backend-unreachable",
+      "passed": true
+    }
+  ]
+}

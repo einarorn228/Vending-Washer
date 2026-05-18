@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { isApiKeyConfigured } from '../../api/backend.js';
+import { isApiKeyConfigured } from '../../../api/backend.js';
 
 export default function ConnectionBanner({ visible }) {
   if (!visible && isApiKeyConfigured()) {
