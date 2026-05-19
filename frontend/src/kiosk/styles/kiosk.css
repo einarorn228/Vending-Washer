@@ -293,6 +293,10 @@ body {
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.kiosk-screen--select {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
 .kiosk-hero {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
@@ -344,6 +348,70 @@ body {
 
 .kiosk-hero--compact {
   text-align: left;
+}
+
+.kiosk-flow-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.kiosk-flow-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 82% -6%, color-mix(in srgb, var(--kiosk-accent) 18%, transparent), transparent 62%);
+}
+
+.kiosk-flow-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kiosk-flow-hero--select {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.9rem, 1.7vw, 1.2rem);
+  align-items: center;
+  padding: clamp(0.95rem, 1.95vw, 1.4rem);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.74) 0%, rgba(15, 23, 42, 0.9) 100%);
+  backdrop-filter: blur(13px);
+  -webkit-backdrop-filter: blur(13px);
+  border-color: color-mix(in srgb, var(--kiosk-accent) 22%, rgba(255, 255, 255, 0.08));
+}
+
+.kiosk-flow-hero__icon {
+  grid-row: 1 / span 3;
+  width: clamp(58px, 5.4vw, 74px);
+  height: clamp(58px, 5.4vw, 74px);
+  border-radius: clamp(18px, 2vw, 22px);
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--kiosk-accent) 36%, var(--kiosk-border));
+  background: linear-gradient(180deg, rgba(112, 200, 255, 0.17), rgba(112, 200, 255, 0.05));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 24px rgba(0, 0, 0, 0.24);
+}
+
+.kiosk-flow-hero__machine-icon {
+  width: clamp(28px, 2.8vw, 36px);
+  height: clamp(28px, 2.8vw, 36px);
+}
+
+.kiosk-flow-hero--select .kiosk-hero__eyebrow,
+.kiosk-flow-hero--select .kiosk-hero__title,
+.kiosk-flow-hero--select .kiosk-hero__message {
+  grid-column: 2;
+}
+
+.kiosk-flow-hero--select .kiosk-hero__title {
+  font-size: clamp(1.75rem, 3vw, 2.45rem);
+}
+
+.kiosk-flow-hero--select .kiosk-hero__message {
+  font-size: clamp(0.97rem, 1.55vw, 1.12rem);
+  margin-top: 0.4rem;
 }
 
 .kiosk-hero--confirmation {
@@ -522,6 +590,14 @@ body {
   --machine-card-content-gap: 0.55rem;
 }
 
+.machine-grid--default {
+  --machine-card-padding: clamp(1.05rem, 1.7vw, 1.3rem);
+  --machine-card-min-h: clamp(146px, 20vh, 206px);
+  --machine-card-gap: clamp(0.85rem, 1.2vw, 1.05rem);
+  --machine-card-title-size: clamp(1.35rem, 2.05vw, 1.8rem);
+  --machine-card-content-gap: 0.4rem;
+}
+
 .machine-grid--empty { border: 1px dashed var(--kiosk-border); border-radius: 16px; padding: 1.25rem; color: var(--kiosk-muted); font-size: 1.04rem; }
 .machine-grid[data-machine-count='1'] { --machine-grid-cols: minmax(min(100%, 260px), min(760px, 100%)); justify-content: center; }
 .machine-grid--scan[data-machine-count='2'] { --machine-grid-cols: repeat(2, minmax(0, 1fr)); }
@@ -532,6 +608,7 @@ body {
 
 .machine-card { border: 1px solid var(--kiosk-border); border-radius: var(--machine-card-radius); background: linear-gradient(180deg, #2a3f5c 0%, var(--kiosk-surface-strong) 100%); padding: var(--machine-card-padding); display: grid; gap: var(--machine-card-gap); min-height: var(--machine-card-min-h); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease; min-width: 0; }
 .machine-card--scan { background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 28px rgba(0, 0, 0, 0.28); }
+.machine-card--default { background: linear-gradient(180deg, rgba(31, 45, 67, 0.86) 0%, rgba(18, 28, 45, 0.94) 100%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 30px rgba(0, 0, 0, 0.28); grid-template-columns: auto minmax(0, 1fr); align-items: center; }
 .machine-card--available { border-color: color-mix(in srgb, var(--kiosk-success) 42%, var(--kiosk-border)); }
 .machine-card--busy { border-color: color-mix(in srgb, var(--kiosk-danger) 24%, var(--kiosk-border)); }
 .machine-card--reserved { border-color: color-mix(in srgb, var(--kiosk-warning) 38%, var(--kiosk-border)); }
@@ -546,11 +623,14 @@ body {
 .machine-card__label { margin: 0; color: #a7bfdd; text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--machine-card-label-size); font-weight: 800; }
 .machine-card__title { margin: 0.3rem 0 0; font-size: var(--machine-card-title-size); line-height: 1.12; overflow-wrap: anywhere; word-break: break-word; }
 .machine-card--scan .machine-card__title { margin: 0; line-height: 1.05; letter-spacing: -0.01em; }
+.machine-card--default .machine-card__title { margin-top: 0.1rem; line-height: 1.08; }
+.machine-card--default .machine-card__label { display: none; }
 .machine-card__hint { margin: 0; color: var(--kiosk-muted); font-size: var(--machine-card-hint-size); font-weight: 600; line-height: 1.25; }
 .machine-card__content { display: grid; gap: var(--machine-card-content-gap); min-width: 0; }
 .machine-card__icon-wrap { width: var(--machine-card-icon-box); height: var(--machine-card-icon-box); border-radius: clamp(20px, 2.6vw, 30px); display: grid; place-items: center; background: color-mix(in srgb, var(--kiosk-danger) 18%, transparent); border: 1px solid color-mix(in srgb, var(--kiosk-danger) 40%, var(--kiosk-border)); flex-shrink: 0; }
 .machine-card--available .machine-card__icon-wrap { background: color-mix(in srgb, var(--kiosk-success) 22%, transparent); border-color: color-mix(in srgb, var(--kiosk-success) 48%, var(--kiosk-border)); }
 .machine-card__icon { width: var(--machine-card-icon-size); height: var(--machine-card-icon-size); position: relative; display: block; color: rgba(244, 247, 255, 0.92); }
+.machine-card--default.machine-card--readonly .machine-card__icon-wrap { opacity: 0.9; }
 .machine-status-badge { width: fit-content; max-width: 100%; padding: 0.35rem 0.76rem; border-radius: 999px; border: 1px solid var(--kiosk-border); font-size: var(--machine-card-badge-size); letter-spacing: 0.01em; font-weight: 700; }
 .machine-card--scan .machine-status-badge { font-weight: 620; padding: 0.45rem 1rem; }
 
@@ -610,6 +690,23 @@ body {
   align-self: start;
 }
 
+.kiosk-screen--select .kiosk-flow-hero--select {
+  animation: kiosk-select-hero-enter 380ms var(--kiosk-ease-calm) both;
+}
+
+.kiosk-screen--select .machine-grid--default .machine-card {
+  animation: kiosk-select-card-enter 340ms var(--kiosk-ease-calm) both;
+}
+
+.kiosk-screen--select .machine-grid--default .machine-card:nth-child(2) { animation-delay: 40ms; }
+.kiosk-screen--select .machine-grid--default .machine-card:nth-child(3) { animation-delay: 70ms; }
+.kiosk-screen--select .machine-grid--default .machine-card:nth-child(4) { animation-delay: 100ms; }
+.kiosk-screen--select .machine-grid--default .machine-card:nth-child(n + 5) { animation-delay: 120ms; }
+
+.kiosk-screen--select .kiosk-support-card {
+  animation: kiosk-select-support-enter 320ms var(--kiosk-ease-calm) 80ms both;
+}
+
 @keyframes kiosk-progress-breathe {
   0% {
     box-shadow:
@@ -627,6 +724,21 @@ body {
 @keyframes kiosk-progress-shockwave {
   0% { transform: scale(1); opacity: 0.85; border-width: 3px; }
   100% { transform: scale(1.65); opacity: 0; border-width: 1px; }
+}
+
+@keyframes kiosk-select-hero-enter {
+  from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes kiosk-select-card-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes kiosk-select-support-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes kiosk-progress-line-fill {
@@ -672,7 +784,10 @@ body {
   .kiosk-progress__line--animating::before,
   .kiosk-progress__line--animating::after,
   .kiosk-progress__traveling-lightning-wrapper,
-  .kiosk-progress__traveling-lightning-svg {
+  .kiosk-progress__traveling-lightning-svg,
+  .kiosk-screen--select .kiosk-flow-hero--select,
+  .kiosk-screen--select .machine-grid--default .machine-card,
+  .kiosk-screen--select .kiosk-support-card {
     animation: none !important;
   }
 
