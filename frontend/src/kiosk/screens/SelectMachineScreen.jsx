@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MachineGrid from '../components/machine/MachineGrid.jsx';
 import { touchSelectMachine } from '../../api/backend.js';
+import MachineIcon from '../components/machine/MachineIcon.jsx';
 
 export default function SelectMachineScreen({ machines, message, interactionPolicy }) {
   const [selectionMessage, setSelectionMessage] = useState('');
@@ -28,8 +29,11 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
   }
 
   return (
-    <section className="kiosk-screen kiosk-screen--select-machine">
-      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-hero kiosk-hero--compact">
+    <section className="kiosk-screen kiosk-screen--select-machine kiosk-screen--select">
+      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-hero kiosk-hero--compact kiosk-flow-hero kiosk-flow-hero--select">
+        <div className="kiosk-flow-hero__icon" aria-hidden="true">
+          <MachineIcon type="washer" className="kiosk-flow-hero__machine-icon" />
+        </div>
         <p className="kiosk-hero__eyebrow">Machine selection</p>
         <h2 className="kiosk-hero__title">Choose your machine</h2>
         <p className="kiosk-hero__message">
@@ -44,6 +48,7 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         machines={machines}
         isInteractive={isTouchSelectable}
         onSelect={handleMachineSelect}
+        variant="default"
       />
 
       <div className="kiosk-stage-card kiosk-support-card kiosk-toast" role="status" aria-live="polite">

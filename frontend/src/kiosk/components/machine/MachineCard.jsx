@@ -37,7 +37,8 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
   const machineType = resolveMachineType(machine);
   const isScanVariant = variant === 'scan';
   const isFocusVariant = variant === 'focus';
-  const showsMachineIcon = isScanVariant || isFocusVariant;
+  const isDefaultVariant = variant === 'default';
+  const showsMachineIcon = isScanVariant || isDefaultVariant || isFocusVariant;
 
   function handleCardActivate() {
     if (isCardInteractive) {
