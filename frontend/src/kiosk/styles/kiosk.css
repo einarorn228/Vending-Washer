@@ -22,22 +22,22 @@
   --kiosk-bg-radial: radial-gradient(circle at 50% -10%, #1e2c4a 0%, #101827 40%, #080e18 100%);
   --kiosk-shell-bg: var(--kiosk-bg-radial);
   --kiosk-progress-topbar-padding: 0.45rem 1.4rem 0;
-  --kiosk-progress-max-width: 1120px;
-  --kiosk-progress-gap: 0.75rem;
-  --kiosk-progress-step-gap: 0.75rem;
-  --kiosk-progress-dot-size: clamp(30px, 3.3vw, 40px);
-  --kiosk-progress-dot-font-size: 0.875rem;
-  --kiosk-progress-label-size: 0.875rem;
-  --kiosk-progress-line-width: 48px;
-  --kiosk-progress-muted-color: rgba(255, 255, 255, 0.6);
-  --kiosk-progress-active-color: #ffffff;
-  --kiosk-progress-complete-color: #bbf7d0;
-  --kiosk-progress-dot-border: rgba(255, 255, 255, 0.1);
-  --kiosk-progress-dot-bg: rgba(255, 255, 255, 0.05);
-  --kiosk-progress-dot-active-border: rgba(255, 255, 255, 0.2);
-  --kiosk-progress-dot-active-bg: rgba(255, 255, 255, 0.1);
-  --kiosk-progress-line-color: rgba(255, 255, 255, 0.1);
-  --kiosk-progress-line-complete-color: rgba(52, 211, 153, 0.4);
+  --kiosk-progress-energy-color: var(--kiosk-accent);
+  --kiosk-progress-energy-muted: color-mix(in srgb, var(--kiosk-accent) 28%, transparent);
+  --kiosk-progress-active-glow: color-mix(in srgb, var(--kiosk-accent) 38%, transparent);
+  --kiosk-progress-complete-glow: color-mix(in srgb, var(--kiosk-accent) 24%, transparent);
+  --kiosk-progress-max-width: 620px;
+  --kiosk-screen-max-width: 1120px;
+  --kiosk-home-screen-max-width: 1420px;
+  --kiosk-progress-dot-size: clamp(38px, 4.2vw, 56px);
+  --kiosk-progress-dot-font-size: clamp(0.95rem, 1.1vw, 1.25rem);
+  --kiosk-progress-label-size: clamp(0.72rem, 0.9vw, 0.95rem);
+  --kiosk-progress-step-width: clamp(66px, 7vw, 86px);
+  --kiosk-progress-step-gap: clamp(0.5rem, 1vh, 0.85rem);
+  --kiosk-progress-line-height: 3px;
+  --kiosk-progress-line-overlap: 12px;
+  --kiosk-progress-animation-duration: 520ms;
+  --kiosk-progress-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 
@@ -90,80 +90,178 @@ body {
 }
 
 .kiosk-progress {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   width: min(var(--kiosk-progress-max-width), 100%);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--kiosk-progress-gap);
-  padding: 0.05rem 0.2rem;
+  position: relative;
   transition: opacity var(--kiosk-transition-calm), transform var(--kiosk-transition-calm);
 }
 
-.kiosk-progress__step {
+.kiosk-progress--subdued {
+  opacity: 0.42;
+  filter: grayscale(55%);
+}
+
+.kiosk-progress__step-wrapper {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--kiosk-progress-step-gap);
-  color: var(--kiosk-progress-muted-color);
-  font-weight: 400;
-  font-size: var(--kiosk-progress-label-size);
+  position: relative;
+  z-index: 2;
+  width: var(--kiosk-progress-step-width);
+  min-width: 0;
 }
 
 .kiosk-progress__dot {
   width: var(--kiosk-progress-dot-size);
   height: var(--kiosk-progress-dot-size);
   border-radius: 999px;
-  border: 1px solid var(--kiosk-progress-dot-border);
-  background: var(--kiosk-progress-dot-bg);
   display: grid;
   place-items: center;
-  color: #eaf2ff;
   font-size: var(--kiosk-progress-dot-font-size);
-  font-weight: 600;
-  transition: border-color var(--kiosk-transition-calm), background var(--kiosk-transition-calm), color var(--kiosk-transition-calm), transform var(--kiosk-transition-calm);
-}
-
-.kiosk-progress__line {
-  width: var(--kiosk-progress-line-width);
-  height: 1px;
-  background: var(--kiosk-progress-line-color);
-  transition: background var(--kiosk-transition-calm);
+  font-weight: 650;
+  color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    color var(--kiosk-transition-calm),
+    border-color var(--kiosk-transition-calm),
+    background var(--kiosk-transition-calm),
+    box-shadow var(--kiosk-transition-calm),
+    transform var(--kiosk-transition-calm);
 }
 
 .kiosk-progress__label {
   font-size: var(--kiosk-progress-label-size);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   line-height: 1;
+  transition:
+    color var(--kiosk-transition-calm),
+    text-shadow var(--kiosk-transition-calm);
 }
 
-.kiosk-progress__step--complete,
-.kiosk-progress__step--active {
-  color: var(--kiosk-progress-active-color);
+.kiosk-progress__step-wrapper--complete .kiosk-progress__dot {
+  color: var(--kiosk-progress-energy-color);
+  border-color: var(--kiosk-progress-energy-muted);
+  background: color-mix(in srgb, var(--kiosk-progress-energy-color) 8%, transparent);
+  box-shadow:
+    0 0 15px var(--kiosk-progress-complete-glow),
+    inset 0 0 10px color-mix(in srgb, var(--kiosk-progress-energy-color) 8%, transparent);
 }
 
-.kiosk-progress__step--complete .kiosk-progress__dot,
-.kiosk-progress__step--active .kiosk-progress__dot {
-  border-color: var(--kiosk-progress-dot-active-border);
-  background: var(--kiosk-progress-dot-active-bg);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.15), inset 0 0 8px rgba(255, 255, 255, 0.2);
+.kiosk-progress__step-wrapper--complete .kiosk-progress__label {
+  color: rgba(255, 255, 255, 0.66);
 }
 
-.kiosk-progress__step--complete .kiosk-progress__dot {
-  color: var(--kiosk-progress-complete-color);
-  border-color: rgba(52, 211, 153, 0.24);
-  background: color-mix(in srgb, var(--kiosk-progress-complete-color) 22%, transparent);
+.kiosk-progress__check-icon {
+  width: 52%;
+  height: 52%;
+  filter: drop-shadow(0 0 5px var(--kiosk-progress-energy-muted));
+}
+
+.kiosk-progress__step-wrapper--active .kiosk-progress__dot {
+  color: #ffffff;
+  border-color: var(--kiosk-progress-energy-color);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--kiosk-progress-energy-color) 24%, transparent) 0%,
+    color-mix(in srgb, var(--kiosk-progress-energy-color) 7%, transparent) 100%
+  );
+  box-shadow:
+    0 0 24px var(--kiosk-progress-active-glow),
+    inset 0 0 14px color-mix(in srgb, var(--kiosk-progress-energy-color) 20%, transparent);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+  animation: kiosk-progress-breathe 3s 1s infinite alternate ease-in-out;
+}
+
+.kiosk-progress__step-wrapper--active .kiosk-progress__label {
+  color: #ffffff;
+  text-shadow: 0 0 12px var(--kiosk-progress-active-glow);
+}
+
+.kiosk-progress__step-wrapper--active .kiosk-progress__dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  pointer-events: none;
+  box-shadow:
+    0 0 20px rgba(255, 255, 255, 0.65),
+    inset 0 0 10px rgba(255, 255, 255, 0.45);
+  animation: kiosk-progress-shockwave 0.8s 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.kiosk-progress__line-wrapper {
+  flex: 1;
+  height: var(--kiosk-progress-line-height);
+  background: rgba(255, 255, 255, 0.08);
+  margin-top: calc(var(--kiosk-progress-dot-size) / 2 - var(--kiosk-progress-line-height) / 2);
+  margin-left: calc(var(--kiosk-progress-line-overlap) * -1);
+  margin-right: calc(var(--kiosk-progress-line-overlap) * -1);
+  position: relative;
+  z-index: 1;
+  border-radius: 999px;
+  overflow: visible;
 }
 
 .kiosk-progress__line--complete {
-  background: var(--kiosk-progress-line-complete-color);
+  background: var(--kiosk-progress-energy-color);
+  box-shadow: 0 0 10px var(--kiosk-progress-energy-muted);
 }
 
-.kiosk-progress__check {
-  width: 20px;
-  height: 20px;
+.kiosk-progress__line--animating::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--kiosk-progress-energy-color);
+  box-shadow: 0 0 8px var(--kiosk-progress-energy-color);
+  border-radius: inherit;
+  transform-origin: left;
+  animation: kiosk-progress-line-fill var(--kiosk-progress-animation-duration) var(--kiosk-progress-ease) forwards;
 }
 
-.kiosk-progress--subdued {
-  opacity: 0.62;
+.kiosk-progress__line--animating::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 0;
+  width: 58px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95));
+  border-radius: 999px;
+  animation: kiosk-progress-beam-head var(--kiosk-progress-animation-duration) var(--kiosk-progress-ease) forwards;
+}
+
+.kiosk-progress__traveling-lightning-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 50px;
+  height: 24px;
+  margin-top: -12px;
+  margin-left: -25px;
+  z-index: 10;
+  pointer-events: none;
+  animation: kiosk-progress-beam-travel var(--kiosk-progress-animation-duration) var(--kiosk-progress-ease) forwards;
+}
+
+.kiosk-progress__traveling-lightning-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 10px var(--kiosk-progress-energy-color));
+  animation: kiosk-progress-lightning-flicker 140ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .kiosk-shell__content {
@@ -177,7 +275,7 @@ body {
 }
 
 .kiosk-screen {
-  width: min(var(--kiosk-progress-max-width), 100%);
+  width: min(var(--kiosk-screen-max-width), 100%);
   max-width: 100%;
   height: 100%;
   max-height: 100%;
@@ -191,7 +289,7 @@ body {
 }
 
 .kiosk-screen--home {
-  width: min(1420px, 100%);
+  width: min(var(--kiosk-home-screen-max-width), 100%);
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
 }
 
@@ -512,16 +610,79 @@ body {
   align-self: start;
 }
 
+@keyframes kiosk-progress-breathe {
+  0% {
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--kiosk-progress-energy-color) 30%, transparent),
+      inset 0 0 12px color-mix(in srgb, var(--kiosk-progress-energy-color) 20%, transparent);
+  }
+
+  100% {
+    box-shadow:
+      0 0 34px color-mix(in srgb, var(--kiosk-progress-energy-color) 46%, transparent),
+      inset 0 0 18px color-mix(in srgb, var(--kiosk-progress-energy-color) 30%, transparent);
+  }
+}
+
+@keyframes kiosk-progress-shockwave {
+  0% { transform: scale(1); opacity: 0.85; border-width: 3px; }
+  100% { transform: scale(1.65); opacity: 0; border-width: 1px; }
+}
+
+@keyframes kiosk-progress-line-fill {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes kiosk-progress-beam-head {
+  0% { left: -58px; opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes kiosk-progress-beam-travel {
+  0% { left: 0%; opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes kiosk-progress-lightning-flicker {
+  0% { transform: scaleY(1); opacity: 1; }
+  25% { transform: scaleY(-1.04); opacity: 0.82; }
+  50% { transform: scaleY(1.08); opacity: 1; }
+  75% { transform: scaleY(-0.96); opacity: 0.9; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kiosk-progress,
   .kiosk-progress__dot,
-  .kiosk-progress__line,
+  .kiosk-progress__line-wrapper,
   .kiosk-hero,
   .kiosk-stage-card,
   .kiosk-detail-card,
   .machine-card {
     transition: none !important;
     transform: none !important;
+  }
+
+  .kiosk-progress__step-wrapper--active .kiosk-progress__dot,
+  .kiosk-progress__step-wrapper--active .kiosk-progress__dot::after,
+  .kiosk-progress__line--animating::before,
+  .kiosk-progress__line--animating::after,
+  .kiosk-progress__traveling-lightning-wrapper,
+  .kiosk-progress__traveling-lightning-svg {
+    animation: none !important;
+  }
+
+  .kiosk-progress__traveling-lightning-wrapper {
+    display: none;
+  }
+
+  .kiosk-progress__line--animating {
+    background: var(--kiosk-progress-energy-color);
+    box-shadow: 0 0 10px var(--kiosk-progress-energy-muted);
   }
 }
 
@@ -638,16 +799,11 @@ body {
     align-items: start;
   }
 
-  .kiosk-progress {
-    gap: 0.35rem;
-  }
-
-  .kiosk-progress__label {
-    font-size: 1.05rem;
-  }
-
-  .kiosk-progress__line {
-    width: 26px;
+  :root {
+    --kiosk-progress-dot-size: clamp(30px, 8vw, 44px);
+    --kiosk-progress-step-width: 66px;
+    --kiosk-progress-label-size: 0.72rem;
+    --kiosk-progress-line-overlap: 8px;
   }
 
   .kiosk-screen {
