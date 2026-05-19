@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MachineGrid from '../components/machine/MachineGrid.jsx';
 import { touchSelectMachine } from '../../api/backend.js';
 import MachineIcon from '../components/machine/MachineIcon.jsx';
 
 export default function SelectMachineScreen({ machines, message, interactionPolicy }) {
-  const [selectionMessage, setSelectionMessage] = useState('');
+  const [selectionFeedback, setSelectionFeedback] = useState({ message: '', tone: 'info' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const feedbackTimerRef = useRef(null);
 
   const isTouchSelectable = Boolean(interactionPolicy?.allowTouchMachineSelect);
+
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
+
+  function showFeedback(messageText, tone = 'info') {
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+    }
+
+    setSelectionFeedback({ message: messageText, tone });
+
+    const hideDelay = tone === 'error' ? 4000 : 3000;
+    feedbackTimerRef.current = setTimeout(() => {
+      setSelectionFeedback({ message: '', tone: 'info' });
+      feedbackTimerRef.current = null;
+    }, hideDelay);
+  }
 
   async function handleMachineSelect(machine) {
     if (!isTouchSelectable || isSubmitting || !machine?.id) {
@@ -15,14 +39,14 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
     }
 
     setIsSubmitting(true);
-    setSelectionMessage('Selecting machine...');
+    showFeedback('Selecting machine...', 'info');
 
     const result = await touchSelectMachine(machine.id);
 
     if (result?.success) {
-      setSelectionMessage(result.message || 'Machine enabled. Waiting for backend update...');
+      showFeedback(result.message || 'Machine enabled. Waiting for backend update...', 'success');
     } else {
-      setSelectionMessage(result?.message || 'Unable to select machine right now.');
+      showFeedback(result?.message || 'Unable to select machine right now.', 'error');
     }
 
     setIsSubmitting(false);
@@ -51,12 +75,17 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         variant="default"
       />
 
-      <div className="kiosk-stage-card kiosk-support-card kiosk-toast" role="status" aria-live="polite">
-        {selectionMessage ||
-          (isTouchSelectable
-            ? 'Tap a machine card to continue.'
-            : 'Waiting for assisted machine selection.')}
-      </div>
+      {selectionFeedback.message ? (
+        <div className="kiosk-select-feedback-wrap">
+          <div
+            className={`kiosk-select-feedback kiosk-select-feedback--${selectionFeedback.tone}`}
+            role={selectionFeedback.tone === 'error' ? 'alert' : 'status'}
+            aria-live="polite"
+          >
+            {selectionFeedback.message}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
