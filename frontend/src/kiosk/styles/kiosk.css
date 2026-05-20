@@ -29,13 +29,14 @@
   --kiosk-progress-max-width: 620px;
   --kiosk-screen-max-width: 1120px;
   --kiosk-home-screen-max-width: 1420px;
-  --kiosk-progress-dot-size: clamp(38px, 4.2vw, 56px);
-  --kiosk-progress-dot-font-size: clamp(0.95rem, 1.1vw, 1.25rem);
-  --kiosk-progress-label-size: clamp(0.72rem, 0.9vw, 0.95rem);
-  --kiosk-progress-step-width: clamp(66px, 7vw, 86px);
-  --kiosk-progress-step-gap: clamp(0.5rem, 1vh, 0.85rem);
-  --kiosk-progress-line-height: 3px;
-  --kiosk-progress-line-overlap: 12px;
+  --kiosk-progress-dot-size: 6.8cqw;
+  --kiosk-progress-dot-font-size: 2.5cqw;
+  --kiosk-progress-label-size: 2.1cqw;
+  --kiosk-progress-step-width: 12.5cqw;
+  --kiosk-progress-step-gap: 1.0cqw;
+  --kiosk-progress-line-height: 0.5cqw;
+  --kiosk-progress-line-overlap: calc(var(--kiosk-progress-step-width) / 2);
+  --kiosk-progress-beam-width: 4.5cqw;
   --kiosk-progress-animation-duration: 520ms;
   --kiosk-progress-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -97,6 +98,7 @@ body {
   margin: 0 auto;
   position: relative;
   transition: opacity var(--kiosk-transition-calm), transform var(--kiosk-transition-calm);
+  container-type: inline-size;
 }
 
 .kiosk-progress--subdued {
@@ -237,7 +239,7 @@ body {
   top: -1px;
   bottom: -1px;
   left: 0;
-  width: 58px;
+  width: var(--kiosk-progress-beam-width);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95));
   border-radius: 999px;
@@ -248,10 +250,10 @@ body {
   position: absolute;
   top: 50%;
   left: 0;
-  width: 50px;
-  height: 24px;
-  margin-top: -12px;
-  margin-left: -25px;
+  width: 8cqw;
+  height: 4cqw;
+  margin-top: -2cqw;
+  margin-left: -4cqw;
   z-index: 10;
   pointer-events: none;
   animation: kiosk-progress-beam-travel var(--kiosk-progress-animation-duration) var(--kiosk-progress-ease) forwards;
@@ -646,6 +648,17 @@ body {
   grid-auto-rows: minmax(var(--machine-card-min-h), 1fr);
 }
 
+.kiosk-screen--select .machine-grid--default[data-machine-count='5'],
+.kiosk-screen--select .machine-grid--default[data-machine-count='6'],
+.kiosk-screen--select .machine-grid--default[data-machine-count='7'],
+.kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
+  --machine-card-title-size: clamp(1.6rem, 11cqw, 2.8rem);
+  --machine-card-hint-size: clamp(0.95rem, 4.4cqw, 1.25rem);
+  --machine-card-badge-size: clamp(1rem, 4.8cqw, 1.35rem);
+  --machine-card-icon-box: clamp(75px, 29cqw, 142px);
+  --machine-card-icon-size: clamp(36px, 13cqw, 68px);
+}
+
 .machine-grid--empty { border: 1px dashed var(--kiosk-border); border-radius: 16px; padding: 1.25rem; color: var(--kiosk-muted); font-size: 1.04rem; }
 .machine-grid[data-machine-count='1'] { --machine-grid-cols: minmax(min(100%, 260px), min(760px, 100%)); justify-content: center; }
 .machine-grid--scan[data-machine-count='2'] { --machine-grid-cols: repeat(2, minmax(0, 1fr)); }
@@ -723,31 +736,34 @@ body {
 
 .kiosk-screen--select .machine-grid--default[data-machine-count='5'],
 .kiosk-screen--select .machine-grid--default[data-machine-count='6'] {
-  --machine-card-min-h: clamp(162px, 21.8vh, 222px);
-  --machine-card-title-size: clamp(1.64rem, 8.1cqw, 2.4rem);
-  --machine-card-hint-size: clamp(0.98rem, 3.2cqw, 1.14rem);
-  --machine-card-badge-size: clamp(0.98rem, 3.4cqw, 1.16rem);
-  --machine-card-icon-box: clamp(84px, 22.4cqw, 128px);
-  --machine-card-icon-size: clamp(39px, 9.6cqw, 61px);
+  --machine-card-min-h: clamp(162px, 21.8vh, 230px);
+  --machine-card-padding: clamp(1.2rem, 2.1vw, 1.75rem);
+  --machine-card-gap: clamp(1.05rem, 1.6vw, 1.4rem);
+  --machine-card-title-size: clamp(1.72rem, 9.6cqw, 2.58rem);
+  --machine-card-hint-size: clamp(1rem, 3.8cqw, 1.2rem);
+  --machine-card-badge-size: clamp(1rem, 4cqw, 1.24rem);
+  --machine-card-icon-box: clamp(96px, 29cqw, 138px);
+  --machine-card-icon-size: clamp(44px, 13.5cqw, 66px);
+  --machine-card-content-gap: clamp(0.52rem, 0.85vh, 0.8rem);
 }
 
 .kiosk-screen--select .machine-grid--default[data-machine-count='7'],
 .kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
-  --machine-card-min-h: clamp(156px, 20.6vh, 210px);
-  --machine-card-padding: clamp(1.1rem, 1.75vw, 1.45rem);
-  --machine-card-gap: clamp(0.92rem, 1.35vw, 1.16rem);
-  --machine-card-title-size: clamp(1.5rem, 7.6cqw, 2.1rem);
-  --machine-card-hint-size: clamp(0.94rem, 3cqw, 1.08rem);
-  --machine-card-badge-size: clamp(0.92rem, 3.2cqw, 1.1rem);
-  --machine-card-icon-box: clamp(76px, 20cqw, 112px);
-  --machine-card-icon-size: clamp(35px, 8.8cqw, 54px);
-  --machine-card-content-gap: clamp(0.44rem, 0.66vh, 0.62rem);
+  --machine-card-min-h: clamp(156px, 20.6vh, 218px);
+  --machine-card-padding: clamp(1.1rem, 1.85vw, 1.55rem);
+  --machine-card-gap: clamp(0.95rem, 1.45vw, 1.28rem);
+  --machine-card-title-size: clamp(1.62rem, 9.2cqw, 2.58rem);
+  --machine-card-hint-size: clamp(0.96rem, 3.6cqw, 1.2rem);
+  --machine-card-badge-size: clamp(0.96rem, 3.8cqw, 1.24rem);
+  --machine-card-icon-box: clamp(88px, 27cqw, 138px);
+  --machine-card-icon-size: clamp(41px, 12.5cqw, 66px);
+  --machine-card-content-gap: clamp(0.48rem, 0.7vh, 0.72rem);
 }
 
-@media (max-height: 680px) and (max-width: 1200px) {
+@media (max-height: 680px) and (max-width: 1400px) {
   .kiosk-screen--select .machine-grid--default[data-machine-count='7'],
   .kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
-    --machine-card-min-h: clamp(144px, 18.4vh, 178px);
+    --machine-card-min-h: clamp(118px, 18.4vh, 178px);
     --machine-card-padding: clamp(0.95rem, 1.25vw, 1.18rem);
     --machine-card-gap: clamp(0.72rem, 1vw, 0.92rem);
     --machine-card-title-size: clamp(1.24rem, 6.3cqw, 1.68rem);
@@ -876,9 +892,9 @@ body {
 }
 
 @keyframes kiosk-progress-beam-head {
-  0% { left: -58px; opacity: 1; }
+  0% { left: calc(var(--kiosk-progress-beam-width) / -2); opacity: 1; }
   90% { opacity: 1; }
-  100% { left: 100%; opacity: 0; }
+  100% { left: calc(100% - var(--kiosk-progress-beam-width) / 2); opacity: 0; }
 }
 
 @keyframes kiosk-progress-beam-travel {
@@ -985,15 +1001,6 @@ body {
 
   .kiosk-shell__topbar {
     padding-inline: 1rem;
-  }
-
-  .kiosk-progress__dot {
-    width: 2.05rem;
-    height: 2.05rem;
-  }
-
-  .kiosk-progress__label {
-    font-size: 1.25rem;
   }
 
   .kiosk-hero--home {
