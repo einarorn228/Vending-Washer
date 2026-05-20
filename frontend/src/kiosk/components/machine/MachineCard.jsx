@@ -2,6 +2,7 @@ import React from 'react';
 import MachineStatusBadge from './MachineStatusBadge.jsx';
 import MachineIcon from './MachineIcon.jsx';
 import { normalizeMachineStatus } from './normalizeMachineStatus.js';
+import AutoFitText from '../common/AutoFitText.jsx';
 
 function resolveHint(status, isInteractive) {
   if (!isInteractive) {
@@ -75,7 +76,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
 
       <div className="machine-card__content">
         {!isScanVariant ? <p className="machine-card__label">Machine</p> : null}
-        <h3 className="machine-card__title">{machineName}</h3>
+        <AutoFitText as="h3" className="machine-card__title" minScale={0.74}>{machineName}</AutoFitText>
         <MachineStatusBadge status={status} />
         {!isScanVariant && !isFocusVariant ? (
           <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p>
