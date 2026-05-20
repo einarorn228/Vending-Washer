@@ -58,14 +58,16 @@ export default function SelectMachineScreen({ machines, message, interactionPoli
         <div className="kiosk-flow-hero__icon" aria-hidden="true">
           <MachineIcon type="washer" className="kiosk-flow-hero__machine-icon" />
         </div>
-        <p className="kiosk-hero__eyebrow">Machine selection</p>
-        <h2 className="kiosk-hero__title">Choose your machine</h2>
-        <p className="kiosk-hero__message">
-          {message ||
-            (isTouchSelectable
-              ? 'Code accepted. Choose any available machine.'
-              : 'Code accepted. Ask an attendant to choose an available machine.')}
-        </p>
+        <div className="kiosk-flow-hero__text-block">
+          <p className="kiosk-hero__eyebrow">Machine selection</p>
+          <h2 className="kiosk-hero__title">Choose your machine</h2>
+          <p className="kiosk-hero__message">
+            {message ||
+              (isTouchSelectable
+                ? 'Code accepted. Choose any available machine.'
+                : 'Code accepted. Ask an attendant to choose an available machine.')}
+          </p>
+        </div>
       </div>
 
       <MachineGrid

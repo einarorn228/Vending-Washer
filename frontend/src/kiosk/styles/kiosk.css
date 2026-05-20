@@ -382,41 +382,53 @@ body {
 .kiosk-flow-hero--select {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: clamp(0.9rem, 1.7vw, 1.2rem);
+  gap: clamp(1.2rem, 2.2vw, 1.8rem);
   align-items: center;
-  padding: clamp(0.95rem, 1.95vw, 1.4rem);
+  padding: clamp(1.2rem, 2.3vw, 1.7rem);
 }
 
 .kiosk-flow-hero__icon {
-  grid-row: 1 / span 3;
-  width: clamp(58px, 5.4vw, 74px);
-  height: clamp(58px, 5.4vw, 74px);
-  border-radius: clamp(18px, 2vw, 22px);
+  width: clamp(66px, 6.4vw, 86px);
+  height: clamp(66px, 6.4vw, 86px);
+  border-radius: clamp(20px, 2.2vw, 24px);
   display: grid;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--kiosk-accent) 36%, var(--kiosk-border));
-  background: linear-gradient(180deg, rgba(112, 200, 255, 0.17), rgba(112, 200, 255, 0.05));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 24px rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  box-shadow: 
+    0 8px 32px rgba(112, 200, 255, 0.12), 
+    inset 0 0 24px rgba(112, 200, 255, 0.1), 
+    0 0 0 1px rgba(112, 200, 255, 0.2);
+  transition: transform var(--kiosk-transition-calm), box-shadow var(--kiosk-transition-calm);
 }
 
 .kiosk-flow-hero__machine-icon {
-  width: clamp(28px, 2.8vw, 36px);
-  height: clamp(28px, 2.8vw, 36px);
+  width: clamp(32px, 3.2vw, 42px);
+  height: clamp(32px, 3.2vw, 42px);
+  color: var(--kiosk-accent);
+  filter: drop-shadow(0 2px 8px rgba(112, 200, 255, 0.35));
 }
 
-.kiosk-flow-hero--select .kiosk-hero__eyebrow,
-.kiosk-flow-hero--select .kiosk-hero__title,
-.kiosk-flow-hero--select .kiosk-hero__message {
-  grid-column: 2;
+.kiosk-flow-hero__text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kiosk-flow-hero--select .kiosk-hero__eyebrow {
+  margin: 0;
+  color: var(--kiosk-accent);
+  text-shadow: 0 0 12px rgba(112, 200, 255, 0.25);
 }
 
 .kiosk-flow-hero--select .kiosk-hero__title {
-  font-size: clamp(1.75rem, 3vw, 2.45rem);
+  font-size: clamp(1.8rem, 3.1vw, 2.6rem);
+  margin-top: 0.15rem;
 }
 
 .kiosk-flow-hero--select .kiosk-hero__message {
-  font-size: clamp(0.97rem, 1.55vw, 1.12rem);
-  margin-top: 0.4rem;
+  font-size: clamp(0.98rem, 1.55vw, 1.15rem);
+  margin-top: 0.35rem;
 }
 
 .kiosk-hero--confirmation {
