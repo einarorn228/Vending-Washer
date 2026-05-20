@@ -13,9 +13,9 @@
   --kiosk-banner-text: #ffe2bc;
   --kiosk-stage-radius: 22px;
   --kiosk-stage-radius-sm: 18px;
-  --kiosk-stage-border: 1px solid color-mix(in srgb, var(--kiosk-border) 84%, #3c4f69);
-  --kiosk-stage-bg: linear-gradient(180deg, rgba(28, 32, 42, 0.88) 0%, rgba(19, 22, 31, 0.88) 100%);
-  --kiosk-stage-shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
+  --kiosk-stage-border: 1px solid rgba(255, 255, 255, 0.08);
+  --kiosk-stage-bg: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  --kiosk-stage-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --kiosk-ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
   --kiosk-transition-calm: 190ms var(--kiosk-ease-calm);
   --kiosk-bg-base: #080e18;
@@ -314,6 +314,8 @@ body {
 .kiosk-stage-card {
   border: var(--kiosk-stage-border);
   background: var(--kiosk-stage-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--kiosk-stage-radius);
   box-shadow: var(--kiosk-stage-shadow);
   min-width: 0;
@@ -670,7 +672,7 @@ body {
 
 .machine-grid[data-machine-count='6'] .machine-card__title,
 .machine-grid[data-machine-count='7'] .machine-card__title,
-.machine-grid[data-machine-count='8'] .machine-card__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.machine-grid[data-machine-count='8'] .machine-card__title { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 
 .kiosk-screen--select .machine-grid--default[data-machine-count='6'] {
