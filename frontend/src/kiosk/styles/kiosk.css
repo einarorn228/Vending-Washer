@@ -292,7 +292,7 @@ body {
 
 .kiosk-screen--home {
   width: min(var(--kiosk-home-screen-max-width), 100%);
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .kiosk-screen--select {
@@ -607,17 +607,54 @@ body {
 }
 
 .machine-grid--scan {
-  --machine-grid-cols: repeat(auto-fit, minmax(260px, 1fr));
-  --machine-card-padding: 1.2rem 1.4rem;
-  --machine-card-gap: 1rem;
-  --machine-card-min-h: clamp(120px, 15vh, 160px);
   --machine-card-radius: 24px;
-  --machine-card-title-size: clamp(1.35rem, 2.1vw, 1.8rem);
   --machine-card-title-line-height: 1.05;
-  --machine-card-badge-size: clamp(1rem, 1.1vw, 1.25rem);
-  --machine-card-badge-padding-y: 0.45rem;
-  --machine-card-badge-padding-x: 1rem;
-  --machine-card-content-gap: 0.45rem;
+  --machine-grid-gap: clamp(0.7rem, 1.5vh, 1.1rem);
+  --machine-card-padding: clamp(0.9rem, 1.8vh, 1.3rem) clamp(1rem, 2.2vw, 1.5rem);
+  --machine-card-gap: clamp(0.85rem, 1.8cqw, 1.2rem);
+  --machine-card-min-h: clamp(110px, 14vh, 160px);
+  --machine-card-title-size: clamp(1.2rem, 7.5cqw, 1.8rem);
+  --machine-card-badge-size: clamp(0.88rem, 3.8cqw, 1.15rem);
+  --machine-card-badge-padding-y: clamp(0.3rem, 0.5vh, 0.45rem);
+  --machine-card-badge-padding-x: clamp(0.6rem, 1vw, 0.9rem);
+  --machine-card-icon-box: clamp(52px, 14cqw, 76px);
+  --machine-card-icon-size: clamp(26px, 7cqw, 38px);
+  --machine-card-content-gap: clamp(0.3rem, 0.6vh, 0.5rem);
+  height: 100%;
+  align-content: stretch;
+  grid-auto-rows: minmax(var(--machine-card-min-h), 1fr);
+}
+
+/* Scan: 4 machines (2-col) — cards are ~50% wider, push content way up */
+.machine-grid--scan[data-machine-count='4'] {
+  --machine-card-icon-box: clamp(60px, 18cqw, 120px);
+  --machine-card-icon-size: clamp(30px, 9cqw, 60px);
+  --machine-card-title-size: clamp(1.4rem, 10cqw, 2.6rem);
+  --machine-card-badge-size: clamp(1rem, 4.5cqw, 1.5rem);
+  --machine-card-badge-padding-y: clamp(0.35rem, 0.7vh, 0.5rem);
+  --machine-card-badge-padding-x: clamp(0.75rem, 1.4vw, 1.1rem);
+  --machine-card-gap: clamp(1.1rem, 2.8cqw, 1.8rem);
+  --machine-card-content-gap: clamp(0.4rem, 0.8vh, 0.65rem);
+}
+
+/* Scan: 2 machines (2-col) — cards are very wide, go large */
+.machine-grid--scan[data-machine-count='2'] {
+  --machine-card-icon-box: clamp(72px, 20cqw, 140px);
+  --machine-card-icon-size: clamp(36px, 10cqw, 70px);
+  --machine-card-title-size: clamp(1.5rem, 11cqw, 3rem);
+  --machine-card-badge-size: clamp(1.1rem, 5cqw, 1.7rem);
+  --machine-card-gap: clamp(1.2rem, 3cqw, 2rem);
+  --machine-card-content-gap: clamp(0.45rem, 0.9vh, 0.7rem);
+}
+
+/* Scan: 1 machine — full width, go monumental */
+.machine-grid--scan[data-machine-count='1'] {
+  --machine-card-icon-box: clamp(90px, 22cqw, 180px);
+  --machine-card-icon-size: clamp(46px, 11cqw, 90px);
+  --machine-card-title-size: clamp(1.8rem, 12cqw, 3.6rem);
+  --machine-card-badge-size: clamp(1.2rem, 6cqw, 2rem);
+  --machine-card-gap: clamp(1.5rem, 4cqw, 2.6rem);
+  --machine-card-content-gap: clamp(0.5rem, 1vh, 0.85rem);
 }
 
 .machine-grid--default {
@@ -632,7 +669,8 @@ body {
   --machine-card-content-gap: clamp(0.42rem, 0.65vh, 0.62rem);
 }
 
-.kiosk-screen--select .machine-grid--default {
+/* ── Global default-grid scaling: applies everywhere machine cards appear ── */
+.machine-grid--default {
   --machine-grid-gap: clamp(0.9rem, 1.85vh, 1.35rem);
   --machine-card-min-h: clamp(170px, 24vh, 252px);
   --machine-card-padding: clamp(1.25rem, 2.25vw, 1.82rem);
@@ -648,10 +686,11 @@ body {
   grid-auto-rows: minmax(var(--machine-card-min-h), 1fr);
 }
 
-.kiosk-screen--select .machine-grid--default[data-machine-count='5'],
-.kiosk-screen--select .machine-grid--default[data-machine-count='6'],
-.kiosk-screen--select .machine-grid--default[data-machine-count='7'],
-.kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
+/* 5–8 machine layouts: tighter 3-column grid, scale via cqw */
+.machine-grid[data-machine-count='5'],
+.machine-grid[data-machine-count='6'],
+.machine-grid[data-machine-count='7'],
+.machine-grid[data-machine-count='8'] {
   --machine-card-title-size: clamp(1.6rem, 11cqw, 2.8rem);
   --machine-card-hint-size: clamp(0.95rem, 4.4cqw, 1.25rem);
   --machine-card-badge-size: clamp(1rem, 4.8cqw, 1.35rem);
@@ -659,10 +698,56 @@ body {
   --machine-card-icon-size: clamp(36px, 13cqw, 68px);
 }
 
+/* 1 Machine Layout - Centered, fixed max-width, viewport-scaled content */
+.machine-grid[data-machine-count='1'] {
+  --machine-grid-cols: minmax(min(100%, 320px), min(680px, 100%));
+  justify-content: center;
+  --machine-card-padding: clamp(1.8rem, 4.5vh, 2.6rem) clamp(2.2rem, 5vw, 3.2rem);
+  --machine-card-gap: clamp(2rem, 5vw, 3.2rem);
+  --machine-card-min-h: clamp(260px, 40vh, 380px);
+  --machine-card-icon-box: clamp(130px, 12vw, 200px);
+  --machine-card-icon-size: clamp(70px, 6.5vw, 110px);
+  --machine-card-title-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  --machine-card-hint-size: clamp(1.2rem, 1.8vw, 1.8rem);
+  --machine-card-badge-size: clamp(1.3rem, 2vw, 2rem);
+  --machine-card-badge-padding-y: clamp(0.5rem, 1vh, 0.8rem);
+  --machine-card-badge-padding-x: clamp(1rem, 2vw, 1.5rem);
+  --machine-card-content-gap: clamp(0.9rem, 2vh, 1.4rem);
+}
+
+/* 2 Machine Layout - Wide & Bold */
+.machine-grid[data-machine-count='2'] {
+  --machine-card-padding: clamp(1.5rem, 3.5vh, 2.2rem) clamp(1.8rem, 4vw, 2.6rem);
+  --machine-card-gap: clamp(1.5rem, 4vw, 2.4rem);
+  --machine-card-min-h: clamp(200px, 30vh, 300px);
+  --machine-card-icon-box: clamp(125px, 28cqw, 190px);
+  --machine-card-icon-size: clamp(70px, 15cqw, 110px);
+  --machine-card-title-size: clamp(2rem, 8cqw, 3.3rem);
+  --machine-card-hint-size: clamp(1.1rem, 3.5cqw, 1.55rem);
+  --machine-card-badge-size: clamp(1.15rem, 4cqw, 1.8rem);
+  --machine-card-badge-padding-y: clamp(0.4rem, 0.8vh, 0.6rem);
+  --machine-card-badge-padding-x: clamp(0.8rem, 1.6vw, 1.2rem);
+  --machine-card-content-gap: clamp(0.7rem, 1.5vh, 1.1rem);
+  --machine-grid-cols: repeat(2, minmax(0, 1fr));
+}
+
+/* 3 Machine Layout - Balanced & Striking */
+.machine-grid[data-machine-count='3'] {
+  --machine-card-padding: clamp(1.2rem, 2.8vh, 1.6rem) clamp(1.4rem, 3vw, 2rem);
+  --machine-card-gap: clamp(1.2rem, 3vw, 1.8rem);
+  --machine-card-min-h: clamp(170px, 24vh, 240px);
+  --machine-card-icon-box: clamp(96px, 28cqw, 135px);
+  --machine-card-icon-size: clamp(52px, 15cqw, 75px);
+  --machine-card-title-size: clamp(1.6rem, 8cqw, 2.3rem);
+  --machine-card-hint-size: clamp(0.95rem, 3.5cqw, 1.15rem);
+  --machine-card-badge-size: clamp(1.05rem, 4cqw, 1.35rem);
+  --machine-card-badge-padding-y: clamp(0.32rem, 0.5vh, 0.42rem);
+  --machine-card-badge-padding-x: clamp(0.68rem, 1vw, 0.9rem);
+  --machine-card-content-gap: clamp(0.55rem, 1.2vh, 0.8rem);
+  --machine-grid-cols: repeat(3, minmax(0, 1fr));
+}
+
 .machine-grid--empty { border: 1px dashed var(--kiosk-border); border-radius: 16px; padding: 1.25rem; color: var(--kiosk-muted); font-size: 1.04rem; }
-.machine-grid[data-machine-count='1'] { --machine-grid-cols: minmax(min(100%, 260px), min(760px, 100%)); justify-content: center; }
-.machine-grid--scan[data-machine-count='2'] { --machine-grid-cols: repeat(2, minmax(0, 1fr)); }
-.machine-grid[data-machine-count='3'] { --machine-grid-cols: repeat(3, minmax(0, 1fr)); }
 .machine-grid[data-machine-count='4'] { --machine-grid-cols: repeat(2, minmax(0, 1fr)); }
 .machine-grid[data-machine-count='5'], .machine-grid[data-machine-count='6'] { --machine-grid-cols: repeat(3, minmax(0, 1fr)); }
 .machine-grid[data-machine-count='7'], .machine-grid[data-machine-count='8'] { --machine-grid-cols: repeat(3, minmax(0, 1fr)); }
