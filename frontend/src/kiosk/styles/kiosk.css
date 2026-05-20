@@ -635,11 +635,11 @@ body {
   --machine-card-min-h: clamp(170px, 24vh, 252px);
   --machine-card-padding: clamp(1.2rem, 2.15vw, 1.7rem);
   --machine-card-gap: clamp(1rem, 1.55vw, 1.35rem);
-  --machine-card-title-size: clamp(1.52rem, 2.45vw, 2.24rem);
-  --machine-card-hint-size: clamp(0.98rem, 1.12vw, 1.12rem);
-  --machine-card-badge-size: clamp(0.98rem, 1.12vw, 1.16rem);
-  --machine-card-icon-box: clamp(78px, 8.7vw, 116px);
-  --machine-card-icon-size: clamp(36px, 4vw, 54px);
+  --machine-card-title-size: clamp(1.58rem, 7.2cqw, 2.32rem);
+  --machine-card-hint-size: clamp(0.98rem, 3.2cqw, 1.14rem);
+  --machine-card-badge-size: clamp(0.98rem, 3.4cqw, 1.18rem);
+  --machine-card-icon-box: clamp(80px, 21cqw, 122px);
+  --machine-card-icon-size: clamp(37px, 9.2cqw, 58px);
   --machine-card-content-gap: clamp(0.5rem, 0.8vh, 0.75rem);
   height: 100%;
   align-content: stretch;
@@ -653,9 +653,7 @@ body {
 .machine-grid[data-machine-count='4'] { --machine-grid-cols: repeat(2, minmax(0, 1fr)); }
 .machine-grid[data-machine-count='5'], .machine-grid[data-machine-count='6'] { --machine-grid-cols: repeat(3, minmax(0, 1fr)); }
 .machine-grid[data-machine-count='7'], .machine-grid[data-machine-count='8'] { --machine-grid-cols: repeat(3, minmax(0, 1fr)); }
-.machine-grid--default[data-machine-count='7'], .machine-grid--default[data-machine-count='8'] { --machine-card-padding: clamp(0.9rem, 1.15vw, 1rem); --machine-card-gap: clamp(0.65rem, 0.85vw, 0.8rem); --machine-card-icon-box: clamp(56px, 5.9vw, 70px); --machine-card-icon-size: clamp(25px, 2.7vw, 33px); --machine-card-title-size: clamp(1.08rem, 1.55vw, 1.42rem); --machine-card-hint-size: clamp(0.82rem, 0.9vw, 0.92rem); --machine-card-badge-size: clamp(0.79rem, 0.85vw, 0.9rem); --machine-card-content-gap: clamp(0.25rem, 0.42vh, 0.34rem); }
-
-.machine-card { border: 1px solid var(--kiosk-border); border-radius: var(--machine-card-radius); background: linear-gradient(180deg, #2a3f5c 0%, var(--kiosk-surface-strong) 100%); padding: var(--machine-card-padding); display: grid; gap: var(--machine-card-gap); min-height: var(--machine-card-min-h); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease; min-width: 0; }
+.machine-card { border: 1px solid var(--kiosk-border); border-radius: var(--machine-card-radius); background: linear-gradient(180deg, #2a3f5c 0%, var(--kiosk-surface-strong) 100%); padding: var(--machine-card-padding); display: grid; gap: var(--machine-card-gap); min-height: var(--machine-card-min-h); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease; min-width: 0; container-type: inline-size; }
 .machine-card--scan { background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 28px rgba(0, 0, 0, 0.28); }
 .machine-card--default { background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 28px rgba(0, 0, 0, 0.28); grid-template-columns: auto minmax(0, 1fr); align-items: center; }
 .machine-card--available { border-color: color-mix(in srgb, var(--kiosk-success) 42%, var(--kiosk-border)); }
@@ -672,13 +670,14 @@ body {
 .machine-card__label { margin: 0; color: #a7bfdd; text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--machine-card-label-size); font-weight: 800; }
 .machine-card__title {
   margin: 0.3rem 0 0;
-  font-size: var(--machine-card-title-size);
+  font-size: calc(var(--machine-card-title-size) * var(--auto-fit-scale, 1));
   line-height: var(--machine-card-title-line-height);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
 }
 .machine-card--scan .machine-card__title { margin: 0; letter-spacing: -0.01em; }
+.auto-fit-text__measure { position: absolute; visibility: hidden; white-space: nowrap; pointer-events: none; font: inherit; font-size: var(--machine-card-title-size); }
+.auto-fit-text__visible { display: block; white-space: nowrap; overflow: visible; }
 .machine-card--default .machine-card__title { margin-top: 0.06rem; }
 .machine-card--default .machine-card__label { display: none; }
 .machine-card__hint { margin: 0; color: var(--kiosk-muted); font-size: var(--machine-card-hint-size); font-weight: 600; line-height: var(--machine-card-hint-line-height); }
@@ -726,17 +725,19 @@ body {
   --machine-card-min-h: clamp(152px, 20.5vh, 208px);
 }
 
-.kiosk-screen--select .machine-grid--default[data-machine-count='7'],
-.kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
-  --machine-card-min-h: clamp(138px, 18.5vh, 178px);
-  --machine-card-padding: clamp(0.86rem, 1.05vw, 1rem);
-  --machine-card-gap: clamp(0.6rem, 0.82vw, 0.75rem);
-  --machine-card-title-size: clamp(1.03rem, 1.35vw, 1.3rem);
-  --machine-card-hint-size: clamp(0.79rem, 0.82vw, 0.88rem);
-  --machine-card-badge-size: clamp(0.77rem, 0.8vw, 0.86rem);
-  --machine-card-icon-box: clamp(52px, 5.4vw, 64px);
-  --machine-card-icon-size: clamp(23px, 2.35vw, 30px);
-  --machine-card-content-gap: clamp(0.22rem, 0.35vh, 0.3rem);
+@media (max-height: 680px) {
+  .kiosk-screen--select .machine-grid--default[data-machine-count='7'],
+  .kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
+    --machine-card-min-h: clamp(146px, 19.2vh, 184px);
+    --machine-card-padding: clamp(0.95rem, 1.25vw, 1.18rem);
+    --machine-card-gap: clamp(0.72rem, 1vw, 0.92rem);
+    --machine-card-title-size: clamp(1.22rem, 6.2cqw, 1.64rem);
+    --machine-card-hint-size: clamp(0.86rem, 2.8cqw, 0.98rem);
+    --machine-card-badge-size: clamp(0.84rem, 3cqw, 1rem);
+    --machine-card-icon-box: clamp(64px, 17cqw, 88px);
+    --machine-card-icon-size: clamp(28px, 7.5cqw, 40px);
+    --machine-card-content-gap: clamp(0.3rem, 0.48vh, 0.42rem);
+  }
 }
 
 .kiosk-toast {
