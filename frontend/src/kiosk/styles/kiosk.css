@@ -633,14 +633,14 @@ body {
 .kiosk-screen--select .machine-grid--default {
   --machine-grid-gap: clamp(0.9rem, 1.85vh, 1.35rem);
   --machine-card-min-h: clamp(170px, 24vh, 252px);
-  --machine-card-padding: clamp(1.2rem, 2.15vw, 1.7rem);
-  --machine-card-gap: clamp(1rem, 1.55vw, 1.35rem);
-  --machine-card-title-size: clamp(1.58rem, 7.2cqw, 2.32rem);
-  --machine-card-hint-size: clamp(0.98rem, 3.2cqw, 1.14rem);
-  --machine-card-badge-size: clamp(0.98rem, 3.4cqw, 1.18rem);
-  --machine-card-icon-box: clamp(80px, 21cqw, 122px);
-  --machine-card-icon-size: clamp(37px, 9.2cqw, 58px);
-  --machine-card-content-gap: clamp(0.5rem, 0.8vh, 0.75rem);
+  --machine-card-padding: clamp(1.25rem, 2.25vw, 1.82rem);
+  --machine-card-gap: clamp(1.05rem, 1.7vw, 1.46rem);
+  --machine-card-title-size: clamp(1.72rem, 8.6cqw, 2.58rem);
+  --machine-card-hint-size: clamp(1rem, 3.4cqw, 1.2rem);
+  --machine-card-badge-size: clamp(1rem, 3.6cqw, 1.24rem);
+  --machine-card-icon-box: clamp(88px, 23.8cqw, 138px);
+  --machine-card-icon-size: clamp(41px, 10.2cqw, 66px);
+  --machine-card-content-gap: clamp(0.56rem, 0.9vh, 0.84rem);
   height: 100%;
   align-content: stretch;
   grid-auto-rows: minmax(var(--machine-card-min-h), 1fr);
@@ -721,19 +721,38 @@ body {
 .machine-grid[data-machine-count='8'] .machine-card__title { letter-spacing: -0.005em; }
 
 
+.kiosk-screen--select .machine-grid--default[data-machine-count='5'],
 .kiosk-screen--select .machine-grid--default[data-machine-count='6'] {
-  --machine-card-min-h: clamp(152px, 20.5vh, 208px);
+  --machine-card-min-h: clamp(162px, 21.8vh, 222px);
+  --machine-card-title-size: clamp(1.64rem, 8.1cqw, 2.4rem);
+  --machine-card-hint-size: clamp(0.98rem, 3.2cqw, 1.14rem);
+  --machine-card-badge-size: clamp(0.98rem, 3.4cqw, 1.16rem);
+  --machine-card-icon-box: clamp(84px, 22.4cqw, 128px);
+  --machine-card-icon-size: clamp(39px, 9.6cqw, 61px);
 }
 
-@media (max-height: 680px) {
+.kiosk-screen--select .machine-grid--default[data-machine-count='7'],
+.kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
+  --machine-card-min-h: clamp(156px, 20.6vh, 210px);
+  --machine-card-padding: clamp(1.1rem, 1.75vw, 1.45rem);
+  --machine-card-gap: clamp(0.92rem, 1.35vw, 1.16rem);
+  --machine-card-title-size: clamp(1.5rem, 7.6cqw, 2.1rem);
+  --machine-card-hint-size: clamp(0.94rem, 3cqw, 1.08rem);
+  --machine-card-badge-size: clamp(0.92rem, 3.2cqw, 1.1rem);
+  --machine-card-icon-box: clamp(76px, 20cqw, 112px);
+  --machine-card-icon-size: clamp(35px, 8.8cqw, 54px);
+  --machine-card-content-gap: clamp(0.44rem, 0.66vh, 0.62rem);
+}
+
+@media (max-height: 680px) and (max-width: 1200px) {
   .kiosk-screen--select .machine-grid--default[data-machine-count='7'],
   .kiosk-screen--select .machine-grid--default[data-machine-count='8'] {
-    --machine-card-min-h: clamp(146px, 19.2vh, 184px);
+    --machine-card-min-h: clamp(144px, 18.4vh, 178px);
     --machine-card-padding: clamp(0.95rem, 1.25vw, 1.18rem);
     --machine-card-gap: clamp(0.72rem, 1vw, 0.92rem);
-    --machine-card-title-size: clamp(1.22rem, 6.2cqw, 1.64rem);
-    --machine-card-hint-size: clamp(0.86rem, 2.8cqw, 0.98rem);
-    --machine-card-badge-size: clamp(0.84rem, 3cqw, 1rem);
+    --machine-card-title-size: clamp(1.24rem, 6.3cqw, 1.68rem);
+    --machine-card-hint-size: clamp(0.86rem, 2.8cqw, 0.99rem);
+    --machine-card-badge-size: clamp(0.84rem, 3cqw, 1.01rem);
     --machine-card-icon-box: clamp(64px, 17cqw, 88px);
     --machine-card-icon-size: clamp(28px, 7.5cqw, 40px);
     --machine-card-content-gap: clamp(0.3rem, 0.48vh, 0.42rem);
