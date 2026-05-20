@@ -440,7 +440,8 @@ body {
 .kiosk-hero__title {
   margin: 0.2rem 0 0;
   font-size: clamp(2.1rem, 6vw, 4.1rem);
-  line-height: 1.03;
+  line-height: 1.15;
+  padding-bottom: 0.12em;
   background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -585,14 +586,14 @@ body {
 }
 
 .machine-grid--scan {
-  --machine-grid-cols: repeat(auto-fit, minmax(300px, 1fr));
-  --machine-card-padding: 1.45rem 1.65rem;
-  --machine-card-gap: 1.25rem;
-  --machine-card-min-h: clamp(132px, 17vh, 176px);
-  --machine-card-radius: 28px;
-  --machine-card-title-size: clamp(1.9rem, 2.55vw, 2.65rem);
-  --machine-card-badge-size: clamp(1.15rem, 1.1vw, 1.4rem);
-  --machine-card-content-gap: 0.55rem;
+  --machine-grid-cols: repeat(auto-fit, minmax(260px, 1fr));
+  --machine-card-padding: 1.2rem 1.4rem;
+  --machine-card-gap: 1rem;
+  --machine-card-min-h: clamp(120px, 15vh, 160px);
+  --machine-card-radius: 24px;
+  --machine-card-title-size: clamp(1.35rem, 2.1vw, 1.8rem);
+  --machine-card-badge-size: clamp(1rem, 1.1vw, 1.25rem);
+  --machine-card-content-gap: 0.45rem;
 }
 
 .machine-grid--default {
@@ -634,7 +635,14 @@ body {
 .machine-card--focus .machine-card__label { color: #bdd4f2; }
 .machine-card--focus .machine-card__icon-wrap { width: clamp(70px, 7.5vw, 96px); height: clamp(70px, 7.5vw, 96px); border-radius: clamp(20px, 2.4vw, 26px); }
 .machine-card__label { margin: 0; color: #a7bfdd; text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--machine-card-label-size); font-weight: 800; }
-.machine-card__title { margin: 0.3rem 0 0; font-size: var(--machine-card-title-size); line-height: 1.12; overflow-wrap: anywhere; word-break: break-word; }
+.machine-card__title {
+  margin: 0.3rem 0 0;
+  font-size: var(--machine-card-title-size);
+  line-height: 1.12;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .machine-card--scan .machine-card__title { margin: 0; line-height: 1.05; letter-spacing: -0.01em; }
 .machine-card--default .machine-card__title { margin-top: 0.1rem; line-height: 1.08; }
 .machine-card--default .machine-card__label { display: none; }
