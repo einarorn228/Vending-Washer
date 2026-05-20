@@ -300,6 +300,8 @@ body {
 }
 
 .kiosk-hero {
+  position: relative;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
   backdrop-filter: blur(16px);
@@ -309,6 +311,25 @@ body {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   min-width: 0;
   transition: border-color var(--kiosk-transition-calm), box-shadow var(--kiosk-transition-calm), transform var(--kiosk-transition-calm), opacity var(--kiosk-transition-calm);
+}
+
+.kiosk-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 82% -6%, color-mix(in srgb, var(--kiosk-accent) 14%, transparent), transparent 62%);
+}
+
+.kiosk-hero--error::after {
+  background: radial-gradient(circle at 82% -6%, color-mix(in srgb, var(--kiosk-danger) 14%, transparent), transparent 62%);
+}
+
+.kiosk-hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .kiosk-stage-card {
@@ -355,23 +376,7 @@ body {
 }
 
 .kiosk-flow-hero {
-  position: relative;
-  overflow: hidden;
-}
-
-.kiosk-flow-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(circle at 82% -6%, color-mix(in srgb, var(--kiosk-accent) 14%, transparent), transparent 62%);
-}
-
-.kiosk-flow-hero > * {
-  position: relative;
-  z-index: 1;
+  min-width: 0;
 }
 
 .kiosk-flow-hero--select {
