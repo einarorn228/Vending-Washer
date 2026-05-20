@@ -363,12 +363,13 @@ body {
 .kiosk-hero--home {
   min-height: clamp(170px, 34vh, 430px);
   max-height: 100%;
-  display: grid;
-  align-content: center;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  gap: 1.9rem;
-  padding: clamp(2rem, 6vw, 4.5rem);
+  gap: clamp(1.2rem, 3.2vh, 1.8rem);
+  padding: clamp(1.4rem, 4vh, 2.6rem) clamp(1.5rem, 5vw, 3.5rem);
 }
 
 .kiosk-hero--compact {
