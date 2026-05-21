@@ -762,9 +762,26 @@ body {
 .machine-card--readonly { opacity: 0.95; }
 .machine-card--interactive { cursor: pointer; }
 .machine-card--interactive:hover, .machine-card--interactive:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--kiosk-accent) 55%, #fff); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38); outline: none; }
-.machine-card--focus { --machine-card-padding: clamp(1.15rem, 2.4vw, 1.7rem); --machine-card-min-h: clamp(170px, 24vh, 250px); --machine-card-radius: 22px; --machine-card-title-size: clamp(1.9rem, 3.4vw, 2.8rem); --machine-card-badge-size: clamp(1rem, 1.15vw, 1.2rem); --machine-card-content-gap: 0.55rem; border-color: color-mix(in srgb, var(--kiosk-accent) 45%, var(--kiosk-border)); background: linear-gradient(180deg, rgba(38, 58, 86, 0.95) 0%, rgba(26, 40, 62, 0.95) 100%); box-shadow: 0 20px 44px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
-.machine-card--focus { --machine-card-padding: clamp(1rem, 2.05vw, 1.55rem); --machine-card-gap: clamp(0.9rem, 1.8vw, 1.35rem); --machine-card-min-h: clamp(170px, 24vh, 252px); --machine-card-radius: 22px; --machine-card-title-size: clamp(1.7rem, 3.3vw, 2.5rem); --machine-card-icon-box: clamp(66px, 7vw, 92px); --machine-card-icon-size: clamp(32px, 3.6vw, 46px); --machine-card-badge-size: clamp(0.95rem, 1.05vw, 1.12rem); --machine-card-content-gap: clamp(0.4rem, 0.7vh, 0.62rem); grid-template-columns: auto minmax(0, 1fr); align-items: center; align-content: stretch; min-height: 100%; }
-.machine-card--focus .machine-card__label { color: #bdd4f2; }
+.machine-card--focus {
+  --machine-card-padding: clamp(1.45rem, 2.6vw, 2rem);
+  --machine-card-gap: clamp(1.15rem, 2.1vw, 1.7rem);
+  --machine-card-min-h: clamp(230px, 35vh, 372px);
+  --machine-card-radius: 22px;
+  --machine-card-title-size: clamp(2.1rem, 10.4cqw, 3.15rem);
+  --machine-card-icon-box: clamp(102px, 24.5cqw, 146px);
+  --machine-card-icon-size: clamp(46px, 11.2cqw, 72px);
+  --machine-card-badge-size: clamp(1.06rem, 4.1cqw, 1.35rem);
+  --machine-card-content-gap: clamp(0.56rem, 0.95vh, 0.8rem);
+  --machine-card-hint-size: clamp(1.02rem, 3.7cqw, 1.24rem);
+  border-color: color-mix(in srgb, var(--kiosk-accent) 45%, var(--kiosk-border));
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.72) 0%, rgba(15, 23, 42, 0.92) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 14px 36px rgba(0, 0, 0, 0.32);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+.machine-card--focus .machine-card__label { display: none; }
 .machine-card--focus .machine-card__icon-wrap { width: var(--machine-card-icon-box); height: var(--machine-card-icon-box); border-radius: clamp(18px, 2.1vw, 24px); }
 .machine-card__label { margin: 0; color: #a7bfdd; text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--machine-card-label-size); font-weight: 800; }
 .machine-card__title {
@@ -780,6 +797,8 @@ body {
 .machine-card--default .machine-card__title { margin-top: 0.06rem; }
 .machine-card--default .machine-card__label { display: none; }
 .machine-card__hint { margin: 0; color: var(--kiosk-muted); font-size: var(--machine-card-hint-size); font-weight: 600; line-height: var(--machine-card-hint-line-height); }
+.machine-card__meta { margin: 0; color: #c9d9ee; font-size: var(--machine-card-hint-size); font-weight: 600; line-height: var(--machine-card-hint-line-height); }
+.machine-card--focus .machine-card__meta { margin-top: clamp(0.14rem, 0.4vh, 0.3rem); color: #d2e3f8; }
 .machine-card__content { display: grid; gap: var(--machine-card-content-gap); min-width: 0; align-content: var(--machine-card-content-align); }
 .machine-card__icon-wrap { width: var(--machine-card-icon-box); height: var(--machine-card-icon-box); border-radius: var(--machine-card-icon-radius); display: grid; place-items: center; background: color-mix(in srgb, var(--kiosk-danger) 18%, transparent); border: 1px solid color-mix(in srgb, var(--kiosk-danger) 40%, var(--kiosk-border)); flex-shrink: 0; }
 .machine-card--available .machine-card__icon-wrap { background: color-mix(in srgb, var(--kiosk-success) 22%, transparent); border-color: color-mix(in srgb, var(--kiosk-success) 48%, var(--kiosk-border)); }
@@ -878,16 +897,21 @@ body {
 
 .kiosk-screen--machine-final {
   grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.5rem, 1.05vh, 0.82rem);
 }
 
 .kiosk-screen--machine-final .kiosk-machine-focus {
-  height: 100%;
   min-height: 0;
-  align-content: stretch;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  padding-top: clamp(0.15rem, 0.55vh, 0.35rem);
 }
 
 .kiosk-screen--machine-final .machine-card--focus {
-  height: 100%;
+  width: min(980px, 100%);
+  min-height: clamp(230px, 34vh, 360px);
+  max-height: clamp(300px, 49vh, 420px);
 }
 
 .kiosk-screen--error {
@@ -1097,6 +1121,29 @@ body {
   }
 }
 
+
+
+@media (max-height: 720px) {
+  .kiosk-screen--machine-final {
+    gap: clamp(0.42rem, 0.75vh, 0.6rem);
+  }
+
+  .kiosk-screen--machine-final .machine-card--focus {
+    min-height: clamp(196px, 30vh, 292px);
+    max-height: clamp(246px, 42vh, 332px);
+  }
+
+  .machine-card--focus {
+    --machine-card-padding: clamp(1.1rem, 1.7vw, 1.35rem);
+    --machine-card-gap: clamp(0.86rem, 1.35vw, 1.08rem);
+    --machine-card-title-size: clamp(1.7rem, 8.9cqw, 2.34rem);
+    --machine-card-icon-box: clamp(82px, 21cqw, 112px);
+    --machine-card-icon-size: clamp(37px, 9.9cqw, 56px);
+    --machine-card-badge-size: clamp(0.95rem, 3.3cqw, 1.13rem);
+    --machine-card-hint-size: clamp(0.92rem, 3cqw, 1.03rem);
+    --machine-card-content-gap: clamp(0.42rem, 0.65vh, 0.58rem);
+  }
+}
 @media (max-height: 680px) {
 
   .kiosk-shell__topbar {

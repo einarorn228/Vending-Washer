@@ -37,7 +37,8 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
   const { machineId, machineLabel, selectedMachine } = resolveSelectedMachine(currentMachine, machines);
   const focusStatus = selectedMachine?.status === 'error' ? 'error' : 'busy';
   const usesLeftMessage = usesLeft ?? null;
-  const fallbackMessage = `${machineLabel} is now in use. No further action is needed—wait for the selected program to finish.${usesLeftMessage !== null ? ` Uses left: ${usesLeftMessage}.` : ''}`;
+  const focusDetail = `Machine running${usesLeftMessage !== null ? ` · Uses left: ${usesLeftMessage}` : ''}`;
+  const fallbackMessage = `${machineLabel} is now running. No further action is needed—wait for the selected program to finish.`;
   const focusMachine = {
     ...(selectedMachine || {}),
     id: selectedMachine?.id || machineId,
@@ -60,6 +61,7 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
           machine={focusMachine}
           isInteractive={false}
           variant="focus"
+          detail={focusDetail}
         />
       </div>
     </section>

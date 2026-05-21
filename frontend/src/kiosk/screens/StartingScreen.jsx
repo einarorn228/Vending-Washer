@@ -37,7 +37,8 @@ export default function StartingScreen({ message, currentMachine, machines, uses
   const { machineId, machineLabel, selectedMachine } = resolveSelectedMachine(currentMachine, machines);
   const focusStatus = selectedMachine?.status === 'error' ? 'error' : 'reserved';
   const usesLeftMessage = usesLeft ?? null;
-  const fallbackMessage = `${machineLabel} is enabled and ready. Choose your cycle and press Start on the machine.${usesLeftMessage !== null ? ` Uses left: ${usesLeftMessage}.` : ''}`;
+  const focusDetail = `Ready for program selection${usesLeftMessage !== null ? ` · Uses left: ${usesLeftMessage}` : ''}`;
+  const fallbackMessage = `${machineLabel} is enabled. Choose your program and press Start on the machine.`;
   const focusMachine = {
     ...(selectedMachine || {}),
     id: selectedMachine?.id || machineId,
@@ -60,6 +61,7 @@ export default function StartingScreen({ message, currentMachine, machines, uses
           machine={focusMachine}
           isInteractive={false}
           variant="focus"
+          detail={focusDetail}
         />
       </div>
     </section>
