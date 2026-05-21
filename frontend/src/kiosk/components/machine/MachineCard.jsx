@@ -30,7 +30,7 @@ function resolveMachineType(machine) {
   return machineName.toLowerCase().includes('dryer') ? 'dryer' : 'washer';
 }
 
-export default function MachineCard({ machine, isInteractive, onSelect, variant = 'default' }) {
+export default function MachineCard({ machine, isInteractive, onSelect, variant = 'default', detail = '' }) {
   const machineName = machine?.name || machine?.id || 'Machine';
   const status = normalizeMachineStatus(machine);
   const isAvailable = status === 'available';
@@ -81,6 +81,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
         {!isScanVariant && !isFocusVariant ? (
           <p className="machine-card__hint">{resolveHint(status, isInteractive)}</p>
         ) : null}
+        {detail ? <p className="machine-card__meta">{detail}</p> : null}
       </div>
     </article>
   );
