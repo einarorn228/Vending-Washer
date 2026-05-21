@@ -36,7 +36,17 @@ export default function KioskRouter({ uiState, backendUnreachable }) {
       );
       break;
     case 'machine_starting':
-      content = <StartingScreen message={uiState.message} {...screenProps} />;
+      content = (
+        <StartingScreen
+          message={uiState.message}
+          selectionSecondsLeft={
+            uiState?.selection_seconds_left ??
+            uiState?.selectionSec
+          }
+          selectionExpiresAt={uiState?.expires_at}
+          {...screenProps}
+        />
+      );
       break;
     case 'machine_in_use':
       content = <InUseScreen message={uiState.message} {...screenProps} />;

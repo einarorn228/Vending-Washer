@@ -49,11 +49,23 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
   return (
     <section className="kiosk-screen kiosk-screen--in-use kiosk-screen--machine-final">
       <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
-        <p className="kiosk-hero__eyebrow">In progress</p>
-        <h2 className="kiosk-hero__title">Machine running</h2>
-        <p className="kiosk-hero__message">
-          {message || fallbackMessage}
-        </p>
+        <div className="kiosk-final-status-card kiosk-final-status-card--in-use">
+          <div className="kiosk-final-status-card__visual" aria-hidden="true">
+            <span className="kiosk-final-status-card__icon">●</span>
+          </div>
+          <div className="kiosk-final-status-card__body">
+            <p className="kiosk-hero__eyebrow">In progress</p>
+            <h2 className="kiosk-hero__title">Machine running</h2>
+            <p className="kiosk-hero__message">
+              {message || fallbackMessage}
+            </p>
+            <div className="kiosk-final-status-card__meta">
+              <p className="kiosk-final-status-card__helper">
+                No further action is needed. Wait for the selected program to finish.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="kiosk-machine-focus">
