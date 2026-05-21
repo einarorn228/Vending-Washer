@@ -30,7 +30,7 @@ function resolveMachineType(machine) {
   return machineName.toLowerCase().includes('dryer') ? 'dryer' : 'washer';
 }
 
-export default function MachineCard({ machine, isInteractive, onSelect, variant = 'default', detail = '' }) {
+export default function MachineCard({ machine, isInteractive, onSelect, variant = 'default', detail = '', children }) {
   const machineName = machine?.name || machine?.id || 'Machine';
   const status = normalizeMachineStatus(machine);
   const isAvailable = status === 'available';
@@ -83,6 +83,12 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
         ) : null}
         {detail ? <p className="machine-card__meta">{detail}</p> : null}
       </div>
+
+      {children ? (
+        <div className="machine-card__extra">
+          {children}
+        </div>
+      ) : null}
     </article>
   );
 }

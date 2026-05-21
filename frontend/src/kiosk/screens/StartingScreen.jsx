@@ -102,8 +102,8 @@ export default function StartingScreen({
 
   return (
     <section className="kiosk-screen kiosk-screen--starting kiosk-screen--machine-final">
-      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
-        <div className="kiosk-final-status-card kiosk-final-status-card--starting">
+      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--centered kiosk-hero--confirmation">
+        <div className="kiosk-final-status-card kiosk-final-status-card--starting kiosk-final-status-card--centered">
           <div className="kiosk-final-status-card__visual" aria-hidden="true">
             <FinalStartingIcon />
           </div>
@@ -112,16 +112,6 @@ export default function StartingScreen({
             <h2 className="kiosk-hero__title">Machine enabled</h2>
             <p className="kiosk-hero__message">
               {message || fallbackMessage}
-            </p>
-          </div>
-          <div className="kiosk-final-status-card__meta">
-            <div className="kiosk-final-status-card__status-chip">
-              <p className="kiosk-final-status-card__countdown-label">{startWindowLabel}</p>
-              <p className="kiosk-final-status-card__countdown-value">{startWindowValue}</p>
-              <p className="kiosk-final-status-card__status-subtle">{startWindowHint}</p>
-            </div>
-            <p className="kiosk-final-status-card__helper">
-              You have 10 minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
             </p>
           </div>
         </div>
@@ -133,7 +123,18 @@ export default function StartingScreen({
           isInteractive={false}
           variant="focus"
           detail={focusDetail}
-        />
+        >
+          <div className="kiosk-final-status-card__meta">
+            <div className="kiosk-final-status-card__status-chip">
+              <p className="kiosk-final-status-card__countdown-label">{startWindowLabel}</p>
+              <p className="kiosk-final-status-card__countdown-value">{startWindowValue}</p>
+              <p className="kiosk-final-status-card__status-subtle">{startWindowHint}</p>
+            </div>
+            <p className="kiosk-final-status-card__helper">
+              You have 10 minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
+            </p>
+          </div>
+        </MachineCard>
       </div>
     </section>
   );

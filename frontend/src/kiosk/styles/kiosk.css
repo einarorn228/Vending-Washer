@@ -378,6 +378,14 @@ body {
   text-align: left;
 }
 
+.kiosk-hero--centered {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .kiosk-flow-hero {
   min-width: 0;
 }
@@ -781,7 +789,7 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 14px 36px rgba(0, 0, 0, 0.32);
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) minmax(260px, 32%);
   align-items: center;
 }
 .machine-card--focus .machine-card__icon-wrap {
@@ -942,6 +950,15 @@ body {
   gap: clamp(0.9rem, 2vw, 1.3rem);
 }
 
+.kiosk-final-status-card--centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: clamp(1rem, 2.5vh, 1.8rem);
+}
+
 .kiosk-final-status-card__visual {
   width: clamp(110px, 14vh, 150px);
   height: clamp(110px, 14vh, 150px);
@@ -961,8 +978,8 @@ body {
   color: #d7edff;
 }
 .kiosk-final-status-card__icon-svg {
-  width: clamp(36px, 4.6vh, 48px);
-  height: clamp(36px, 4.6vh, 48px);
+  width: clamp(56px, 7.5vh, 76px);
+  height: clamp(56px, 7.5vh, 76px);
 }
 .kiosk-final-status-card__icon-stroke {
   fill: none;
@@ -982,13 +999,16 @@ body {
 .kiosk-final-status-card__body {
   min-width: 0;
   display: grid;
+  align-content: center;
   gap: clamp(0.42rem, 0.88vh, 0.72rem);
 }
 
 .kiosk-final-status-card__meta {
   min-width: 0;
-  display: grid;
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.8rem, 1.8vh, 1.4rem);
 }
 
 .kiosk-final-status-card__status-chip {

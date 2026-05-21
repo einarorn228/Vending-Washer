@@ -64,8 +64,8 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
 
   return (
     <section className="kiosk-screen kiosk-screen--in-use kiosk-screen--machine-final">
-      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
-        <div className="kiosk-final-status-card kiosk-final-status-card--in-use">
+      <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--centered kiosk-hero--confirmation">
+        <div className="kiosk-final-status-card kiosk-final-status-card--in-use kiosk-final-status-card--centered">
           <div className="kiosk-final-status-card__visual" aria-hidden="true">
             <FinalInUseIcon />
           </div>
@@ -74,16 +74,6 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
             <h2 className="kiosk-hero__title">Machine running</h2>
             <p className="kiosk-hero__message">
               {message || fallbackMessage}
-            </p>
-          </div>
-          <div className="kiosk-final-status-card__meta">
-            <div className="kiosk-final-status-card__status-chip">
-              <p className="kiosk-final-status-card__countdown-label">Program status</p>
-              <p className="kiosk-final-status-card__countdown-value">In progress</p>
-              <p className="kiosk-final-status-card__status-subtle">No further action is needed.</p>
-            </div>
-            <p className="kiosk-final-status-card__helper">
-              The selected machine is running. No further action is needed. Wait for the program to finish.
             </p>
           </div>
         </div>
@@ -95,7 +85,18 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
           isInteractive={false}
           variant="focus"
           detail={focusDetail}
-        />
+        >
+          <div className="kiosk-final-status-card__meta">
+            <div className="kiosk-final-status-card__status-chip">
+              <p className="kiosk-final-status-card__countdown-label">Program status</p>
+              <p className="kiosk-final-status-card__countdown-value">In progress</p>
+              <p className="kiosk-final-status-card__status-subtle">No further action is needed.</p>
+            </div>
+            <p className="kiosk-final-status-card__helper">
+              Wait for the selected program to finish.
+            </p>
+          </div>
+        </MachineCard>
       </div>
     </section>
   );
