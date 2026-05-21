@@ -33,12 +33,28 @@ function resolveSelectedMachine(currentMachine, machines) {
   };
 }
 
+function FinalInUseIcon() {
+  return (
+    <svg
+      className="kiosk-final-status-card__icon-svg kiosk-final-status-card__icon-svg--active"
+      viewBox="0 0 48 48"
+      role="img"
+      aria-label="Machine active status"
+    >
+      <circle cx="24" cy="24" r="15" className="kiosk-final-status-card__icon-stroke kiosk-final-status-card__icon-stroke--soft" />
+      <path d="M17 24 H31" className="kiosk-final-status-card__icon-stroke" />
+      <path d="M24 17 V31" className="kiosk-final-status-card__icon-stroke" />
+      <circle cx="24" cy="24" r="4.2" className="kiosk-final-status-card__icon-fill" />
+    </svg>
+  );
+}
+
 export default function InUseScreen({ message, currentMachine, machines, usesLeft }) {
   const { machineId, machineLabel, selectedMachine } = resolveSelectedMachine(currentMachine, machines);
   const focusStatus = selectedMachine?.status === 'error' ? 'error' : 'busy';
   const usesLeftMessage = usesLeft ?? null;
-  const focusDetail = `Machine running${usesLeftMessage !== null ? ` · Uses left: ${usesLeftMessage}` : ''}`;
-  const fallbackMessage = `${machineLabel} is now running. No further action is needed—wait for the selected program to finish.`;
+  const focusDetail = `Program in progress${usesLeftMessage !== null ? ` · Uses left: ${usesLeftMessage}` : ''}`;
+  const fallbackMessage = `${machineLabel} is running. No further action is needed—wait for the program to finish.`;
   const focusMachine = {
     ...(selectedMachine || {}),
     id: selectedMachine?.id || machineId,
@@ -51,7 +67,7 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
       <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
         <div className="kiosk-final-status-card kiosk-final-status-card--in-use">
           <div className="kiosk-final-status-card__visual" aria-hidden="true">
-            <span className="kiosk-final-status-card__icon">●</span>
+            <FinalInUseIcon />
           </div>
           <div className="kiosk-final-status-card__body">
             <p className="kiosk-hero__eyebrow">In progress</p>
@@ -59,11 +75,16 @@ export default function InUseScreen({ message, currentMachine, machines, usesLef
             <p className="kiosk-hero__message">
               {message || fallbackMessage}
             </p>
-            <div className="kiosk-final-status-card__meta">
-              <p className="kiosk-final-status-card__helper">
-                No further action is needed. Wait for the selected program to finish.
-              </p>
+          </div>
+          <div className="kiosk-final-status-card__meta">
+            <div className="kiosk-final-status-card__status-chip">
+              <p className="kiosk-final-status-card__countdown-label">Program status</p>
+              <p className="kiosk-final-status-card__countdown-value">In progress</p>
+              <p className="kiosk-final-status-card__status-subtle">No further action is needed.</p>
             </div>
+            <p className="kiosk-final-status-card__helper">
+              The selected machine is running. No further action is needed. Wait for the program to finish.
+            </p>
           </div>
         </div>
       </div>

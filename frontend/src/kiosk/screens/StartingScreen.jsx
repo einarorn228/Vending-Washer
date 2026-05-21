@@ -55,6 +55,24 @@ function resolveCountdown(selectionSecondsLeft, selectionExpiresAt) {
   return null;
 }
 
+function FinalStartingIcon() {
+  return (
+    <svg
+      className="kiosk-final-status-card__icon-svg"
+      viewBox="0 0 48 48"
+      role="img"
+      aria-label="Start window timer"
+    >
+      <circle cx="24" cy="26" r="14" className="kiosk-final-status-card__icon-stroke" />
+      <path d="M24 26 L24 18" className="kiosk-final-status-card__icon-stroke" />
+      <path d="M24 26 L31 30" className="kiosk-final-status-card__icon-stroke" />
+      <path d="M20 8 H28" className="kiosk-final-status-card__icon-stroke" />
+      <path d="M17 11 L20 14" className="kiosk-final-status-card__icon-stroke kiosk-final-status-card__icon-stroke--soft" />
+      <path d="M31 11 L28 14" className="kiosk-final-status-card__icon-stroke kiosk-final-status-card__icon-stroke--soft" />
+    </svg>
+  );
+}
+
 export default function StartingScreen({
   message,
   currentMachine,
@@ -70,6 +88,11 @@ export default function StartingScreen({
   const fallbackMessage = `${machineLabel} is enabled. Choose your program and press Start on the machine.`;
   const countdownSeconds = resolveCountdown(selectionSecondsLeft, selectionExpiresAt);
   const hasCountdown = countdownSeconds !== null;
+  const startWindowLabel = hasCountdown ? 'Start window remaining' : 'Start window';
+  const startWindowValue = hasCountdown ? formatCountdown(countdownSeconds) : '10 min';
+  const startWindowHint = hasCountdown
+    ? 'No use is taken if time runs out.'
+    : 'Scan again if the start window expires.';
   const focusMachine = {
     ...(selectedMachine || {}),
     id: selectedMachine?.id || machineId,
@@ -82,7 +105,7 @@ export default function StartingScreen({
       <div className="kiosk-stage-card kiosk-stage-card--hero kiosk-stage-card--confirmation kiosk-hero kiosk-hero--compact kiosk-hero--confirmation">
         <div className="kiosk-final-status-card kiosk-final-status-card--starting">
           <div className="kiosk-final-status-card__visual" aria-hidden="true">
-            <span className="kiosk-final-status-card__icon">⏱</span>
+            <FinalStartingIcon />
           </div>
           <div className="kiosk-final-status-card__body">
             <p className="kiosk-hero__eyebrow">Start confirmed</p>
@@ -90,17 +113,16 @@ export default function StartingScreen({
             <p className="kiosk-hero__message">
               {message || fallbackMessage}
             </p>
-            <div className="kiosk-final-status-card__meta">
-              {hasCountdown ? (
-                <>
-                  <p className="kiosk-final-status-card__countdown-label">Start window remaining</p>
-                  <p className="kiosk-final-status-card__countdown-value">{formatCountdown(countdownSeconds)}</p>
-                </>
-              ) : null}
-              <p className="kiosk-final-status-card__helper">
-                You have 10 minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
-              </p>
+          </div>
+          <div className="kiosk-final-status-card__meta">
+            <div className="kiosk-final-status-card__status-chip">
+              <p className="kiosk-final-status-card__countdown-label">{startWindowLabel}</p>
+              <p className="kiosk-final-status-card__countdown-value">{startWindowValue}</p>
+              <p className="kiosk-final-status-card__status-subtle">{startWindowHint}</p>
             </div>
+            <p className="kiosk-final-status-card__helper">
+              You have 10 minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
+            </p>
           </div>
         </div>
       </div>
