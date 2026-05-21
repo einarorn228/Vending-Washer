@@ -75,7 +75,7 @@ export default function MachineCard({ machine, isInteractive, onSelect, variant 
       ) : null}
 
       <div className="machine-card__content">
-        {!isScanVariant ? <p className="machine-card__label">Machine</p> : null}
+        {!isScanVariant && !isFocusVariant ? <p className="machine-card__label">Machine</p> : null}
         <AutoFitText as="h3" className="machine-card__title" minScale={0.5}>{machineName}</AutoFitText>
         <MachineStatusBadge status={status} />
         {!isScanVariant && !isFocusVariant ? (
