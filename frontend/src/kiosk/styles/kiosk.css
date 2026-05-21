@@ -796,12 +796,14 @@ body {
 .machine-card--focus .machine-status-badge {
   font-weight: 760;
   letter-spacing: 0.015em;
+  justify-self: start;
 }
 .machine-card--focus .machine-card__meta {
-  margin-top: clamp(0.05rem, 0.24vh, 0.2rem);
+  margin-top: clamp(0.12rem, 0.32vh, 0.24rem);
   color: #d3e3f8;
   font-size: clamp(0.94rem, 2.9cqw, 1.08rem);
   font-weight: 620;
+  line-height: 1.25;
 }
 .machine-card__label { margin: 0; color: #a7bfdd; text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--machine-card-label-size); font-weight: 800; }
 .machine-card__title {
@@ -935,9 +937,9 @@ body {
 .kiosk-final-status-card {
   min-height: 100%;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(0.9rem, 2vw, 1.45rem);
+  grid-template-columns: auto minmax(0, 1fr) minmax(188px, 28%);
+  align-items: stretch;
+  gap: clamp(0.9rem, 2vw, 1.3rem);
 }
 
 .kiosk-final-status-card__visual {
@@ -958,6 +960,24 @@ body {
   font-weight: 700;
   color: #d7edff;
 }
+.kiosk-final-status-card__icon-svg {
+  width: clamp(36px, 4.6vh, 48px);
+  height: clamp(36px, 4.6vh, 48px);
+}
+.kiosk-final-status-card__icon-stroke {
+  fill: none;
+  stroke: #d8ecff;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.kiosk-final-status-card__icon-stroke--soft {
+  opacity: 0.68;
+}
+.kiosk-final-status-card__icon-fill {
+  fill: #95ffd3;
+  filter: drop-shadow(0 0 8px rgba(113, 226, 164, 0.45));
+}
 
 .kiosk-final-status-card__body {
   min-width: 0;
@@ -966,9 +986,17 @@ body {
 }
 
 .kiosk-final-status-card__meta {
-  margin-top: clamp(0.15rem, 0.4vh, 0.32rem);
-  padding-top: clamp(0.42rem, 0.86vh, 0.68rem);
-  border-top: 1px solid color-mix(in srgb, var(--kiosk-border) 64%, rgba(255, 255, 255, 0.32));
+  min-width: 0;
+  display: grid;
+  align-content: center;
+}
+
+.kiosk-final-status-card__status-chip {
+  border: 1px solid color-mix(in srgb, var(--kiosk-accent) 44%, rgba(255, 255, 255, 0.18));
+  border-radius: 16px;
+  padding: clamp(0.62rem, 1vh, 0.82rem) clamp(0.75rem, 1.2vw, 1rem);
+  background: linear-gradient(180deg, rgba(49, 80, 126, 0.35) 0%, rgba(22, 40, 70, 0.55) 100%);
+  box-shadow: inset 0 0 16px rgba(112, 200, 255, 0.12);
 }
 
 .kiosk-final-status-card__countdown-label {
@@ -980,11 +1008,18 @@ body {
 }
 
 .kiosk-final-status-card__countdown-value {
-  margin: clamp(0.18rem, 0.42vh, 0.28rem) 0 clamp(0.36rem, 0.72vh, 0.54rem);
+  margin: clamp(0.18rem, 0.42vh, 0.28rem) 0 0;
   font-size: clamp(1.5rem, 3.35vh, 2.06rem);
   font-weight: 760;
   letter-spacing: 0.03em;
   color: #ffffff;
+}
+
+.kiosk-final-status-card__status-subtle {
+  margin: clamp(0.25rem, 0.42vh, 0.34rem) 0 0;
+  color: #c9ddf5;
+  font-size: clamp(0.78rem, 1.5vh, 0.9rem);
+  line-height: 1.25;
 }
 
 .kiosk-final-status-card__helper {
@@ -1000,6 +1035,11 @@ body {
 
 .kiosk-final-status-card--in-use .kiosk-final-status-card__icon {
   color: #8dffb3;
+}
+.kiosk-final-status-card--in-use .kiosk-final-status-card__status-chip {
+  border-color: color-mix(in srgb, var(--kiosk-success) 48%, rgba(255, 255, 255, 0.16));
+  background: linear-gradient(180deg, rgba(55, 106, 88, 0.3) 0%, rgba(21, 49, 43, 0.52) 100%);
+  box-shadow: inset 0 0 16px rgba(113, 226, 164, 0.14);
 }
 
 .kiosk-screen--error {
@@ -1239,6 +1279,7 @@ body {
   }
 
   .kiosk-final-status-card {
+    grid-template-columns: auto minmax(0, 1fr);
     gap: clamp(0.72rem, 1.5vw, 1.04rem);
   }
 
@@ -1253,7 +1294,7 @@ body {
   }
 
   .kiosk-final-status-card__meta {
-    padding-top: clamp(0.32rem, 0.58vh, 0.48rem);
+    grid-column: 1 / -1;
   }
 
   .kiosk-final-status-card__countdown-value {
