@@ -896,6 +896,7 @@ body {
 
 .kiosk-screen--machine-final {
   grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.5rem, 1.05vh, 0.82rem);
 }
 
 .kiosk-screen--machine-final .kiosk-machine-focus {
