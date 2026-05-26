@@ -107,3 +107,34 @@ export async function touchSelectMachine(machineId) {
     status: result.status,
   };
 }
+
+export async function simulateScanCode(code) {
+  if (typeof code !== 'string' || !code.trim()) {
+    return {
+      success: false,
+      message: 'Invalid scan code.',
+    };
+  }
+
+  const result = await request('/api/scan_code', {
+    method: 'POST',
+    body: JSON.stringify({ code: code.trim() }),
+    allowErrorPayload: true,
+  });
+
+  if (!result) {
+    return {
+      success: false,
+      message: 'Unable to reach backend right now.',
+    };
+  }
+
+  const payload = result.payload && typeof result.payload === 'object' ? result.payload : {};
+
+  return {
+    success: Boolean(payload.success && result.ok),
+    message: typeof payload.message === 'string' ? payload.message : 'Scan failed.',
+    status: result.status,
+  };
+}
+

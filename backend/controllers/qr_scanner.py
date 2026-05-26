@@ -323,7 +323,7 @@ def _handle_scanned_value(decoded: str) -> None:
             _clear_fragment_buffers()
             logger.info("Accepted scan: %s", use)
         else:
-            logger.debug("Scan rejected: %s (reason=%s)", use, outcome.message)
+            logger.warning("Scan rejected: %s (reason=%s)", use, outcome.message)
     except Exception as exc:  # pragma: no cover - defensive for runtime issues
         logger.exception("Error processing QR code: %s", exc)
 

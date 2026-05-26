@@ -158,6 +158,8 @@ def ingest_scan(raw_code: Optional[str], source: str) -> ScanOutcome:
     """Shared scanner/API ingress orchestration."""
 
     provider_name, provider = _provider_for_request()
+    logger.info("ingest_scan: processing scan from source=%s using active provider=%s", source, provider_name)
+
     if provider_name == "local":
         success, message, code_info = handle_scanned_code(raw_code, source=source)
         if success and code_info:
@@ -173,31 +175,42 @@ def ingest_scan(raw_code: Optional[str], source: str) -> ScanOutcome:
             )
             with _scan_session_lock:
                 _scan_sessions[code_info.code] = session_uid
+            logger.info("ingest_scan: local code validation succeeded for code=%s", code_info.code)
+        else:
+            logger.warning("ingest_scan: local code validation failed for code=%s: %s", raw_code, message)
         return ScanOutcome(success=success, message=message, code_info=code_info)
 
     identifier = (raw_code or "").strip()
     ready, busy_message = require_ready_to_scan(source, identifier)
     if not ready:
+        logger.warning("ingest_scan: system not ready to scan, ignored for code=%s: %s", identifier, busy_message)
         return ScanOutcome(success=False, message=busy_message or SCAN_BUSY_MESSAGE, code_info=None)
     if not identifier:
+        logger.warning("ingest_scan: received empty/missing code")
         show_error_state("Missing code")
         return ScanOutcome(success=False, message="Missing code", code_info=None)
 
+    logger.info("ingest_scan: querying Reisa API lookup for code=%s (mode=%s)", identifier, _lookup_mode(provider_name))
     lookup = provider.lookup(identifier, mode=_lookup_mode(provider_name))
     if not lookup.success or not lookup.entitlement:
         message = lookup.message or "Code expired or invalid."
+        logger.warning("ingest_scan: Reisa API lookup failed for code=%s: %s", identifier, message)
         show_error_state(message)
         write_scan_log(identifier, None, "invalid", source, details="provider_lookup_failed")
         return ScanOutcome(success=False, message=message, code_info=None)
 
+    logger.info("ingest_scan: Reisa API lookup succeeded, validating authorization for code=%s", identifier)
     auth = provider.authorize(lookup.entitlement)
     if not auth.authorized or not auth.entitlement:
         message = auth.message or "Code expired or invalid."
+        logger.warning("ingest_scan: Reisa authorization failed for code=%s: %s", identifier, message)
         show_error_state(message)
         write_scan_log(identifier, None, "invalid", source, details="provider_unauthorized")
         return ScanOutcome(success=False, message=message, code_info=None)
 
     entitlement = auth.entitlement
+    logger.info("ingest_scan: scan accepted and armed for code=%s (order_id=%s, remaining uses=%s)",
+                identifier, getattr(entitlement, "order_id", None), _uses_left(entitlement))
     write_scan_log(identifier, getattr(entitlement, "order_id", None), "valid", source)
     arm_code(entitlement)
     update_ui_state(
