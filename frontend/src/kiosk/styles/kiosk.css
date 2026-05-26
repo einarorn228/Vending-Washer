@@ -1615,3 +1615,39 @@ body {
 }
 
 .kiosk-scan-icon__wiggle-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; animation: qr-wiggle 3.5s infinite ease-in-out; } @keyframes qr-wiggle { 0%, 15%, 80%, 100% { transform: rotate(0deg); } 32% { transform: rotate(6deg); } 48% { transform: rotate(0deg); } 64% { transform: rotate(-6deg); } }
+
+/* Fallback for Chromium builds that do not support backdrop blur reliably (common on some Pi GPU stacks).
+   Keep existing layout unchanged while preserving a premium card look. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .kiosk-progress__dot,
+  .kiosk-hero,
+  .kiosk-stage-card,
+  .machine-card--scan,
+  .machine-card--default,
+  .machine-card--focus,
+  .kiosk-select-feedback,
+  .kiosk-preview-toggle-btn--floating,
+  .machine-settings-modal__overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .kiosk-progress__dot,
+  .kiosk-hero,
+  .kiosk-stage-card,
+  .machine-card--scan,
+  .machine-card--default,
+  .machine-card--focus,
+  .kiosk-select-feedback,
+  .kiosk-preview-toggle-btn--floating {
+    background: linear-gradient(180deg, rgba(27, 39, 60, 0.94) 0%, rgba(14, 22, 37, 0.98) 100%);
+    border-color: rgba(130, 162, 210, 0.34);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 16px 36px rgba(0, 0, 0, 0.38);
+  }
+
+  .machine-settings-modal__overlay {
+    background: radial-gradient(circle at 50% 12%, rgba(26, 37, 58, 0.62) 0%, rgba(10, 15, 25, 0.84) 100%);
+  }
+}
