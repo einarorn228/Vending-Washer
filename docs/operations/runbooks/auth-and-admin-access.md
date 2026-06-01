@@ -160,3 +160,10 @@ Recovery steps:
 
 ## Unknown / requires verification from code
 - No dedicated account lockout/rate limiting logic is implemented for repeated failed admin attempts.
+
+
+## Beta dev/admin panel auth
+
+The temporary `/dev/admin` panel uses the kiosk API key as a session-only password while `dev_admin_enabled=true`. This is a beta convenience only and is not production-grade authentication.
+
+Keep `dev_admin_enabled=false` unless actively using the trusted-local beta panel. See `docs/operations/runbooks/beta-dev-admin-panel.md` for enable/disable commands, security limitations, and backup guidance.

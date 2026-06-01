@@ -11,6 +11,7 @@ from flask import Flask, Response, g, jsonify, request
 from flask_cors import CORS
 from backend.controllers.code_generator import generate_new_code
 from backend.controllers.ui_api import ui_api
+from backend.controllers.dev_admin_api import dev_admin_api
 from backend.models import remove_session, session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
@@ -30,6 +31,7 @@ root_logger = getLogger()
 app = Flask(__name__)
 
 app.register_blueprint(ui_api, url_prefix="/api")
+app.register_blueprint(dev_admin_api, url_prefix="/api/dev_admin")
 
 
 def _load_cors_origins() -> list[str]:

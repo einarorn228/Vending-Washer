@@ -45,6 +45,13 @@ General cautions:
 - Restart needed: No
 - Operator notes: rotate immediately after first install.
 
+## `dev_admin_enabled`
+- Default/seed: `false`
+- Consumed by: `/api/dev_admin/*` kill-switch checks in `backend/controllers/dev_admin_api.py`
+- Risk: **High** (enables temporary beta admin surface)
+- Restart needed: No
+- Operator notes: keep disabled unless actively using the trusted-local beta panel.
+
 ## `api_key`
 - Default/seed: generated on first run if missing
 - Consumed by:
@@ -77,7 +84,7 @@ General cautions:
 - Operator notes: too low => user timeouts; too high => stale armed windows.
 
 ## `selection_timeout_sec`
-- Default/seed: not in `DEFAULT_SETTINGS`; runtime reads key with fallback from `backend/controllers/machine_control.py`
+- Default/seed: `15`
 - Consumed by: pending start timeout in `backend/controllers/machine_control.py`
 - Risk: **Medium**
 - Restart needed: No
@@ -199,21 +206,21 @@ General cautions:
 - Operator notes: oversizing can create burst load.
 
 ## `serial_port`
-- Default/seed: not seeded; default fallback used in scanner code (`/dev/ttyACM0`)
+- Default/seed: `/dev/ttyACM0`
 - Consumed by: `backend/controllers/qr_scanner.py`, `tools/test_scanner.py`
 - Risk: **Medium**
 - Restart needed: **Yes** for scanner module import-time initialization
 - Operator notes: set explicitly per host OS/device. Newland FM3080 USB CDC on Pi: [`../operations/runbooks/scanner-newland-fm3080-cdc.md`](../operations/runbooks/scanner-newland-fm3080-cdc.md).
 
 ## `serial_baudrate`
-- Default/seed: not seeded; fallback `9600`
+- Default/seed: `9600`
 - Consumed by: scanner serial init
 - Risk: **Medium**
 - Restart needed: **Yes**
 - Operator notes: must match scanner hardware settings.
 
 ## `scan_timeout`
-- Default/seed: not seeded; fallback `1`
+- Default/seed: `3`
 - Consumed by: scanner serial init/read timeout
 - Risk: **Low/Medium**
 - Restart needed: **Yes**
@@ -269,3 +276,10 @@ Prefer API unless recovery constraints require direct DB intervention.
 - `button_select_timeout_sec` and `selection_timeout_sec` are different settings with different code paths.
 - Only `button_select_timeout_sec` is seeded by default.
 - If you need non-default selection pending timeout, add/update `selection_timeout_sec` explicitly.
+
+## `machine_card_layout`
+- Default/seed: optional/missing; runtime creates safe defaults when absent
+- Consumed by: machine-card decoration for kiosk snapshots and beta dev/admin machine layout editor
+- Risk: **Medium/High** (affects kiosk machine card order/type/labels)
+- Restart needed: No
+- Operator notes: stored as JSON string. Internal machine keys remain in `machines.name`; this layout should not be used to rename internal IDs.

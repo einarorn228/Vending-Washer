@@ -21,9 +21,11 @@ def _ensure_db_initialized() -> None:
 DEFAULT_SETTINGS = {
     "admin_username": "admin",
     "admin_password_hash": hashlib.sha256(b"admin").hexdigest(),
+    "dev_admin_enabled": "false",
     "cors_allowed_origins": "http://localhost,http://localhost:3000,http://127.0.0.1:3000",
     "log_level": "INFO",
     "button_select_timeout_sec": "45",
+    "selection_timeout_sec": "15",
     "kiosk_input_mode": "hardware_buttons",
     "button_box_enabled": "false",
     "provider_default": "local",

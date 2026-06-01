@@ -20,3 +20,5 @@ Operational docs for admins/operators: command recipes, diagnostics workflows, a
 ## Source-of-truth note
 - Runbooks are actionable procedures.
 - Archive docs are historical references only.
+
+- [Beta dev/admin panel](runbooks/beta-dev-admin-panel.md) — temporary trusted-local beta settings and machine-card control panel.
