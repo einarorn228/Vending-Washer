@@ -42,6 +42,12 @@ def is_button_box_enabled(session=default_session) -> bool:
     return parse_setting_bool(raw, default=False)
 
 
+
+def is_dev_admin_enabled(session=default_session) -> bool:
+    raw = get_setting_value(session, "dev_admin_enabled", default="false")
+    return parse_setting_bool(raw, default=False)
+
+
 def is_telemetry_enabled(session=default_session) -> bool:
     """When false, Shelly telemetry HTTP polls are skipped (dev / no-hardware)."""
 

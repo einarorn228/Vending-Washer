@@ -564,3 +564,30 @@ PY
 ```
 
 If output differs from this document, update this file before changing runbooks.
+
+
+## Temporary beta dev/admin API
+
+Namespace: `/api/dev_admin/*`
+
+Status: temporary beta/dev tooling, not production admin.
+
+All endpoints require:
+
+- `dev_admin_enabled=true`, otherwise `403`,
+- valid `X-API-KEY`, otherwise `401`.
+
+Secrets are never returned raw. `api_key`, `admin_password_hash`, and `reisa_bearer_token` are read-only/masked metadata in the first beta panel.
+
+Endpoints:
+
+- `POST /api/dev_admin/unlock` — validate kill switch and API-key lock.
+- `GET /api/dev_admin/status` — overview/status for the panel.
+- `GET /api/dev_admin/settings` — grouped whitelist settings metadata and values.
+- `PATCH /api/dev_admin/settings` — validate all provided whitelist changes before writing any setting.
+- `GET /api/dev_admin/machines` — machine card/layout and advanced technical mapping data.
+- `PATCH /api/dev_admin/machines/<machine_name>` — update whitelisted visual or confirmed advanced technical fields. Internal machine keys are not editable.
+- `PATCH /api/dev_admin/machine-layout` — reorder machine cards by existing machine keys.
+- `GET /api/dev_admin/export-config` — export non-secret settings and machine/device/config data for rollback support.
+
+Machine preview cards in `/dev/admin` are non-operational and must not call kiosk selection/start endpoints.

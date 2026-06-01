@@ -22,7 +22,7 @@ Columns:
 - `key` STRING UNIQUE NOT NULL
 - `value` STRING NOT NULL
 
-Used for auth, provider mode, timeouts, scanner config, and feature toggles.
+Used for auth, provider mode, timeouts, scanner config, feature toggles, and temporary beta machine-card layout metadata (`machine_card_layout`).
 
 ## `codes`
 Model: `backend/models/code_model.py`
@@ -219,3 +219,12 @@ PY
 
 Expected table names include:
 `codes, devices, machine_configs, machines, reisa_audit_logs, reisa_retry_jobs, scan_logs, settings, usage_sessions`.
+
+
+## Temporary beta machine-card layout setting
+
+The first beta `/dev/admin` panel stores presentation-only machine card metadata in the `settings` row `machine_card_layout` instead of adding schema columns. This avoids migration risk for beta deployments.
+
+The JSON value can contain card order, washer/dryer type, short label, and description keyed by existing `machines.name` values. It must not replace or casually change internal machine keys.
+
+`Machine.is_enabled` remains the source for whether a machine is active in the kiosk selection/runtime flow.

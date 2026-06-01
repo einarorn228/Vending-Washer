@@ -20,6 +20,7 @@ from backend.models.setting_model import (
     is_telemetry_enabled,
 )
 from backend.providers.local_provider import LocalProvider
+from backend.services.machine_layout_service import decorate_machine_snapshot
 from backend.services.usage_session_service import (
     STATE_FAILED,
     STATE_TIMED_OUT,
@@ -270,9 +271,13 @@ def show_error_state(message: str, hold_seconds: int = 3) -> None:
 
 
 def get_machine_snapshot() -> list:
-    """Return a snapshot of machine availability from the telemetry store."""
+    """Return kiosk-facing machine availability decorated with card layout metadata."""
 
-    return _store.get_snapshot()
+    db = _get_session()
+    try:
+        return decorate_machine_snapshot(_store.get_snapshot(), db)
+    finally:
+        db.close()
 
 
 def _get_session():

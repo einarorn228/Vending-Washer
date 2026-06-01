@@ -8,6 +8,14 @@ Touch-first washer vending prototype consisting of a Flask backend, a React touc
 - `kiosk_input_mode`/`input_mode` remains legacy compatibility metadata and must not be used to disable touch selection.
 - Both touch and button-box selection paths use the same backend start validation flow.
 
+## Beta dev/admin panel
+- Route: `/dev/admin`
+- Purpose: temporary trusted-local beta panel for whitelisted settings and machine-card layout edits.
+- Backend kill switch: `dev_admin_enabled` must be `true`; default is `false`.
+- Temporary lock: uses the kiosk API key as the password; this is not production-grade security.
+- Secrets are read-only/masked in the first beta panel.
+- See `docs/operations/runbooks/beta-dev-admin-panel.md`.
+
 ## Dev UI preview route (current)
 - Route: `/dev/kiosk-preview`
 - Purpose: develop kiosk UI without QR scan, backend polling, machine hardware, or Shelly triggers.
