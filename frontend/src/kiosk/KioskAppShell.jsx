@@ -6,6 +6,7 @@ import './styles/kiosk.css';
 export default function KioskAppShell({ backendUnreachable, currentState, children }) {
   return (
     <div className="kiosk-shell">
+      <div className="kiosk-beta-watermark">BETA Testing</div>
       <ConnectionBanner visible={backendUnreachable} />
       <div className="kiosk-shell__topbar">
         <KioskProgressSteps currentState={currentState} />

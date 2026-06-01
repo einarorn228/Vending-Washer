@@ -69,6 +69,23 @@ body {
   overflow: hidden;
 }
 
+.kiosk-beta-watermark {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  z-index: 10000;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 @supports (height: 100dvh) {
   .kiosk-shell {
     height: 100dvh;
