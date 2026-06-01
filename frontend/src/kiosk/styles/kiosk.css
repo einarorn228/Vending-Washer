@@ -828,7 +828,7 @@ body {
 .machine-card--default .machine-card__label { display: none; }
 .machine-card__hint { margin: 0; color: var(--kiosk-muted); font-size: var(--machine-card-hint-size); font-weight: 600; line-height: var(--machine-card-hint-line-height); }
 .machine-card__meta { margin: 0; color: #c9d9ee; font-size: var(--machine-card-hint-size); font-weight: 600; line-height: var(--machine-card-hint-line-height); }
-.machine-card__content { display: grid; gap: var(--machine-card-content-gap); min-width: 0; align-content: var(--machine-card-content-align); }
+.machine-card__content { display: grid; gap: var(--machine-card-content-gap); min-width: 0; align-content: var(--machine-card-content-align); flex: 1; }
 .machine-card__icon-wrap { width: var(--machine-card-icon-box); height: var(--machine-card-icon-box); border-radius: var(--machine-card-icon-radius); display: grid; place-items: center; background: color-mix(in srgb, var(--kiosk-danger) 18%, transparent); border: 1px solid color-mix(in srgb, var(--kiosk-danger) 40%, var(--kiosk-border)); flex-shrink: 0; }
 .machine-card--available .machine-card__icon-wrap { background: color-mix(in srgb, var(--kiosk-success) 22%, transparent); border-color: color-mix(in srgb, var(--kiosk-success) 48%, var(--kiosk-border)); }
 .machine-card__icon { width: var(--machine-card-icon-size); height: var(--machine-card-icon-size); position: relative; display: block; color: rgba(244, 247, 255, 0.92); }
@@ -1618,7 +1618,7 @@ body {
 
 /* Fallback for Chromium builds that do not support backdrop blur reliably (common on some Pi GPU stacks).
    Keep existing layout unchanged while preserving a premium card look. */
-@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+@supports (display: block) {
   .kiosk-progress__dot,
   .kiosk-hero,
   .kiosk-stage-card,
@@ -1632,13 +1632,11 @@ body {
     -webkit-backdrop-filter: none;
   }
 
-  .kiosk-progress__dot,
   .kiosk-hero,
   .kiosk-stage-card,
   .machine-card--scan,
   .machine-card--default,
   .machine-card--focus,
-  .kiosk-select-feedback,
   .kiosk-preview-toggle-btn--floating {
     background: linear-gradient(180deg, rgba(27, 39, 60, 0.94) 0%, rgba(14, 22, 37, 0.98) 100%);
     border-color: rgba(130, 162, 210, 0.34);
@@ -1647,7 +1645,16 @@ body {
       0 16px 36px rgba(0, 0, 0, 0.38);
   }
 
+  .kiosk-progress__dot {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
   .machine-settings-modal__overlay {
     background: radial-gradient(circle at 50% 12%, rgba(26, 37, 58, 0.62) 0%, rgba(10, 15, 25, 0.84) 100%);
+  }
+
+  .kiosk-progress__step-wrapper--active .kiosk-progress__dot,
+  .kiosk-progress__step-wrapper--active .kiosk-progress__dot::after {
+    animation: none !important;
   }
 }

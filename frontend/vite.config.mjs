@@ -11,7 +11,7 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
     proxy: apiProxy,
-    open: true,
+    open: false,
   },
   // `npm run start` uses `vite preview`, which does not inherit `server.proxy` unless mirrored here.
   preview: {

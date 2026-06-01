@@ -22,7 +22,7 @@ KIOSK_URL="${KIOSK_URL:-http://localhost:3000/}"
 KIOSK_WINDOW_SIZE="${KIOSK_WINDOW_SIZE:-1920,1080}"
 # Keep scale baseline deterministic across Pi models.
 # If physical panel calibration needs it, test: 1.05, 1.1, or 1.15 explicitly.
-KIOSK_DEVICE_SCALE_FACTOR="${KIOSK_DEVICE_SCALE_FACTOR:-1}"
+KIOSK_DEVICE_SCALE_FACTOR="${KIOSK_DEVICE_SCALE_FACTOR:-1.35}"
 
 CHROME_FLAGS=(
   --no-first-run
@@ -44,6 +44,8 @@ CHROME_FLAGS=(
   --restore-last-session=false
   --user-data-dir=/home/hamrar/.config/chromium-kiosk
   --disk-cache-dir=/home/hamrar/.cache/chromium-kiosk
+  --remote-debugging-port=9222
+  --remote-allow-origins=*
   "$KIOSK_URL"
 )
 

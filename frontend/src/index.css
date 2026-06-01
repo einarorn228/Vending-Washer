@@ -1,6 +1,6 @@
-/* Kiosk / embedded browsers: force light palette so text is never "invisible" vs OS dark mode. */
+/* Kiosk dark theme: ensure native controls (scrollbars, inputs) match. */
 html {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html,
@@ -11,6 +11,7 @@ body {
   background-color: #ececec;
   color: #141414;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  touch-action: manipulation;
 }
 
 #root {
