@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-const DEV_ADMIN_KEY = 'DEV_ADMIN_API_KEY';
+const DEV_ADMIN_KEY = 'DEV_ADMIN_AUTH';
 
 export function getStoredDevAdminKey() {
   if (typeof window === 'undefined') return null;
@@ -7,9 +7,10 @@ export function getStoredDevAdminKey() {
   return value && value.trim() ? value.trim() : null;
 }
 
-export function storeDevAdminKey(apiKey) {
+export function storeDevAdminKey(username, password) {
   if (typeof window !== 'undefined') {
-    window.sessionStorage.setItem(DEV_ADMIN_KEY, apiKey);
+    const b64 = btoa(`${username}:${password}`);
+    window.sessionStorage.setItem(DEV_ADMIN_KEY, b64);
   }
 }
 
@@ -27,7 +28,7 @@ async function devAdminRequest(path, apiKey, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
-    'X-API-KEY': apiKey,
+    'Authorization': `Basic ${apiKey}`,
   };
 
   try {
@@ -59,10 +60,21 @@ export function getDevAdminSettings(apiKey) {
   return devAdminRequest('/settings', apiKey);
 }
 
-export function saveDevAdminSettings(apiKey, changes) {
+export function saveDevAdminSettings(apiKey, changes, currentApiKey = null) {
+  const body = { changes };
+  if (currentApiKey) {
+    body.current_api_key = currentApiKey;
+  }
   return devAdminRequest('/settings', apiKey, {
     method: 'PATCH',
-    body: JSON.stringify({ changes }),
+    body: JSON.stringify(body),
+  });
+}
+
+export function generateNewApiKey(authKey, currentApiKey) {
+  return devAdminRequest('/generate_api_key', authKey, {
+    method: 'POST',
+    body: JSON.stringify({ current_api_key: currentApiKey }),
   });
 }
 

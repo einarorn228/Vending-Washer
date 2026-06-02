@@ -41,6 +41,14 @@ async function request(path, options = {}) {
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof window !== 'undefined' && !window._isReloading) {
+          window._isReloading = true;
+          console.warn('API key invalid or expired. Reloading to fetch new configuration...');
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      }
+
       if (options.allowErrorPayload) {
         return {
           ok: false,

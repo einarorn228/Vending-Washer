@@ -135,17 +135,17 @@ SETTING_SCHEMA: Dict[str, Dict[str, Any]] = {
         "max": 300,
         "description": "How long a scanned code remains armed for physical button-box selection.",
     },
-    "selection_timeout_sec": {
+    "machine_reservation_minutes": {
         "group": "machine_timing",
-        "label": "Machine start confirmation timeout (seconds)",
-        "type": "float",
-        "default": "15",
+        "label": "Machine reservation duration (minutes)",
+        "type": "int",
+        "default": "10",
         "editable": True,
         "restart_required": False,
         "risk": "medium",
         "min": 1,
-        "max": 300,
-        "description": "How long backend waits for machine start confirmation before timing out.",
+        "max": 120,
+        "description": "How long the machine is reserved after the user selects it before it becomes available again.",
     },
     "backend_relay_enabled": {
         "group": "runtime",
@@ -640,9 +640,7 @@ def build_export_config(db) -> dict:
 
 
 def _validate_technical_update(db, machine: Machine, technical: Mapping[str, Any], errors: Dict[str, str], changes: Dict[str, Any]) -> None:
-    for field in technical:
-        if field not in MACHINE_TECH_FIELDS:
-            errors[f"technical.{field}"] = "Unsupported technical field."
+    # Ignore unsupported fields instead of erroring, as the frontend sends back read-only metadata fields.
     if "shelly_ip" in technical:
         value = str(technical.get("shelly_ip") or "").strip()
         if not _valid_host(value):

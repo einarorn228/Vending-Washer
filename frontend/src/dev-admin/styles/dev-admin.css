@@ -110,6 +110,11 @@
   font: inherit;
 }
 
+.dev-admin-page select option {
+  background: #0f172a;
+  color: #fff;
+}
+
 .dev-admin-page textarea { resize: vertical; }
 
 .dev-admin-lock button,
@@ -346,3 +351,49 @@
 .dev-admin-lock h1 {
   color: var(--kiosk-text, #f3f6fc);
 }
+
+.dev-admin-danger {
+  background: linear-gradient(135deg, #ff8585, #dc2626) !important;
+}
+
+.dev-admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.7);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.dev-admin-modal {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 24px 56px rgba(0,0,0,0.4);
+}
+
+.dev-admin-modal--important {
+  border-color: rgba(112, 200, 255, 0.5);
+}
+
+.dev-admin-modal h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.dev-admin-code-block {
+  background: #06111f;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(112, 200, 255, 0.4);
+  font-family: monospace;
+  font-size: 1.1rem;
+  margin: 1.5rem 0;
+  color: #70c8ff;
+  word-break: break-all;
+}
+

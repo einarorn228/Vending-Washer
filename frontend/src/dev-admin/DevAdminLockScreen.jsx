@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { storeDevAdminKey, unlockDevAdmin } from './api.js';
 
 export default function DevAdminLockScreen({ onUnlocked }) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isDisabled, setIsDisabled] = useState(false);
@@ -9,21 +10,24 @@ export default function DevAdminLockScreen({ onUnlocked }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const key = password.trim();
-    if (!key) {
-      setMessage('Enter the kiosk API key to unlock this temporary beta panel.');
+    const user = username.trim();
+    const pass = password.trim();
+    if (!user || !pass) {
+      setMessage('Enter your username and password to unlock this admin panel.');
       return;
     }
+
+    const authKey = btoa(`${user}:${pass}`);
 
     setIsLoading(true);
     setMessage('');
     setIsDisabled(false);
-    const result = await unlockDevAdmin(key);
+    const result = await unlockDevAdmin(authKey);
     setIsLoading(false);
 
     if (result.ok && result.payload?.success) {
-      storeDevAdminKey(key);
-      onUnlocked(key);
+      storeDevAdminKey(user, pass);
+      onUnlocked(authKey);
       return;
     }
 
@@ -33,17 +37,16 @@ export default function DevAdminLockScreen({ onUnlocked }) {
       return;
     }
 
-    setMessage(result.payload?.message || 'Wrong API key or backend is unreachable.');
+    setMessage(result.payload?.message || 'Wrong credentials or backend is unreachable.');
   }
 
   return (
     <main className="dev-admin-lock">
       <section className="dev-admin-lock__card">
-        <p className="dev-admin-eyebrow">Temporary beta tool</p>
-        <h1>Beta Dev/Admin Panel</h1>
+        <p className="dev-admin-eyebrow">Administration</p>
+        <h1>Dev/Admin Panel</h1>
         <div className="dev-admin-warning" role="alert">
-          Uses the kiosk API key as a temporary password. This is not production-grade security.
-          Only use on trusted/local beta systems and disable <code>dev_admin_enabled</code> when done.
+          Please log in with your administrative credentials.
         </div>
         {isDisabled ? (
           <div className="dev-admin-disabled">
@@ -52,13 +55,23 @@ export default function DevAdminLockScreen({ onUnlocked }) {
         ) : null}
         <form onSubmit={handleSubmit} className="dev-admin-lock__form">
           <label>
-            API key / temporary password
+            Username
+            <input
+              type="text"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              autoComplete="username"
+              placeholder="Enter username"
+            />
+          </label>
+          <label>
+            Password
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
-              placeholder="Enter API key"
+              placeholder="Enter password"
             />
           </label>
           <button type="submit" disabled={isLoading}>{isLoading ? 'Unlocking…' : 'Unlock'}</button>

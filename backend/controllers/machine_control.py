@@ -48,7 +48,7 @@ STARTED_NOTICE_SECONDS = 3.0
 # After start is confirmed, simulated “program finished” delay when telemetry is off (bench / no hardware).
 BENCH_SIMULATED_PROGRAM_SECONDS = 1.2
 SELECTION_TIMEOUT_SECONDS = 600.0
-SELECTION_TIMEOUT_MESSAGE = "Selection timed out. Please scan again."
+SELECTION_TIMEOUT_MESSAGE = "Reservation expired. Please scan again."
 
 
 @dataclass
@@ -582,13 +582,13 @@ def register_store_listeners() -> None:
 def _selection_timeout_seconds() -> float:
     db = _get_session()
     try:
-        raw = get_setting_value(db, "selection_timeout_sec")
+        raw = get_setting_value(db, "machine_reservation_minutes")
     finally:
         db.close()
     try:
         value = float(raw)
         if value > 0:
-            return value
+            return value * 60.0
     except (TypeError, ValueError):
         pass
     return SELECTION_TIMEOUT_SECONDS

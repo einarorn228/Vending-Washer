@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { saveDevAdminSettings } from '../api.js';
 import SettingField from './SettingField.jsx';
+import SecuritySettingsPanel from './SecuritySettingsPanel.jsx';
 
 function flattenSettings(groups) {
   const map = {};
@@ -12,7 +13,7 @@ function flattenSettings(groups) {
   return map;
 }
 
-export default function SettingsPanel({ apiKey, groups, onReload }) {
+export default function SettingsPanel({ apiKey, groups, secretMetadata, onReload }) {
   const initialValues = useMemo(() => flattenSettings(groups), [groups]);
   const [draft, setDraft] = useState(initialValues);
   const [errors, setErrors] = useState({});
@@ -89,6 +90,10 @@ export default function SettingsPanel({ apiKey, groups, onReload }) {
           ))}
         </article>
       ))}
+      <SecuritySettingsPanel 
+        authKey={apiKey} 
+        reisaTokenIsSet={secretMetadata?.reisa_bearer_token_set} 
+      />
       {message ? <p className="dev-admin-save-message">{message}</p> : null}
     </section>
   );

@@ -20,6 +20,7 @@ export default function DevAdminPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [status, setStatus] = useState(null);
   const [settingsGroups, setSettingsGroups] = useState([]);
+  const [secretMetadata, setSecretMetadata] = useState({});
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,7 +53,11 @@ export default function DevAdminPage() {
       getDevAdminMachines(key),
     ]);
     if (settingsResult.ok && settingsResult.payload?.success) {
-      setSettingsGroups(settingsResult.payload.groups || []);
+      const groups = settingsResult.payload.groups || [];
+      setSettingsGroups(groups);
+      
+      const tokenSetting = groups.flatMap(g => g.settings || []).find(s => s.key === 'reisa_bearer_token');
+      setSecretMetadata({ reisa_bearer_token_set: tokenSetting?.is_set });
     }
     if (machinesResult.ok && machinesResult.payload?.success) {
       setMachines(machinesResult.payload.machines || []);
@@ -78,6 +83,7 @@ export default function DevAdminPage() {
     setIsUnlocked(false);
     setStatus(null);
     setSettingsGroups([]);
+    setSecretMetadata({});
     setMachines([]);
   }
 
@@ -87,7 +93,7 @@ export default function DevAdminPage() {
 
   let content;
   if (activeTab === 'settings') {
-    content = <SettingsPanel apiKey={apiKey} groups={settingsGroups} onReload={() => loadAll(apiKey)} />;
+    content = <SettingsPanel apiKey={apiKey} groups={settingsGroups} secretMetadata={secretMetadata} onReload={() => loadAll(apiKey)} />;
   } else if (activeTab === 'machines') {
     content = <MachineCardsPanel apiKey={apiKey} machines={machines} onReload={() => loadAll(apiKey)} />;
   } else {

@@ -25,7 +25,7 @@ DEFAULT_SETTINGS = {
     "cors_allowed_origins": "http://localhost,http://localhost:3000,http://127.0.0.1:3000",
     "log_level": "INFO",
     "button_select_timeout_sec": "45",
-    "selection_timeout_sec": "15",
+    "machine_reservation_minutes": "10",
     "kiosk_input_mode": "hardware_buttons",
     "button_box_enabled": "false",
     "provider_default": "local",
@@ -72,7 +72,7 @@ def ensure_core_settings(logger: Optional[logging.Logger] = None) -> None:
             update_setting_value(session, "log_level", "INFO")
 
         if get_setting_value(session, "api_key") is None:
-            created_api_key = secrets.token_hex(32)
+            created_api_key = "test-key"
             update_setting_value(session, "api_key", created_api_key)
     finally:
         session.close()
@@ -80,7 +80,7 @@ def ensure_core_settings(logger: Optional[logging.Logger] = None) -> None:
     if created_api_key:
         log = logger or logging.getLogger(__name__)
         log.warning(
-            "First-run: generated API_KEY=%s. Store it securely.",
+            "First-run: generated API_KEY=%s. Please change it securely.",
             created_api_key,
         )
 
