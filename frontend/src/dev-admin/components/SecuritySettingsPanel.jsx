@@ -9,16 +9,6 @@ export default function SecuritySettingsPanel({ authKey, reisaTokenIsSet }) {
   const [saving, setSaving] = useState(false);
   const [generatedKey, setGeneratedKey] = useState('');
 
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const justGenerated = window.sessionStorage.getItem('JUST_GENERATED_API_KEY');
-      if (justGenerated) {
-        setGeneratedKey(justGenerated);
-        window.sessionStorage.removeItem('JUST_GENERATED_API_KEY');
-      }
-    }
-  }, []);
-
   async function handleUpdateReisaToken(e) {
     e.preventDefault();
     if (!currentApiKey) {

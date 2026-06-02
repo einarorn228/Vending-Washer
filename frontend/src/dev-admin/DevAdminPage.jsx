@@ -65,9 +65,21 @@ export default function DevAdminPage() {
     setLoading(false);
   }
 
+  const [recoveredKey, setRecoveredKey] = useState('');
+
   useEffect(() => {
     if (apiKey) {
       loadAll(apiKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const justGenerated = window.sessionStorage.getItem('JUST_GENERATED_API_KEY');
+      if (justGenerated) {
+        setRecoveredKey(justGenerated);
+        window.sessionStorage.removeItem('JUST_GENERATED_API_KEY');
+      }
     }
   }, []);
 
@@ -104,6 +116,20 @@ export default function DevAdminPage() {
     <DevAdminShell activeTab={activeTab} onTabChange={setActiveTab} onLock={handleLock}>
       {loading ? <div className="dev-admin-loading">Loading beta dev/admin data…</div> : null}
       {disabled ? <div className="dev-admin-disabled">{error}</div> : error ? <div className="dev-admin-form-error">{error}</div> : null}
+      
+      {recoveredKey && (
+        <div className="dev-admin-modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="dev-admin-modal dev-admin-modal--important">
+            <h3>New API Key Generated</h3>
+            <p>Here is your new API token for the application. <strong>Please ensure you write it down before closing this window.</strong> It will not be shown again.</p>
+            <div className="dev-admin-code-block">
+              <code>{recoveredKey}</code>
+            </div>
+            <button className="dev-admin-primary" onClick={() => setRecoveredKey('')}>I have written it down</button>
+          </div>
+        </div>
+      )}
+
       {content}
     </DevAdminShell>
   );
