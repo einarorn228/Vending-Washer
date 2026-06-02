@@ -9,6 +9,16 @@ export default function SecuritySettingsPanel({ authKey, reisaTokenIsSet }) {
   const [saving, setSaving] = useState(false);
   const [generatedKey, setGeneratedKey] = useState('');
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const justGenerated = window.sessionStorage.getItem('JUST_GENERATED_API_KEY');
+      if (justGenerated) {
+        setGeneratedKey(justGenerated);
+        window.sessionStorage.removeItem('JUST_GENERATED_API_KEY');
+      }
+    }
+  }, []);
+
   async function handleUpdateReisaToken(e) {
     e.preventDefault();
     if (!currentApiKey) {
@@ -55,6 +65,9 @@ export default function SecuritySettingsPanel({ authKey, reisaTokenIsSet }) {
     if (!result.ok || !result.payload?.success) {
       setError(result.payload?.message || 'Failed to generate new API key.');
     } else {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('JUST_GENERATED_API_KEY', result.payload.new_api_key);
+      }
       setGeneratedKey(result.payload.new_api_key);
     }
   }

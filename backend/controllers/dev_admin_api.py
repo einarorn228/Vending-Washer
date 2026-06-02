@@ -154,16 +154,22 @@ def generate_api_key(db):
     update_setting_value(db, "api_key", new_key)
     
     import os
-    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", ".env"))
-    if os.path.exists(env_path):
-        with open(env_path, "r") as f:
-            lines = f.readlines()
-        with open(env_path, "w") as f:
-            for line in lines:
-                if line.startswith("VITE_API_KEY="):
-                    f.write(f"VITE_API_KEY={new_key}\n")
-                else:
-                    f.write(line)
+    import threading
+    
+    def update_env():
+        env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", ".env"))
+        if os.path.exists(env_path):
+            with open(env_path, "r") as f:
+                lines = f.readlines()
+            with open(env_path, "w") as f:
+                for line in lines:
+                    if line.startswith("VITE_API_KEY="):
+                        f.write(f"VITE_API_KEY={new_key}\n")
+                    else:
+                        f.write(line)
+                        
+    # Wait 1.5 seconds before updating .env so the JSON response reaches the frontend
+    threading.Timer(1.5, update_env).start()
 
     return jsonify({"success": True, "new_api_key": new_key})
 
