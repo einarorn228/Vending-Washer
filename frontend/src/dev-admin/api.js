@@ -99,3 +99,25 @@ export function saveMachineOrder(apiKey, order) {
 export function exportDevAdminConfig(apiKey) {
   return devAdminRequest('/export-config', apiKey);
 }
+
+export function getKioskState(apiKey) {
+  return devAdminRequest('/kiosk_state', apiKey);
+}
+
+export function remoteScan(apiKey, code) {
+  return devAdminRequest('/remote_scan', apiKey, {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export function remoteTouchSelect(apiKey, machineId) {
+  return devAdminRequest('/remote_touch_select', apiKey, {
+    method: 'POST',
+    body: JSON.stringify({ machine_id: machineId }),
+  });
+}
+
+export function remoteReset(apiKey) {
+  return devAdminRequest('/remote_reset', apiKey, { method: 'POST', body: JSON.stringify({}) });
+}

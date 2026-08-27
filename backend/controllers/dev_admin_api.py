@@ -214,3 +214,59 @@ def update_machine_layout(db):
 @require_dev_admin
 def export_config(db):
     return jsonify({"success": True, **build_export_config(db)})
+
+
+@dev_admin_api.route("/kiosk_state", methods=["GET"])
+@require_dev_admin
+def kiosk_state(db):
+    from backend.controllers.machine_control import UI_STATE, get_machine_snapshot
+
+    state = dict(UI_STATE)
+    state["machines"] = get_machine_snapshot()
+    return jsonify({"success": True, "kiosk_state": state})
+
+
+@dev_admin_api.route("/remote_scan", methods=["POST"])
+@require_dev_admin
+def remote_scan(db):
+    from backend.services.start_orchestrator import SCAN_BUSY_MESSAGE, ingest_scan
+
+    data = request.get_json(silent=True) or {}
+    code = (data.get("code") or "").strip()
+    if not code:
+        return _json_error("Missing code", 400)
+    outcome = ingest_scan(code, source="dev_admin")
+    if not outcome.success:
+        status = 409 if outcome.message == SCAN_BUSY_MESSAGE else 400
+        return jsonify({"success": False, "message": outcome.message}), status
+    code_info = outcome.code_info
+    uses_left = code_info.usage_limit - code_info.current_usage if code_info else None
+    return jsonify({"success": True, "message": outcome.message, "uses_left": uses_left})
+
+
+@dev_admin_api.route("/remote_touch_select", methods=["POST"])
+@require_dev_admin
+def remote_touch_select(db):
+    from backend.services.start_orchestrator import start_from_touch
+
+    data = request.get_json(silent=True) or {}
+    machine_id = (data.get("machine_id") or "").strip()
+    if not machine_id:
+        return _json_error("Missing machine_id", 400)
+    outcome = start_from_touch(machine_id=machine_id)
+    status = 200 if outcome.success else 409
+    return jsonify({"success": outcome.success, "message": outcome.message, "uses_left": outcome.uses_left}), status
+
+
+@dev_admin_api.route("/remote_reset", methods=["POST"])
+@require_dev_admin
+def remote_reset(db):
+    from backend.controllers.machine_control import update_ui_state
+
+    update_ui_state({
+        "state": "waiting_for_code",
+        "message": "Scan your code to start",
+        "current_machine": None,
+        "uses_left": None,
+    })
+    return jsonify({"success": True, "message": "Kiosk reset to ready state."})

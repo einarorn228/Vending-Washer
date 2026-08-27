@@ -2,6 +2,7 @@ import React from 'react';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'remote_control', label: 'Remote Control' },
   { id: 'settings', label: 'Settings' },
   { id: 'machines', label: 'Machine Cards' },
 ];

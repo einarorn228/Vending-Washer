@@ -6,6 +6,7 @@ import DevAdminShell from './DevAdminShell.jsx';
 import OverviewPanel from './components/OverviewPanel.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import MachineCardsPanel from './components/MachineCardsPanel.jsx';
+import RemoteControlPanel from './components/RemoteControlPanel.jsx';
 import {
   clearDevAdminKey,
   getDevAdminMachines,
@@ -108,6 +109,8 @@ export default function DevAdminPage() {
     content = <SettingsPanel apiKey={apiKey} groups={settingsGroups} secretMetadata={secretMetadata} onReload={() => loadAll(apiKey)} />;
   } else if (activeTab === 'machines') {
     content = <MachineCardsPanel apiKey={apiKey} machines={machines} onReload={() => loadAll(apiKey)} />;
+  } else if (activeTab === 'remote_control') {
+    content = <RemoteControlPanel apiKey={apiKey} />;
   } else {
     content = <OverviewPanel apiKey={apiKey} status={status} onReload={() => loadAll(apiKey)} />;
   }
