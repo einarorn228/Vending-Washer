@@ -60,4 +60,10 @@ Thumbs.db
 *.bak
 *.swp
 *.tmp
-*.lockbackend/logs/
+*.lock
+
+# Dev scratch artifacts (screenshots & ad-hoc inspection scripts)
+select_screen_preview.png
+test-sandbox/screen.jpg
+test-sandbox/get_browser_metrics.py
+test-sandbox/inspect_dom.py
