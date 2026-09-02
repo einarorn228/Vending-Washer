@@ -31,6 +31,10 @@ def _as_list(value):
     return value if isinstance(value, list) else [value]
 
 
+def _normalised(value):
+    return sorted(_as_list(value)) if isinstance(value, list) else value
+
+
 def _validate_neutral(meta, path, known_settings):
     if meta.get("category") not in CATEGORIES:
         raise CompileError(f"{path}: unknown category {meta.get('category')!r}")
@@ -40,6 +44,8 @@ def _validate_neutral(meta, path, known_settings):
         raise CompileError(f"{path}: unknown risk {meta.get('risk')!r}")
     if meta.get("status") not in STATUSES:
         raise CompileError(f"{path}: unknown status {meta.get('status')!r}")
+    if not isinstance(meta.get("last_reviewed"), str) or not meta.get("last_reviewed"):
+        raise CompileError(f"{path}: last_reviewed is required (ISO date string)")
     for group in _as_list(meta.get("diagnostics")):
         if group not in DIAGNOSTIC_GROUPS:
             raise CompileError(f"{path}: unknown diagnostic group {group!r}")
@@ -49,6 +55,19 @@ def _validate_neutral(meta, path, known_settings):
     for key in _as_list(meta.get("related_settings")):
         if key not in known_settings:
             raise CompileError(f"{path}: unknown setting key {key!r}")
+
+
+def _validate_checks(meta, path):
+    checks = meta.get("checks")
+    if checks is None:
+        return
+    if not isinstance(checks, list):
+        raise CompileError(f"{path}: checks must be a list")
+    for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            raise CompileError(f"{path}: checks[{index}] must be a mapping")
+        if not isinstance(check.get("id"), str) or not check["id"]:
+            raise CompileError(f"{path}: checks[{index}] needs a non-empty string id")
 
 
 def compile_help(root, trust_class, known_settings, build_id=None):
@@ -67,6 +86,7 @@ def compile_help(root, trust_class, known_settings, build_id=None):
         unknown = set(meta) - REQUIRED_FIELDS - CANONICAL_ONLY_FIELDS - LOCALISED_OPTIONAL_FIELDS
         if unknown:
             raise CompileError(f"{path}: unknown field(s) {sorted(unknown)}")
+        _validate_checks(meta, path)
         if not isinstance(meta["id"], str) or not meta["id"]:
             raise CompileError(f"{path}: id must be a non-empty string, got {meta['id']!r}")
         if meta["locale"] not in LOCALES:
@@ -111,7 +131,7 @@ def compile_help(root, trust_class, known_settings, build_id=None):
                 continue
             meta, body, path = locales[locale]
             for field in CANONICAL_ONLY_FIELDS & set(meta):
-                if locale != canonical_locale and meta[field] != canonical_meta.get(field):
+                if locale != canonical_locale and _normalised(meta[field]) != _normalised(canonical_meta.get(field)):
                     raise CompileError(
                         f"{path}: translation overrides inherited field {field!r}"
                     )

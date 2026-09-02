@@ -161,6 +161,31 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             self.compile()
 
+    def test_translation_may_list_inherited_fields_in_any_order(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("related_settings:\n  - telemetry_enabled",
+                          "related_settings:\n  - telemetry_enabled\n  - backend_relay_enabled"))
+        _write(self.tmp, "is/machines_telemetry/machine-unavailable.md",
+               IS_STUB_PUBLISHED.replace(
+                   "search_aliases:",
+                   "related_settings:\n  - backend_relay_enabled\n  - telemetry_enabled\nsearch_aliases:"))
+        self.settings = {"telemetry_enabled", "backend_relay_enabled"}
+        guide = self.compile()["guides"]["machine-unavailable"]
+        self.assertEqual(guide["related_settings"], ["backend_relay_enabled", "telemetry_enabled"])
+
+    def test_missing_last_reviewed_is_a_compile_error(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("last_reviewed: 2026-09-02\n", ""))
+        with self.assertRaises(CompileError):
+            self.compile()
+
+    def test_check_without_id_is_a_compile_error(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("---\n\n## Check telemetry",
+                          "checks:\n  - question: Is it on?\n---\n\n## Check telemetry"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
 
 if __name__ == "__main__":
     unittest.main()
