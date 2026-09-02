@@ -3716,10 +3716,14 @@ readings → `tune-thresholds`; each Settings group header → its group guide;
 > or `DevAdminShell`. Outside a provider the link renders nothing. Links to guide ids that
 > do not exist until Task 17 open the drawer's `notFound` state by design.
 >
-> *Danger zone.* Only the recovery **prose** (`<h3>How to switch it back on</h3>` and its
-> `<p>`) is replaced by the contextual link; the literal `RECOVERY_COMMAND` code block stays,
-> because the panel must remain self-sufficient when Help is unavailable (spec §11.4) and a
-> command is a technical identifier, not prose.
+> *Danger zone (superseded at the checkpoint-5 closure).* The maintainer ruled that the
+> privileged recovery command (a shell + Python snippet that flips `dev_admin_enabled`) must
+> not exist in frontend-bundled content, because the dev-admin bundle is publicly retrievable.
+> `RECOVERY_COMMAND` and its code block are removed; the panel keeps one non-sensitive line
+> plus the authenticated link to `admin-access-recovery`, which will carry the procedure.
+> `RESTART_COMMAND` in the Shell stays (documented restart, not privilege recovery).
+> The support-report body is built by the pure, tested `buildSupportReportBody` in
+> `checklistState.js`, pinning the `machine_id` contract (the value is `machine.machine_key`).
 >
 > *Machine context.* `MachineDetailDrawer` passes `machine.machine_key` as the drawer's
 > `machineId` (it equals the telemetry runtime slug that `support_service` scopes on), so a
