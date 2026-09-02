@@ -1071,6 +1071,20 @@ class CompilerTests(unittest.TestCase):
         guide = self.compile()["guides"]["machine-unavailable"]
         self.assertEqual(guide["status"], "published")
 
+    def test_unknown_frontmatter_field_fails(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("common_problem_rank: 1", "common_problem_rank: 1\nproblem_guide: oops"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
+    def test_numeric_id_fails(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("id: machine-unavailable", "id: 007"))
+        _write(self.tmp, "is/machines_telemetry/machine-unavailable.md",
+               IS_STUB_PUBLISHED.replace("id: machine-unavailable", "id: 007"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
     def test_unknown_diagnostic_group_fails(self):
         _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
                EN.replace("machine.telemetry", "machine.not_a_group"))
@@ -1115,8 +1129,8 @@ from pathlib import Path
 from backend.help.blocks import parse_body
 from backend.help.frontmatter import split_frontmatter
 from backend.help.schema import (
-    CANONICAL_ONLY_FIELDS, CATEGORIES, KINDS, LOCALES, REQUIRED_FIELDS,
-    RISKS, SCHEMA_VERSION, STATUSES, TRANSLATION_STATUSES, CompileError,
+    CANONICAL_ONLY_FIELDS, CATEGORIES, KINDS, LOCALES, LOCALISED_OPTIONAL_FIELDS,
+    REQUIRED_FIELDS, RISKS, SCHEMA_VERSION, STATUSES, TRANSLATION_STATUSES, CompileError,
 )
 from backend.help.search_index import build_index_record
 
@@ -1166,6 +1180,14 @@ def compile_help(root, trust_class, known_settings, build_id=None):
         missing = REQUIRED_FIELDS - set(meta)
         if missing:
             raise CompileError(f"{path}: missing required field(s) {sorted(missing)}")
+        # Spec §5.2: an UNKNOWN field fails the build too. Without this, a mistyped or
+        # mis-indented key (e.g. `problem_guide` escaping its check) would be silently
+        # accepted and then silently ignored.
+        unknown = set(meta) - REQUIRED_FIELDS - CANONICAL_ONLY_FIELDS - LOCALISED_OPTIONAL_FIELDS
+        if unknown:
+            raise CompileError(f"{path}: unknown field(s) {sorted(unknown)}")
+        if not isinstance(meta["id"], str) or not meta["id"]:
+            raise CompileError(f"{path}: id must be a non-empty string, got {meta['id']!r}")
         if meta["locale"] not in LOCALES:
             raise CompileError(f"{path}: unknown locale {meta['locale']!r}")
         guide_id, locale = meta["id"], meta["locale"]
@@ -1267,7 +1289,7 @@ def compile_help(root, trust_class, known_settings, build_id=None):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_compiler.py -v`
-Expected: PASS (13 tests)
+Expected: PASS (15 tests)
 
 - [ ] **Step 5: Commit**
 
