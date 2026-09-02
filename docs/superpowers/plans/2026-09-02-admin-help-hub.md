@@ -751,10 +751,27 @@ def parse_body(markdown_text, known_settings):
     return sections
 ```
 
+> **Corrections applied during execution (Task 3 is complete; the committed
+> `backend/help/blocks.py` at `539ead4` is authoritative over the snippet above).** Three
+> defects in the snippet were found by implementation and review and fixed in the shipped code:
+> 1. `_raw()` returned `""` for `softbreak` nodes (they carry neither `raw` nor `children`),
+>    which concatenated `[!WARNING]` with the following line and broke callout detection.
+>    Shipped code maps `softbreak` to `"\n"`.
+> 2. `blank_line` nodes appear inside `list_item` (multi-paragraph items) and `block_quote`
+>    (blank separator after the marker); the snippet only skipped them at top level and so
+>    raised a spurious `CompileError`. Shipped code skips `blank_line` in exactly those two
+>    containers and nowhere else — the catch-all rejection of unmapped nodes is unchanged.
+> 3. Stripping the `[!…]` marker left the softbreak-derived `" "` inline; shipped code also
+>    drops a leading whitespace-only text inline from the callout body.
+>
+> The test file gained `test_table_header_and_rows_have_the_right_shape`,
+> `test_multi_paragraph_list_item_parses`, `test_callout_with_blank_separator_line_parses`
+> and `test_callout_body_has_no_marker_or_stray_whitespace` (11 tests total).
+
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_blocks.py -v`
-Expected: PASS (8 tests)
+Expected: PASS (11 tests)
 
 - [ ] **Step 5: Commit**
 
