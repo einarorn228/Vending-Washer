@@ -3432,6 +3432,45 @@ git commit -m "feat(help): add folded prefix search for Icelandic queries"
 `blockDescriptors.js` (plain JS, fully tested) and `BlockRenderer.jsx` is a thin consumer
 that only turns descriptors into elements. No component-test toolchain is added.
 
+> **Corrections applied during execution (checkpoint 4, before dispatch) — shipped shapes
+> this task must consume verbatim:**
+>
+> *Blocks* (from `backend/help/blocks.py`): `paragraph {inlines}`, `heading {level, text}`,
+> `code_block {language, text}`, `ordered_list` / `unordered_list {items: [[block, …], …]}`
+> (each item is a list of blocks), `table {header: [[inline, …], …], rows: [[[inline, …], …], …]}`
+> (header is a list of cells, each cell a list of inlines; rows is a list of such cell lists),
+> `callout {level: 'note' | 'warning' | 'danger', blocks}`.
+> *Inlines*: `text {text}`, `code {text}`, `setting_ref {value}`, `strong {inlines}`,
+> `em {inlines}`, `guide_link {guide_id, text}`, `external_link {url, text}`.
+> `blockToDescriptor` must default any missing field (the Step 1 test feeds skeletons
+> without `text`/`level`) and return `null` for an unknown `type`; unknown inline types are
+> dropped, never thrown on.
+>
+> *Sections*: `guide.locales[loc].sections = [{anchor, heading, blocks}]`; the first section
+> may be a preamble with `anchor: null, heading: null`. Heading blocks inside sections carry
+> no anchor — the section does; `GuideView` puts `id={section.anchor}` on the section element
+> so `#help/<id>/<anchor>` can scroll to it.
+>
+> *Locale payload*: `{title, summary, search_aliases, stub, translation_status, sections?,
+> checks?}`. A payload with `stub: true` has **no** `sections` and **no** `checks`.
+> `resolveLocale(guide, requested)`: if `guide.locales[requested]` exists and is not a stub →
+> `{locale: requested, isFallback: false}`; otherwise `{locale: guide.canonical_locale,
+> isFallback: true}`. Guide-level fields: `id, canonical_locale, category, kind, risk
+> ('low'|'medium'|'high'), status, last_reviewed, common_problem_rank, related_guides,
+> related_settings, diagnostics, actions`. The `riskHigh` badge shows only when
+> `guide.risk === 'high'`.
+>
+> *Manifest fetch*: `getHelpManifest(apiKey)` = `devAdminRequest('/help/manifest', apiKey)`
+> (existing helper in `api.js`, returns `{ok, status, payload}`). 200 → `payload.manifest`
+> (+ `payload.status`); 503 → `payload.reason` (a reason code string) with `payload.success
+> === false`; any other non-ok → `payload.message`. `useHelpManifest` never throws, fetches
+> once per `apiKey`, and exposes `{manifest, status, error, loading}` where `error` is the
+> reason code or message string, or `''`.
+>
+> *Strings*: `t(locale, key)` returns `STRINGS[locale]?.[key] ?? STRINGS.en[key] ?? key`.
+> No other UI copy is introduced; technical identifiers (setting keys, guide ids, anchors)
+> are rendered verbatim, never translated.
+
 Draft Icelandic chrome, for review before the feature is considered finished:
 
 | Key | `is` | `en` |
@@ -3529,9 +3568,23 @@ git commit -m "feat(help): render guides from the strict block schema"
 - Consumes: `guide.locales[locale].checks`.
 - Produces: `initialCheckState(checks) -> {[checkId]: 'not_checked'}`, `setCheckResult(state, checkId, result) -> state`, `toReportChecks(state) -> [{check_id, result}]`, `<ChecklistPanel />`, `<SupportReportButton guideId machineId checks locale localeShown />`.
 
-`SupportReportButton` posts `{guide_id, machine_id, checks, locale, locale_shown}` and copies
+`SupportReportButton` posts `{guide_id, machine_id, checks, locale}` and copies
 `payload.text` via `navigator.clipboard`, falling back to a selectable `<textarea>` when the
 clipboard API is unavailable (older Chromium on the Pi, or a non-secure origin).
+
+> **Corrections applied during execution (checkpoint 4, before dispatch):** the original
+> interface also posted `locale_shown`. Task 10 ruled `locale_shown` **server-owned** — the
+> route ignores it and derives it from the resolved guide — so the client never sends it and
+> the button's props are `guideId machineId checks locale` (no `localeShown`). The route
+> (`POST /api/dev_admin/support_report`, via `devAdminRequest(..., {method: 'POST', body})`)
+> answers 200 `{success, report, text}`; 400/404 `{success: false, message}`; the
+> `machine_id` field is sent as `null` when there is no machine context. `checks` entries
+> are `{check_id, result}` with `result` ∈ `ok | problem | unsure | not_checked`, at most 50.
+> A check entry in `guide.locales[loc].checks` is `{id, question, look_for, expected, route,
+> diagnostics, problem_guide?}` (spec §4.7); `ChecklistPanel` renders `question`,
+> `look_for` and `expected`, and shows the `problem_guide` link (via `onOpenGuide`) only when
+> that check's result is `problem`. Checks come from the payload `resolveLocale` selected —
+> a stub inherits the canonical checklist.
 
 - [ ] **Step 1: Write the failing test**
 
