@@ -89,3 +89,6 @@ test-sandbox/
 config-export*.json
 dev-admin-export*.json
 *-config-export.json
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
