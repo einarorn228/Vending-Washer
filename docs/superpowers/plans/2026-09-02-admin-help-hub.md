@@ -3697,6 +3697,61 @@ readings → `tune-thresholds`; each Settings group header → its group guide;
 (replacing the inline recovery prose so there is one source); `DevAdminShell` restart banner →
 `settings-requiring-restart`.
 
+> **Corrections applied during execution (checkpoint 4, before dispatch):**
+>
+> *Group guides.* The 15-guide corpus has no per-settings-group guides, so the eleven
+> Settings group links resolve through a static map `SETTINGS_GROUP_GUIDES` in
+> `frontend/src/dev-admin/help/settingsGroupGuides.js`, keyed by `SETTING_GROUPS` id:
+> `dev_admin`→`admin-access-recovery`, `api_security`→`admin-access-recovery`,
+> `scanner`→`scanner-not-scanning`, `machine_timing`→`machine-does-not-start`,
+> `screen_timing`→`admin-panel-orientation`, `hardware_timing`→`machine-does-not-start`,
+> `kiosk`→`admin-panel-orientation`, `runtime`→`settings-requiring-restart`,
+> `codes`→`code-rejected`, `provider`→`reisa-configuration`, `logging`→`using-diagnostics`.
+> A group with no entry renders no link. The map is surfaced at the Task 15 checkpoint for
+> maintainer retargeting.
+>
+> *Drawer plumbing.* `ContextualHelpLink` reaches `openHelpDrawer(guideId, anchor)` through
+> a React context (`HelpDrawerContext` in `frontend/src/dev-admin/help/HelpDrawerContext.js`,
+> provided by `DevAdminPage`); no prop drilling through `SettingsPanel`, `MachineCardsPanel`
+> or `DevAdminShell`. Outside a provider the link renders nothing. Links to guide ids that
+> do not exist until Task 17 open the drawer's `notFound` state by design.
+>
+> *Danger zone.* Only the recovery **prose** (`<h3>How to switch it back on</h3>` and its
+> `<p>`) is replaced by the contextual link; the literal `RECOVERY_COMMAND` code block stays,
+> because the panel must remain self-sufficient when Help is unavailable (spec §11.4) and a
+> command is a technical identifier, not prose.
+>
+> *Machine context.* `MachineDetailDrawer` passes `machine.machine_key` as the drawer's
+> `machineId` (it equals the telemetry runtime slug that `support_service` scopes on), so a
+> report opened from a machine is machine-scoped.
+>
+> *Help locale.* The Help UI locale is a preference held in `DevAdminPage` (default
+> `manifest.default_locale`, i.e. `is`; toggle `is | en` in `HelpPanel`; persisted in
+> `localStorage.HELP_LOCALE` inside try/catch). The drawer uses the same value. Admin chrome
+> outside Help stays English — no wider localisation.
+>
+> *Failure states (spec §11.4).* `HelpPanel` renders the `unavailable` string when
+> `useHelpManifest` reports an error (manifest missing/malformed → 503 reason) and still
+> renders nothing else Help-related; other tabs are unaffected. `HelpPanel` and `HelpDrawer`
+> mount inside a small `HelpErrorBoundary` (class component in `help/`) so a render fault in
+> Help never unmounts the admin shell. The `notFound` string shows when `helpRoute.invalid`
+> is true or the guide id is absent from the manifest — never a redirect to Overview.
+> Search is client-side; if `searchGuides` throws, the boundary catches it and categories
+> still render.
+>
+> *Hash and drawer are separate.* `HelpPanel` (the tab) is driven by `helpRoute` from Task 11
+> and navigates by writing `window.location.hash` via `formatHelpHash`; `HelpDrawer` is
+> driven only by page state (`drawerGuide {guideId, anchor} | null`) and never touches the
+> hash. Opening a guide from inside the drawer keeps you in the drawer.
+>
+> *GuideView props.* From Tasks 13/14: `guide, locale, onOpenGuide, titleFor?, apiKey,
+> machineId?`. `titleFor` is derived from the manifest in `HelpPanel`/`HelpDrawer`.
+>
+> *Categories.* The category list uses the frozen category vocabulary in its manifest
+> order of first appearance, labelled with short Icelandic/English strings added to
+> `helpStrings.js` (`category_<id>` keys) — the only new UI copy this task introduces.
+> The `Hjálp` placeholder section from Task 11 is replaced by `<HelpPanel>`.
+
 - [ ] **Step 1: Write the failing test**
 
 ```javascript
