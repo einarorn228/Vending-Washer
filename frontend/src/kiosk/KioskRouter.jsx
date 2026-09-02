@@ -18,6 +18,7 @@ export default function KioskRouter({ uiState, backendUnreachable }) {
     currentMachine: uiState?.current_machine,
     usesLeft: uiState?.uses_left,
     machines: uiState?.machines,
+    reservationMinutes: uiState?.reservation_minutes,
   };
 
   let content;

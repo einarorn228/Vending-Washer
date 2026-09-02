@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import MachineGrid from '../../kiosk/components/machine/MachineGrid.jsx';
-import { saveDevAdminMachine, saveMachineOrder } from '../api.js';
+import { saveDevAdminMachines } from '../api.js';
 import MachineDetailDrawer from './MachineDetailDrawer.jsx';
 
 function cloneMachines(machines) {
@@ -63,33 +63,49 @@ export default function MachineCardsPanel({ apiKey, machines, onReload }) {
     const order = draft.map((machine) => machine.machine_key);
     const originalOrder = (machines || []).map((machine) => machine.machine_key);
 
-    if (JSON.stringify(order) !== JSON.stringify(originalOrder)) {
-      const orderResult = await saveMachineOrder(apiKey, order);
-      if (!orderResult.ok || !orderResult.payload?.success) {
-        setSaving(false);
-        setErrors({ layout: orderResult.payload?.errors?.order || orderResult.payload?.message || 'Machine order save failed.' });
-        return;
-      }
-    }
-
-    for (const machine of draft) {
-      if (!machineChanged(machine, originalByKey[machine.machine_key])) continue;
-      const result = await saveDevAdminMachine(apiKey, machine.machine_key, {
+    const orderChanged = JSON.stringify(order) !== JSON.stringify(originalOrder);
+    const updates = draft
+      .filter((machine) => machineChanged(machine, originalByKey[machine.machine_key]))
+      .map((machine) => ({
+        machine_key: machine.machine_key,
         display_name: machine.display_name,
         short_label: machine.short_label,
         type: machine.type,
         description: machine.description,
         active_in_kiosk: machine.active_in_kiosk,
         display_order: machine.display_order,
-      });
-      if (!result.ok || !result.payload?.success) {
-        setSaving(false);
-        setErrors({ [machine.machine_key]: result.payload?.errors || { machine: result.payload?.message || 'Machine save failed.' } });
-        return;
-      }
+      }));
+
+    if (!updates.length && !orderChanged) {
+      setSaving(false);
+      setMessage('No changes to save.');
+      return;
     }
 
+    // One request, one backend transaction: a rejected card can no longer leave the
+    // machines before it already written.
+    const result = await saveDevAdminMachines(apiKey, updates, orderChanged ? order : null);
     setSaving(false);
+
+    if (!result.ok || !result.payload?.success) {
+      const payloadErrors = { ...(result.payload?.errors || {}) };
+      // The order/generic errors render through the `layout` slot above the list.
+      if (payloadErrors.order) {
+        payloadErrors.layout = payloadErrors.order.order || 'Machine order save failed.';
+        delete payloadErrors.order;
+      }
+      if (payloadErrors.updates) {
+        payloadErrors.layout = Object.values(payloadErrors.updates)[0] || 'Machine save failed.';
+        delete payloadErrors.updates;
+      }
+      if (!Object.keys(payloadErrors).length) {
+        payloadErrors.layout = result.payload?.message || 'Machine save failed.';
+      }
+      setErrors(payloadErrors);
+      setMessage('Nothing was saved. Fix the errors below and save again.');
+      return;
+    }
+
     setMessage('Machine card layout saved. Reloading current values…');
     onReload();
   }

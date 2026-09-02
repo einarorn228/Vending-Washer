@@ -16,6 +16,11 @@ from backend.models import remove_session, session
 from backend.models.code_model import Code
 from backend.models.scan_log_model import ScanLog
 from backend.models.setting_model import get_setting_value, update_setting_value
+from backend.services.diagnostics_service import (
+    metrics_snapshot,
+    normalise_labels,
+    recent_scan_logs,
+)
 from backend.services.reisa_audit_service import list_audit_events_for_session
 from backend.services.reisa_diagnostics_service import get_reisa_session_diagnostics, get_reisa_sync_diagnostics
 from backend.services.reisa_replay_service import replay_due_jobs, replay_retry_job
@@ -194,8 +199,8 @@ def generate_code():
 # TODO: Add authentication before exposing in production
 
 
-def _normalise_labels(labels_tuple):
-    return {k: v for k, v in labels_tuple}
+# Shared with the dev/admin diagnostics endpoints so both surfaces agree.
+_normalise_labels = normalise_labels
 
 
 
@@ -294,27 +299,7 @@ def admin_reisa_sync_failures():
 @app.route("/admin/metrics", methods=["GET"])
 @require_admin_auth
 def admin_metrics():
-    counters, gauges, histograms = snapshot()
-
-    def _prepare(mapping):
-        return [
-            {"name": name, "labels": _normalise_labels(labels), "value": value}
-            for (name, labels), value in mapping.items()
-        ]
-
-    histo_payload = []
-    for (name, labels), values in histograms.items():
-        entry = {"name": name, "labels": _normalise_labels(labels)}
-        entry.update(values)
-        histo_payload.append(entry)
-
-    return jsonify(
-        {
-            "counters": _prepare(counters),
-            "gauges": _prepare(gauges),
-            "histograms": histo_payload,
-        }
-    )
+    return jsonify(metrics_snapshot())
 
 
 @app.route("/admin/metrics/export.csv", methods=["GET"])
@@ -447,20 +432,9 @@ def get_usage_by_code(code):
 @require_admin_auth
 def get_last_scan_logs(count):
     """Return the last `count` scan log entries."""
-    logs = session.query(ScanLog).order_by(ScanLog.timestamp.desc()).limit(count).all()
-    if not logs:
+    result = recent_scan_logs(session, count)
+    if not result:
         return jsonify({"message": "No scan logs found."}), 404
-    result = [
-        {
-            "id": log.id,
-            "code": log.code,
-            "order_id": log.order_id,
-            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
-            "result": log.result,
-            "details": log.details,
-        }
-        for log in logs
-    ]
     return jsonify(result)
 
 

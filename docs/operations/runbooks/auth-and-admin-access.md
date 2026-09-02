@@ -69,46 +69,80 @@ Expected: HTTP 200 with state payload.
 
 ## Rotate admin password hash
 
-Generate SHA-256 hash for new plaintext password:
-```bash
-python - <<'PY'
-import hashlib
-pw = 'ChangeMeStrong'
-print(hashlib.sha256(pw.encode('utf-8')).hexdigest())
-PY
-```
+These credentials guard **both** `/admin/*` and `/api/dev_admin/*`. The seeded default is
+`admin` / `admin`; confirm you are not still on it before beta.
 
-Apply hash:
+Check whether the seeded default is still in place (prints a yes/no, never the hash):
+
 ```bash
-python - <<'PY'
+source .venv/bin/activate
+python - <<'CHECK'
+import hashlib
 from backend.models import Session
-from backend.models.setting_model import update_setting_value
+from backend.models.setting_model import get_setting_value
 s = Session()
 try:
-    update_setting_value(s, 'admin_password_hash', '<hash_from_previous_step>')
+    print("still the seeded default:",
+          get_setting_value(s, "admin_password_hash") == hashlib.sha256(b"admin").hexdigest())
 finally:
     s.close()
-PY
+CHECK
+```
+
+Rotate it. This prompts for the password rather than taking it as an argument or a literal,
+so it never reaches shell history, `ps` output, or this file:
+
+```bash
+source .venv/bin/activate
+python - <<'ROTATE'
+import getpass, hashlib
+from backend.models import Session
+from backend.models.setting_model import update_setting_value
+
+pw = getpass.getpass("New admin password: ")
+if pw != getpass.getpass("Confirm: "):
+    raise SystemExit("passwords did not match; nothing changed")
+if len(pw) < 12:
+    raise SystemExit("use at least 12 characters; nothing changed")
+
+s = Session()
+try:
+    update_setting_value(s, "admin_password_hash", hashlib.sha256(pw.encode("utf-8")).hexdigest())
+    print("admin_password_hash updated")
+finally:
+    s.close()
+ROTATE
 ```
 
 Optional username rotation:
+
 ```bash
-python - <<'PY'
+source .venv/bin/activate
+python - <<'USER'
 from backend.models import Session
 from backend.models.setting_model import update_setting_value
 s = Session()
 try:
-    update_setting_value(s, 'admin_username', 'ops_admin')
+    update_setting_value(s, "admin_username", "ops_admin")
 finally:
     s.close()
-PY
+USER
 ```
 
-Verify admin auth:
+Verify admin auth. Passing `-u user` without `:password` makes curl prompt, keeping the
+password out of shell history:
+
 ```bash
+source .venv/bin/activate
 API_KEY=$(python backend/scripts/get_api_key.py)
-curl -u ops_admin:ChangeMeStrong -H "X-API-KEY: $API_KEY" http://127.0.0.1:5000/admin/codes
+curl -u ops_admin -H "X-API-KEY: $API_KEY" http://127.0.0.1:5000/admin/codes
 ```
+
+Expected: HTTP 200. Then confirm `/dev/admin` accepts the same credentials.
+
+Hashing note: this is unsalted SHA-256 compared with `==` -- no salt, no work factor, not
+constant-time. It is adequate only for a LAN kiosk behind Basic auth. Use a long, unique
+password and do not reuse it elsewhere.
 
 ## Common auth failures
 

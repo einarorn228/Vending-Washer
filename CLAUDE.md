@@ -39,6 +39,12 @@ python -m pytest backend/tests/test_ui_api.py
 python -m pytest backend/tests/test_flask_startup_bootstrap.py
 ```
 
+Tests never touch the real `codes.db`. `backend/tests/_isolation.py` redirects the engine to a
+throwaway file via `VENDING_WASHER_DATABASE_URL` (imported from both `conftest.py` for pytest and
+`backend/tests/__init__.py` for `python -m unittest`), and `backend/models` refuses to bind to the
+project database while under test. Test `setUp` methods delete `settings`/`machines`/`devices` rows,
+so that guard is what stands between a test run and the operator's runtime configuration.
+
 ## Architecture
 
 ### Backend state machine

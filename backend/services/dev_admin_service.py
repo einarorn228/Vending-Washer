@@ -19,6 +19,12 @@ from backend.controllers import qr_scanner
 from backend.models.device_model import Device
 from backend.models.machine_model import Machine, MachineConfig
 from backend.models.setting_model import Settings, get_setting_value, parse_setting_bool
+from backend.models.settings_audit_model import (
+    ENTITY_MACHINE,
+    ENTITY_SETTING,
+    SettingsAuditLog,
+    serialize_audit_entry,
+)
 from backend.services.machine_layout_service import (
     MACHINE_CARD_LAYOUT_KEY,
     default_short_label,
@@ -29,6 +35,10 @@ from backend.services.machine_layout_service import (
 )
 
 SECRET_KEYS = {"api_key", "admin_password_hash", "reisa_bearer_token"}
+
+# Turning the panel off locks every admin out of /dev/admin until someone edits the
+# database over SSH, so it must not be reachable by an ordinary settings save.
+LOCKOUT_CONFIRMATION_PHRASE = "DISABLE DEV ADMIN"
 BOOL_TRUE = {"1", "true", "yes", "on"}
 BOOL_FALSE = {"0", "false", "no", "off"}
 
@@ -37,7 +47,11 @@ SETTING_GROUPS = [
     {"id": "api_security", "title": "API / Security"},
     {"id": "scanner", "title": "Scanner"},
     {"id": "machine_timing", "title": "Machine Timing"},
+    {"id": "screen_timing", "title": "Screen Timing"},
+    {"id": "hardware_timing", "title": "Hardware Timing"},
+    {"id": "kiosk", "title": "Kiosk Input"},
     {"id": "runtime", "title": "Shelly / Runtime Toggles"},
+    {"id": "codes", "title": "Codes"},
     {"id": "provider", "title": "Provider / Mode"},
     {"id": "logging", "title": "Logging / Diagnostics"},
 ]
@@ -217,6 +231,191 @@ SETTING_SCHEMA: Dict[str, Dict[str, Any]] = {
         "risk": "high",
         "description": "Secret token. Raw value is never shown or edited here.",
     },
+    "kiosk_input_mode": {
+        "group": "kiosk",
+        "label": "Kiosk input mode (legacy)",
+        "type": "enum",
+        "choices": ["touch", "hardware_buttons"],
+        "default": "hardware_buttons",
+        "editable": False,
+        "restart_required": False,
+        "risk": "low",
+        "description": "Legacy metadata echoed on /api/ui_state as input_mode. It has no runtime effect today - touch machine selection is always allowed. Use 'Button box input enabled' to control the physical button box.",
+    },
+    "code_expiration_days": {
+        "group": "codes",
+        "label": "Code expiration (days)",
+        "type": "int",
+        "default": "0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 0,
+        "max": 3650,
+        "description": "Days until a newly generated local code expires. 0 means codes never expire. Only affects codes created after the change.",
+    },
+    "selection_notice_seconds": {
+        "group": "screen_timing",
+        "label": "Machine-selected notice (seconds)",
+        "type": "float",
+        "default": "3.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "low",
+        "min": 0.5,
+        "max": 30,
+        "description": "How long the kiosk shows the 'machine starting' screen before returning to the ready screen if telemetry never confirms.",
+    },
+    "started_notice_seconds": {
+        "group": "screen_timing",
+        "label": "Machine-started notice (seconds)",
+        "type": "float",
+        "default": "3.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "low",
+        "min": 0.5,
+        "max": 30,
+        "description": "How long the confirmation screen stays up after a run is confirmed, before the kiosk resets to ready.",
+    },
+    "error_notice_seconds": {
+        "group": "screen_timing",
+        "label": "Error notice (seconds)",
+        "type": "float",
+        "default": "3.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "low",
+        "min": 1,
+        "max": 30,
+        "description": "How long an error message stays on the kiosk screen before it auto-resets to ready.",
+    },
+    "kiosk_poll_interval_ms": {
+        "group": "screen_timing",
+        "label": "Kiosk poll interval (ms)",
+        "type": "int",
+        "default": "1000",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 250,
+        "max": 10000,
+        "description": "How often the kiosk screen asks the backend for the current state. Lower feels snappier but adds load; higher is calmer but laggier.",
+    },
+    "relay_pulse_duration_sec": {
+        "group": "hardware_timing",
+        "label": "Relay pulse duration (seconds)",
+        "type": "float",
+        "default": "1.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "high",
+        "min": 0.1,
+        "max": 10,
+        "description": "How long a pulsed Shelly relay stays closed. Machines that ignore a short pulse may need a longer one.",
+    },
+    "shelly_http_timeout_sec": {
+        "group": "hardware_timing",
+        "label": "Shelly command timeout (seconds)",
+        "type": "float",
+        "default": "3.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 1,
+        "max": 15,
+        "description": "How long the backend waits for a Shelly relay command to respond before treating it as failed.",
+    },
+    "telemetry_http_timeout_sec": {
+        "group": "hardware_timing",
+        "label": "Telemetry read timeout (seconds)",
+        "type": "float",
+        "default": "5.0",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 1,
+        "max": 30,
+        "description": "How long a single telemetry read from a Shelly device may take before it counts as a failed read. Raise it on a noisy Wi-Fi network.",
+    },
+    "reisa_connect_timeout_ms": {
+        "group": "provider",
+        "label": "Reisa connect timeout (ms)",
+        "type": "int",
+        "default": "1500",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 200,
+        "max": 30000,
+        "description": "How long to wait while opening a connection to Reisa. Too low causes false network timeouts.",
+    },
+    "reisa_read_timeout_ms": {
+        "group": "provider",
+        "label": "Reisa read timeout (ms)",
+        "type": "int",
+        "default": "2500",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "min": 200,
+        "max": 60000,
+        "description": "How long to wait for a Reisa response once connected. Tune against real provider latency.",
+    },
+    "reisa_action_start": {
+        "group": "provider",
+        "label": "Reisa start action",
+        "type": "string",
+        "default": "WASHING_MACHINE_START",
+        "editable": True,
+        "restart_required": False,
+        "risk": "high",
+        "description": "Action string sent to Reisa when a machine starts. A wrong value makes Reisa reject every start.",
+    },
+    "reisa_action_completion": {
+        "group": "provider",
+        "label": "Reisa completion action",
+        "type": "string",
+        "default": "WASHING_MACHINE_COMPLETE",
+        "editable": True,
+        "restart_required": False,
+        "risk": "high",
+        "description": "Action string sent to Reisa when a run finishes. A wrong value makes Reisa reject every completion.",
+    },
+    "reisa_retry_worker_enabled": {
+        "group": "provider",
+        "label": "Reisa retry worker enabled",
+        "type": "bool",
+        "default": "false",
+        "editable": True,
+        "restart_required": False,
+        "risk": "medium",
+        "description": "When on, a background worker retries Reisa calls that failed with a retryable error.",
+    },
+    "reisa_retry_worker_interval_sec": {
+        "group": "provider",
+        "label": "Reisa retry interval (seconds)",
+        "type": "int",
+        "default": "30",
+        "editable": True,
+        "restart_required": False,
+        "risk": "low",
+        "min": 5,
+        "max": 300,
+        "description": "How often the Reisa retry worker looks for due jobs.",
+    },
+    "reisa_retry_worker_batch_size": {
+        "group": "provider",
+        "label": "Reisa retry batch size",
+        "type": "int",
+        "default": "20",
+        "editable": True,
+        "restart_required": False,
+        "risk": "low",
+        "min": 1,
+        "max": 100,
+        "description": "How many Reisa retry jobs are processed in one pass.",
+    },
     "log_level": {
         "group": "logging",
         "label": "Log level",
@@ -351,23 +550,81 @@ def validate_settings_changes(db, changes: Mapping[str, Any]) -> Tuple[Optional[
     return (validated if not errors else None), errors
 
 
-def apply_settings_changes(db, validated: Mapping[str, str]) -> list:
+def record_audit_entry(
+    db,
+    *,
+    entity_type: str,
+    entity_key: str,
+    field: str,
+    old_value,
+    new_value,
+    is_high_risk: bool = False,
+    restart_required: bool = False,
+    source: str = "dev_admin",
+) -> None:
+    """Stage one audit row. Never commits: it rides the caller's transaction."""
+
+    db.add(
+        SettingsAuditLog(
+            source=source,
+            entity_type=entity_type,
+            entity_key=entity_key,
+            field=field,
+            old_value=None if old_value is None else str(old_value),
+            new_value=None if new_value is None else str(new_value),
+            is_high_risk=bool(is_high_risk),
+            restart_required=bool(restart_required),
+        )
+    )
+
+
+def read_audit_entries(db, limit: int = 100) -> list:
+    limit = max(1, min(int(limit or 100), 500))
+    rows = (
+        db.query(SettingsAuditLog)
+        .order_by(SettingsAuditLog.created_at.desc(), SettingsAuditLog.id.desc())
+        .limit(limit)
+        .all()
+    )
+    return [serialize_audit_entry(row) for row in rows]
+
+
+def apply_settings_changes(db, validated: Mapping[str, str], commit: bool = True) -> list:
+    """Stage validated setting writes.
+
+    Pass ``commit=False`` when the caller needs to bundle further writes (for
+    example secret updates) into the same transaction.
+    """
+
     updated = []
     for key, stored in validated.items():
         setting = db.query(Settings).filter_by(key=key).first()
+        previous = setting.value if setting else None
         if setting:
             setting.value = stored
         else:
             setting = Settings(key=key, value=stored)
             db.add(setting)
         schema = SETTING_SCHEMA[key]
+        if previous != stored:
+            record_audit_entry(
+                db,
+                entity_type=ENTITY_SETTING,
+                entity_key=key,
+                field=key,
+                old_value=previous,
+                new_value=stored,
+                is_high_risk=schema.get("risk") == "high",
+                restart_required=bool(schema.get("restart_required", False)),
+            )
         updated.append({
             "key": key,
             "value": parse_stored_value(stored, schema),
             "stored_value": stored,
             "restart_required": bool(schema.get("restart_required", False)),
         })
-    db.commit()
+    if commit:
+        db.commit()
     return updated
 
 
@@ -528,12 +785,64 @@ def validate_machine_update(db, machine_name: str, payload: Mapping[str, Any]) -
     return (changes if not errors else None), errors
 
 
+# Machine fields whose change can start the wrong physical machine or break
+# availability reporting; recorded as high risk in the audit trail.
+_HIGH_RISK_MACHINE_FIELDS = {
+    "uni_relay_channel",
+    "i4_button_index",
+    "is_enabled",
+    "ip",
+    "relay_channel",
+    "metric_source",
+    "on_threshold",
+    "off_threshold",
+    "on_confirm_ms",
+    "off_confirm_ms",
+    "poll_interval_ms",
+}
+
+
+def _audit_machine_field(db, machine_key: str, field: str, previous, value) -> None:
+    if previous == value:
+        return
+    record_audit_entry(
+        db,
+        entity_type=ENTITY_MACHINE,
+        entity_key=machine_key,
+        field=field,
+        old_value=previous,
+        new_value=value,
+        is_high_risk=field in _HIGH_RISK_MACHINE_FIELDS,
+    )
+
+
 def apply_machine_update(db, changes: Mapping[str, Any]) -> dict:
+    """Apply one machine update and commit it."""
+
+    try:
+        _apply_machine_changes(db, changes)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     machine: Machine = changes["machine"]
+    db.refresh(machine)
+    return _machine_payload(machine, load_machine_card_layout(db), 1)
+
+
+def _apply_machine_changes(db, changes: Mapping[str, Any]) -> None:
+    """Stage one machine's changes. Never commits: it rides the caller's transaction."""
+
+    machine: Machine = changes["machine"]
+    machine_key = machine.name
     for field, value in changes["machine_fields"].items():
+        _audit_machine_field(db, machine_key, field, getattr(machine, field, None), value)
         setattr(machine, field, value)
     if changes["device_fields"] and machine.uni_device:
         for field, value in changes["device_fields"].items():
+            _audit_machine_field(
+                db, machine_key, f"device.{field}", getattr(machine.uni_device, field, None), value
+            )
             setattr(machine.uni_device, field, value)
         if hasattr(machine.uni_device, "updated_at"):
             machine.uni_device.updated_at = datetime.utcnow()
@@ -542,6 +851,9 @@ def apply_machine_update(db, changes: Mapping[str, Any]) -> dict:
             machine.config = MachineConfig(machine_id=machine.id, on_threshold=8, off_threshold=3, on_confirm_ms=1200, off_confirm_ms=3000, poll_interval_ms=1000)
             db.add(machine.config)
         for field, value in changes["config_fields"].items():
+            _audit_machine_field(
+                db, machine_key, f"config.{field}", getattr(machine.config, field, None), value
+            )
             setattr(machine.config, field, value)
     if "relay_channel" in changes["machine_fields"] and machine.uni_device:
         machine.uni_device.relay_channel = changes["machine_fields"]["relay_channel"]
@@ -549,12 +861,12 @@ def apply_machine_update(db, changes: Mapping[str, Any]) -> dict:
     if changes["layout"]:
         layout = load_machine_card_layout(db)
         layout_entry = _mutable_layout_entry(layout, machine.name, machine.ui_name)
+        for field, value in changes["layout"].items():
+            _audit_machine_field(
+                db, machine_key, f"layout.{field}", layout_entry.get(field), value
+            )
         layout_entry.update(changes["layout"])
         _store_layout(db, layout)
-
-    db.commit()
-    db.refresh(machine)
-    return _machine_payload(machine, load_machine_card_layout(db), 1)
 
 
 def validate_machine_order(db, order: Any) -> Tuple[Optional[dict], Dict[str, str]]:
@@ -573,6 +885,20 @@ def validate_machine_order(db, order: Any) -> Tuple[Optional[dict], Dict[str, st
 
 
 def apply_machine_order(db, validated: Mapping[str, Any]) -> dict:
+    """Apply a display-order change and commit it."""
+
+    try:
+        _apply_machine_order_entries(db, validated)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return build_machines_payload(db)
+
+
+def _apply_machine_order_entries(db, validated: Mapping[str, Any]) -> None:
+    """Stage the display order. Never commits: it rides the caller's transaction."""
+
     layout = load_machine_card_layout(db)
     machine_map = {machine.name: machine for machine in db.query(Machine).all()}
     for index, key in enumerate(validated["order"], start=1):
@@ -580,7 +906,98 @@ def apply_machine_order(db, validated: Mapping[str, Any]) -> dict:
         entry = _mutable_layout_entry(layout, key, machine.ui_name)
         entry["display_order"] = index
     _store_layout(db, layout)
-    db.commit()
+
+
+def validate_machine_updates(
+    db, updates: Any
+) -> Tuple[Optional[list], Dict[str, Dict[str, str]]]:
+    """Validate a whole batch of machine payloads before anything is applied.
+
+    Card edits are saved as one unit, so a single bad row must not leave the other
+    machines already written.
+    """
+
+    if not isinstance(updates, list):
+        return None, {"updates": {"updates": "Expected an array of machine updates."}}
+
+    validated = []
+    errors: Dict[str, Dict[str, str]] = {}
+    seen_keys = set()
+    for entry in updates:
+        if not isinstance(entry, Mapping):
+            errors["updates"] = {"updates": "Each update must be an object."}
+            continue
+        payload = dict(entry)
+        machine_key = str(payload.pop("machine_key", "") or "").strip()
+        if not machine_key:
+            errors["updates"] = {"machine_key": "Every update needs a machine_key."}
+            continue
+        if machine_key in seen_keys:
+            errors[machine_key] = {"machine_key": "Duplicate machine in this save."}
+            continue
+        seen_keys.add(machine_key)
+        changes, machine_errors = validate_machine_update(db, machine_key, payload)
+        if machine_errors:
+            errors[machine_key] = machine_errors
+        else:
+            validated.append(changes)
+
+    if not errors:
+        errors.update(_batch_button_index_conflicts(db, validated))
+
+    return (validated if not errors else None), errors
+
+
+def _batch_button_index_conflicts(db, validated: list) -> Dict[str, Dict[str, str]]:
+    """Catch I4 button collisions created *within* one batch.
+
+    ``_button_index_conflicts`` only compares against committed rows, so two cards
+    moved onto the same index in a single save would both pass on their own.
+    """
+
+    effective: Dict[str, Tuple[Any, bool]] = {}
+    changed_keys = set()
+    for changes in validated:
+        machine = changes["machine"]
+        fields = changes["machine_fields"]
+        changed_keys.add(machine.name)
+        effective[machine.name] = (
+            fields.get("i4_button_index", machine.i4_button_index),
+            bool(fields.get("is_enabled", machine.is_enabled)),
+        )
+    for machine in db.query(Machine).all():
+        effective.setdefault(machine.name, (machine.i4_button_index, bool(machine.is_enabled)))
+
+    errors: Dict[str, Dict[str, str]] = {}
+    owner_by_index: Dict[Any, str] = {}
+    for name in sorted(effective):
+        index, enabled = effective[name]
+        if index is None or not enabled:
+            continue
+        other = owner_by_index.get(index)
+        if other is None:
+            owner_by_index[index] = name
+            continue
+        for candidate, conflicting in ((name, other), (other, name)):
+            if candidate in changed_keys:
+                errors.setdefault(candidate, {})["technical.i4_button_index"] = (
+                    f"I4 button index {index} is also used by {conflicting} in this save."
+                )
+    return errors
+
+
+def apply_machine_updates(db, validated: list, order: Optional[list] = None) -> dict:
+    """Apply a validated batch of machine updates and the layout order atomically."""
+
+    try:
+        for changes in validated:
+            _apply_machine_changes(db, changes)
+        if order:
+            _apply_machine_order_entries(db, {"order": order})
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     return build_machines_payload(db)
 
 

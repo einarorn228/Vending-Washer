@@ -44,6 +44,15 @@ DEFAULT_SETTINGS = {
     "serial_port": "/dev/ttyACM0",
     "serial_baudrate": "9600",
     "scan_timeout": "3",
+    "code_expiration_days": "0",
+    # Screen dwell times and hardware timing, tunable from the dev/admin panel.
+    "selection_notice_seconds": "3.0",
+    "started_notice_seconds": "3.0",
+    "error_notice_seconds": "3.0",
+    "kiosk_poll_interval_ms": "1000",
+    "relay_pulse_duration_sec": "1.0",
+    "shelly_http_timeout_sec": "3.0",
+    "telemetry_http_timeout_sec": "5.0",
 }
 
 

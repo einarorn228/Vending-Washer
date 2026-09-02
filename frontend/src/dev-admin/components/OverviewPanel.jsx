@@ -61,7 +61,7 @@ export default function OverviewPanel({ apiKey, status, onReload }) {
         <StatusItem label="Telemetry" value={status?.runtime?.telemetry_enabled ? 'enabled' : 'disabled'} />
         <StatusItem label="Configured machines" value={status?.machines?.configured ?? 'unknown'} />
         <StatusItem label="Active in kiosk" value={status?.machines?.active_in_kiosk ?? 'unknown'} />
-        <StatusItem label="Settings loaded" value={status?.settings_loaded_at || 'unknown'} />
+        <StatusItem label="Status read at" value={status?.settings_loaded_at || 'unknown'} />
       </div>
       {exportMessage ? <p className="dev-admin-save-message">{exportMessage}</p> : null}
     </section>

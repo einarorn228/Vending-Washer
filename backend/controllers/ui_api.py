@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from backend.controllers.machine_control import (
     UI_STATE,
     get_machine_snapshot,
+    reservation_minutes,
     SELECT_MACHINE_MESSAGE,
 )
 from backend.models import session
@@ -27,6 +28,20 @@ INPUT_MODE_TOUCH = "touch"
 INPUT_MODE_HARDWARE_BUTTONS = "hardware_buttons"
 
 _log = logging.getLogger(__name__)
+
+
+DEFAULT_POLL_INTERVAL_MS = 1000
+
+
+def _resolve_poll_interval_ms() -> int:
+    raw = get_setting_value(session, "kiosk_poll_interval_ms", default=DEFAULT_POLL_INTERVAL_MS)
+    try:
+        value = int(float(raw))
+    except (TypeError, ValueError):
+        return DEFAULT_POLL_INTERVAL_MS
+    if not 250 <= value <= 10000:
+        return DEFAULT_POLL_INTERVAL_MS
+    return value
 
 
 def _resolve_input_mode() -> str:
@@ -130,6 +145,8 @@ def ui_state():
     state["machines"] = list_machines()
     state["input_mode"] = _resolve_input_mode()
     state["button_box_enabled"] = is_button_box_enabled(session)
+    state["reservation_minutes"] = reservation_minutes()
+    state["poll_interval_ms"] = _resolve_poll_interval_ms()
     response = jsonify(state)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"

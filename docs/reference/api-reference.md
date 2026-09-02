@@ -587,6 +587,7 @@ Endpoints:
 - `PATCH /api/dev_admin/settings` — validate all provided whitelist changes before writing any setting.
 - `GET /api/dev_admin/machines` — machine card/layout and advanced technical mapping data.
 - `PATCH /api/dev_admin/machines/<machine_name>` — update whitelisted visual or confirmed advanced technical fields. Internal machine keys are not editable.
+- `PATCH /api/dev_admin/machines` — save several machine cards, and optionally the display order, in one transaction. Every update is validated first; if any is rejected nothing is written. Body: `{"updates": [{"machine_key": ..., ...}], "order": [...]}`.
 - `PATCH /api/dev_admin/machine-layout` — reorder machine cards by existing machine keys.
 - `GET /api/dev_admin/export-config` — export non-secret settings and machine/device/config data for rollback support.
 

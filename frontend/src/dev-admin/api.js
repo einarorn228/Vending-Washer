@@ -60,10 +60,13 @@ export function getDevAdminSettings(apiKey) {
   return devAdminRequest('/settings', apiKey);
 }
 
-export function saveDevAdminSettings(apiKey, changes, currentApiKey = null) {
+export function saveDevAdminSettings(apiKey, changes, currentApiKey = null, confirmationPhrase = null) {
   const body = { changes };
   if (currentApiKey) {
     body.current_api_key = currentApiKey;
+  }
+  if (confirmationPhrase) {
+    body.confirmation_phrase = confirmationPhrase;
   }
   return devAdminRequest('/settings', apiKey, {
     method: 'PATCH',
@@ -89,10 +92,16 @@ export function saveDevAdminMachine(apiKey, machineKey, changes) {
   });
 }
 
-export function saveMachineOrder(apiKey, order) {
-  return devAdminRequest('/machine-layout', apiKey, {
+// One transaction for the whole card panel: either every changed machine and the
+// display order are saved, or nothing is.
+export function saveDevAdminMachines(apiKey, updates, order = null) {
+  const body = { updates };
+  if (order) {
+    body.order = order;
+  }
+  return devAdminRequest('/machines', apiKey, {
     method: 'PATCH',
-    body: JSON.stringify({ order }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -116,6 +125,14 @@ export function remoteTouchSelect(apiKey, machineId) {
     method: 'POST',
     body: JSON.stringify({ machine_id: machineId }),
   });
+}
+
+export function getDevAdminTelemetry(apiKey) {
+  return devAdminRequest('/telemetry', apiKey);
+}
+
+export function getDevAdminDiagnostics(apiKey, limit = 50) {
+  return devAdminRequest(`/diagnostics?limit=${encodeURIComponent(limit)}`, apiKey);
 }
 
 export function remoteReset(apiKey) {

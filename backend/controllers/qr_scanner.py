@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 SERIAL_PORT = "/dev/ttyACM0"
 SERIAL_BAUDRATE = 9600
-SCAN_TIMEOUT = 1
+SCAN_TIMEOUT = 3.0
 EXPECTED_CODE_LENGTH = 8
 # After the first byte, return from read() when this many seconds pass with no new byte (full barcode frame).
 # USB CDC skannar geta haft >200 ms bil milli bæta undir álagi; of stutt gildi sker UUID í tvennt.
@@ -212,11 +212,21 @@ def _looks_like_scanner_token(value: str) -> bool:
     return False
 
 
-def _read_scanner_settings() -> tuple[str, int, int]:
+def _read_scanner_settings() -> tuple[str, int, float]:
     port = get_setting_value(session, "serial_port", default="/dev/ttyACM0")
     baud = get_setting_value(session, "serial_baudrate", default=9600)
-    timeout = get_setting_value(session, "scan_timeout", default=1)
-    return str(port), int(baud), int(timeout)
+    timeout = get_setting_value(session, "scan_timeout", default=3)
+    # scan_timeout is a float setting (see dev_admin SETTING_SCHEMA); a fractional
+    # value must not break scanner startup, so coerce leniently.
+    try:
+        timeout_value = float(timeout)
+    except (TypeError, ValueError):
+        timeout_value = 3.0
+    try:
+        baud_value = int(baud)
+    except (TypeError, ValueError):
+        baud_value = 9600
+    return str(port), baud_value, timeout_value
 
 
 def _ensure_serial_ready() -> bool:

@@ -13,7 +13,7 @@ from sqlalchemy.orm import joinedload
 
 from backend.metrics import set_gauge
 from backend.models import Session
-from backend.models.setting_model import is_telemetry_enabled
+from backend.models.setting_model import get_setting_value, is_telemetry_enabled
 from backend.models.device_model import Device
 from backend.models.machine_model import Machine
 from backend.utils.logger import get_error_logger, get_event_logger
@@ -28,7 +28,10 @@ RUNSTATE_IN_USE = "in_use"
 RUNSTATE_OFFLINE = "offline"
 
 # Shelly HTTP reads; slightly above Wi‑Fi jitter to cut avoidable read timeouts.
-_HTTP_TIMEOUT_SEC = 5.0
+_DEFAULT_HTTP_TIMEOUT_SEC = 5.0
+# Refreshed once per poll-loop iteration from the telemetry_http_timeout_sec setting,
+# so dev/admin changes apply without a restart.
+_HTTP_TIMEOUT_SEC = _DEFAULT_HTTP_TIMEOUT_SEC
 # Avoid flooding events.log with TELEMETRY_READ while a device is flaky (errors.log still has detail).
 _TELEMETRY_FAIL_EVENT_LOG_MIN_INTERVAL_SEC = 30.0
 _last_telemetry_fail_event_log: Dict[str, float] = {}
@@ -176,6 +179,64 @@ class MachineStateStore:
                 for runtime in self._machines.values()
                 if runtime.is_enabled
             ]
+
+    def get_diagnostic_snapshot(self, now: Optional[float] = None) -> List[Dict[str, object]]:
+        """Full runtime view for the dev/admin diagnostics tab.
+
+        Deliberately separate from get_snapshot(), which feeds the kiosk contract
+        and must keep its narrow shape.
+        """
+
+        reference = time.monotonic() if now is None else now
+        with self._lock:
+            rows = []
+            for runtime in self._machines.values():
+                config = runtime.config
+                rows.append(
+                    {
+                        "id": runtime.slug,
+                        "name": runtime.ui_name,
+                        "is_enabled": runtime.is_enabled,
+                        "available": runtime.available,
+                        "run_state": runtime.run_state,
+                        "pending_start": runtime.pending_start,
+                        "last_value": runtime.last_value,
+                        "seconds_since_read": (
+                            None
+                            if runtime.last_read_ts is None
+                            else round(reference - runtime.last_read_ts, 2)
+                        ),
+                        "seconds_above": (
+                            None
+                            if runtime.above_since is None
+                            else round(reference - runtime.above_since, 2)
+                        ),
+                        "seconds_below": (
+                            None
+                            if runtime.below_since is None
+                            else round(reference - runtime.below_since, 2)
+                        ),
+                        "band": (
+                            None
+                            if runtime.last_value is None
+                            else _classify_band(runtime.last_value, config)
+                        ),
+                        "device": {
+                            "name": runtime.uni_device.name,
+                            "ip": runtime.uni_device.ip,
+                            "metric_source": runtime.uni_device.metric_source,
+                            "relay_channel": runtime.uni_device.relay_channel,
+                        },
+                        "config": {
+                            "on_threshold": config.on_threshold,
+                            "off_threshold": config.off_threshold,
+                            "on_confirm_ms": config.on_confirm_ms,
+                            "off_confirm_ms": config.off_confirm_ms,
+                            "poll_interval_ms": config.poll_interval_ms,
+                        },
+                    }
+                )
+            return rows
 
     def get_machine(self, slug: str) -> Optional[MachineRuntime]:
         with self._lock:
@@ -533,6 +594,18 @@ def _handle_poll(store: MachineStateStore, ctx: MachinePollContext) -> None:
     store.update_measurement(ctx.slug, value, True, now)
 
 
+def _refresh_http_timeout(db) -> None:
+    global _HTTP_TIMEOUT_SEC
+    raw = get_setting_value(db, "telemetry_http_timeout_sec")
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        value = _DEFAULT_HTTP_TIMEOUT_SEC
+    if not 1.0 <= value <= 30.0:
+        value = _DEFAULT_HTTP_TIMEOUT_SEC
+    _HTTP_TIMEOUT_SEC = value
+
+
 def start_telemetry_poll() -> None:
     """Launch telemetry polling thread if not already running."""
 
@@ -548,6 +621,7 @@ def start_telemetry_poll() -> None:
                 db = Session()
                 try:
                     polls_on = is_telemetry_enabled(db)
+                    _refresh_http_timeout(db)
                 finally:
                     db.close()
                 if not polls_on:

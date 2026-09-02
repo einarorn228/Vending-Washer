@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import '../kiosk/styles/kiosk.css';
 import './styles/dev-admin.css';
 import DevAdminLockScreen from './DevAdminLockScreen.jsx';
-import DevAdminShell from './DevAdminShell.jsx';
+import DevAdminShell, { TAB_IDS } from './DevAdminShell.jsx';
 import OverviewPanel from './components/OverviewPanel.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import MachineCardsPanel from './components/MachineCardsPanel.jsx';
 import RemoteControlPanel from './components/RemoteControlPanel.jsx';
+import DiagnosticsPanel from './components/DiagnosticsPanel.jsx';
 import {
   clearDevAdminKey,
   getDevAdminMachines,
@@ -15,10 +16,31 @@ import {
   getStoredDevAdminKey,
 } from './api.js';
 
+const STATUS_REFRESH_MS = 5000;
+const RESTART_PENDING_KEY = 'DEV_ADMIN_RESTART_PENDING';
+
+function readTabFromHash() {
+  if (typeof window === 'undefined') return 'overview';
+  const hash = window.location.hash.replace(/^#/, '');
+  return TAB_IDS.includes(hash) ? hash : 'overview';
+}
+
+function readRestartPending() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = window.sessionStorage.getItem(RESTART_PENDING_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function DevAdminPage() {
   const [apiKey, setApiKey] = useState(getStoredDevAdminKey());
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(readTabFromHash);
+  const [restartPending, setRestartPending] = useState(readRestartPending);
   const [status, setStatus] = useState(null);
   const [settingsGroups, setSettingsGroups] = useState([]);
   const [secretMetadata, setSecretMetadata] = useState({});
@@ -74,6 +96,19 @@ export default function DevAdminPage() {
     }
   }, []);
 
+  // Overview reports live runtime facts (kiosk state, scanner availability), so it
+  // has to keep refreshing rather than showing whatever was true at unlock time.
+  useEffect(() => {
+    if (!isUnlocked || !apiKey) return undefined;
+    const interval = setInterval(async () => {
+      const result = await getDevAdminStatus(apiKey);
+      if (result.ok && result.payload?.success) {
+        setStatus(result.payload.status);
+      }
+    }, STATUS_REFRESH_MS);
+    return () => clearInterval(interval);
+  }, [isUnlocked, apiKey]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const justGenerated = window.sessionStorage.getItem('JUST_GENERATED_API_KEY');
@@ -83,6 +118,52 @@ export default function DevAdminPage() {
       }
     }
   }, []);
+
+  // Keep the tab in the URL so a refresh (common on a kiosk tablet) stays put.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const syncFromHash = () => setActiveTab(readTabFromHash());
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = tab;
+    }
+  }
+
+  function handleRestartRequired(labels) {
+    setRestartPending((current) => {
+      const merged = Array.from(new Set([...current, ...labels]));
+      try {
+        window.sessionStorage.setItem(RESTART_PENDING_KEY, JSON.stringify(merged));
+      } catch {
+        /* sessionStorage unavailable; the banner still shows for this session */
+      }
+      return merged;
+    });
+  }
+
+  function handleDismissRestart() {
+    setRestartPending([]);
+    try {
+      window.sessionStorage.removeItem(RESTART_PENDING_KEY);
+    } catch {
+      /* nothing to clean up */
+    }
+  }
+
+  function handleLockedOut() {
+    setApiKey(null);
+    setIsUnlocked(false);
+    setStatus(null);
+    setSettingsGroups([]);
+    setMachines([]);
+    setDisabled(true);
+    setError('Beta dev/admin panel is now disabled. Re-enable it on the kiosk host to get back in.');
+  }
 
   function handleUnlocked(key) {
     setApiKey(key);
@@ -106,17 +187,34 @@ export default function DevAdminPage() {
 
   let content;
   if (activeTab === 'settings') {
-    content = <SettingsPanel apiKey={apiKey} groups={settingsGroups} secretMetadata={secretMetadata} onReload={() => loadAll(apiKey)} />;
+    content = (
+      <SettingsPanel
+        apiKey={apiKey}
+        groups={settingsGroups}
+        secretMetadata={secretMetadata}
+        onReload={() => loadAll(apiKey)}
+        onLockedOut={handleLockedOut}
+        onRestartRequired={handleRestartRequired}
+      />
+    );
   } else if (activeTab === 'machines') {
     content = <MachineCardsPanel apiKey={apiKey} machines={machines} onReload={() => loadAll(apiKey)} />;
   } else if (activeTab === 'remote_control') {
     content = <RemoteControlPanel apiKey={apiKey} />;
+  } else if (activeTab === 'diagnostics') {
+    content = <DiagnosticsPanel apiKey={apiKey} />;
   } else {
     content = <OverviewPanel apiKey={apiKey} status={status} onReload={() => loadAll(apiKey)} />;
   }
 
   return (
-    <DevAdminShell activeTab={activeTab} onTabChange={setActiveTab} onLock={handleLock}>
+    <DevAdminShell
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      onLock={handleLock}
+      restartPending={restartPending}
+      onDismissRestart={handleDismissRestart}
+    >
       {loading ? <div className="dev-admin-loading">Loading beta dev/admin data…</div> : null}
       {disabled ? <div className="dev-admin-disabled">{error}</div> : error ? <div className="dev-admin-form-error">{error}</div> : null}
       

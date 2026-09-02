@@ -83,13 +83,6 @@ General cautions:
 - Restart needed: No (read on demand)
 - Operator notes: too low => user timeouts; too high => stale armed windows.
 
-## `selection_timeout_sec`
-- Default/seed: `15`
-- Consumed by: pending start timeout in `backend/controllers/machine_control.py`
-- Risk: **Medium**
-- Restart needed: No
-- Operator notes: if absent/invalid, code falls back to hardcoded default.
-
 ## `backend_relay_enabled`
 - Default/seed:
   - missing key is ensured as `false` by `ensure_backend_relay_setting_exists` in `backend.app` startup path
@@ -118,15 +111,16 @@ General cautions:
   - Touchscreen machine selection is still available during `choose_machine` regardless of this setting.
   - Separate from `backend_relay_enabled`: this setting gates button-box input behavior, while `backend_relay_enabled` gates real relay/Shelly actuation.
 
-## `kiosk_input_mode` (legacy compatibility metadata)
-- Default/seed: may exist in older deployments as `touch` or `hardware_buttons`
-- Consumed by: legacy/compatibility metadata in `/api/ui_state` (`input_mode`)
-- Risk: **Low/Medium**
+## `kiosk_input_mode` (legacy; no runtime effect)
+- Default/seed: `hardware_buttons`
+- Consumed by: echoed on `/api/ui_state` as `input_mode`, then read by `frontend/src/kiosk/adapters/inputModeAdapter.js`
+- Risk: **Low**
 - Restart needed: No
 - Operator notes:
-  - Keep for compatibility; do not use as the source of truth for touchscreen interactivity.
-  - Touchscreen selection remains enabled in `choose_machine` even if this value is `hardware_buttons`.
-  - New deployments should prefer `button_box_enabled` for button-box enablement control.
+  - **This setting currently changes nothing.** `createInteractionPolicy` hardcodes `allowTouchMachineSelect: true`, and the one value it does derive (`allowTouchPrimaryActions`) is not consumed by any component.
+  - Exposed **read-only** in the dev/admin panel so operators can see it without being misled into tuning it.
+  - Use `button_box_enabled` to control the physical button box.
+  - Either wire this up or delete it before the production admin system; leaving dead configuration in place invites wasted debugging.
 
 ## `provider_default`
 - Default/seed: `local`
@@ -227,11 +221,64 @@ General cautions:
 - Operator notes: affects scanner responsiveness and CPU wake profile.
 
 ## `code_expiration_days`
-- Default/seed: not seeded; code fallback `0`
+- Default/seed: `0` (seeded; `0` means codes never expire)
 - Consumed by: code generation (`backend/controllers/code_generator.py`)
 - Risk: **Medium**
 - Restart needed: No
-- Operator notes: controls when codes get expiration timestamps.
+- Operator notes: only affects codes created after the change; existing codes keep their original expiry.
+
+---
+
+## Screen timing (beta tuning)
+
+All of these are read on demand, so a change from the dev/admin panel applies to the
+next kiosk interaction with no restart. Each falls back to the constant in
+`backend/controllers/machine_control.py` if the row is missing or unparseable.
+
+## `selection_notice_seconds`
+- Default/seed: `3.0` — Range: `0.5`–`30`
+- Consumed by: `machine_control.selection_notice_seconds()` → reset timer after entering `machine_starting`
+- Risk: **Low** — Restart needed: No
+- Operator notes: how long the kiosk waits on the starting screen before falling back to ready when telemetry never confirms.
+
+## `started_notice_seconds`
+- Default/seed: `3.0` — Range: `0.5`–`30`
+- Consumed by: `machine_control.started_notice_seconds()` → reset timer after a confirmed start
+- Risk: **Low** — Restart needed: No
+- Operator notes: raise if customers walk away before reading the confirmation.
+
+## `error_notice_seconds`
+- Default/seed: `3.0` — Range: `1`–`30`
+- Consumed by: `machine_control.show_error_state()` when no explicit hold is passed
+- Risk: **Low** — Restart needed: No
+
+## `kiosk_poll_interval_ms`
+- Default/seed: `1000` — Range: `250`–`10000`
+- Consumed by: served on `/api/ui_state` as `poll_interval_ms`; honoured by `frontend/src/kiosk/hooks/useUiStatePolling.js`
+- Risk: **Medium** — Restart needed: No (the kiosk re-arms its timer on the next poll)
+- Operator notes: lower feels snappier but increases Pi load; higher is calmer but laggier.
+
+---
+
+## Hardware timing (beta tuning)
+
+## `relay_pulse_duration_sec`
+- Default/seed: `1.0` — Range: `0.1`–`10`
+- Consumed by: `machine_control.relay_pulse_duration_sec()` → `send_shelly_pulse(duration=...)`
+- Risk: **High** (real relay actuation) — Restart needed: No
+- Operator notes: machines that ignore a short pulse may need a longer one. Verify wiring before experimenting with `backend_relay_enabled=true`.
+
+## `shelly_http_timeout_sec`
+- Default/seed: `3.0` — Range: `1`–`15`
+- Consumed by: pushed into `backend/utils/shelly_control.py` via `set_http_timeout()` from `machine_control._refresh_shelly_timeout()` on every actuation
+- Risk: **Medium** — Restart needed: No
+- Operator notes: raise on slow or unreliable Wi-Fi to the machines. The Gen1/Gen2 probe uses `min(2.0, this)`.
+
+## `telemetry_http_timeout_sec`
+- Default/seed: `5.0` — Range: `1`–`30`
+- Consumed by: `backend/controllers/telemetry.py` (`_refresh_http_timeout`, refreshed once per poll-loop pass)
+- Risk: **Medium** — Restart needed: No
+- Operator notes: raise on a busy network; too low shows as repeated failed telemetry reads.
 
 ---
 
@@ -273,9 +320,10 @@ Prefer API unless recovery constraints require direct DB intervention.
 
 
 ## Timeout key gotcha
-- `button_select_timeout_sec` and `selection_timeout_sec` are different settings with different code paths.
-- Only `button_select_timeout_sec` is seeded by default.
-- If you need non-default selection pending timeout, add/update `selection_timeout_sec` explicitly.
+- `button_select_timeout_sec` and `machine_reservation_minutes` are different settings with different code paths.
+- `button_select_timeout_sec` bounds the armed window for physical button-box selection (`_button_timeout_seconds`).
+- `machine_reservation_minutes` bounds how long a selected machine stays reserved (`_selection_timeout_seconds`), and it is the value the kiosk shows the customer on the starting screen.
+- There is no `selection_timeout_sec` setting. It was documented previously but no code has ever read it; use `machine_reservation_minutes`.
 
 ## `machine_card_layout`
 - Default/seed: optional/missing; runtime creates safe defaults when absent

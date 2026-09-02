@@ -64,6 +64,28 @@ Thumbs.db
 
 # Dev scratch artifacts (screenshots & ad-hoc inspection scripts)
 select_screen_preview.png
-test-sandbox/screen.jpg
-test-sandbox/get_browser_metrics.py
-test-sandbox/inspect_dom.py
+
+# Ad-hoc Puppeteer viewport sandbox. Local scratch only: it is not wired into any
+# test, script, or runbook, and its scenario ids no longer match
+# frontend/src/kiosk/dev/kioskPreviewScenarios.js.
+test-sandbox/
+
+# ============================
+# Runtime database artifacts
+# ============================
+# `*.db` only matches names ENDING in .db, and `*.bak` only names ending in .bak,
+# so a dated backup such as codes.db.bak.<timestamp> slipped past both and was
+# committed with real credentials inside it. Match the whole family instead.
+*.db.*
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3-*
+*.dump
+*.sql.gz
+
+# Dev/admin config exports: no raw secrets, but device IPs and machine/relay
+# mappings. Narrow patterns so real fixtures (package.json, docs/**/*.json) stay.
+config-export*.json
+dev-admin-export*.json
+*-config-export.json

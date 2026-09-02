@@ -9,25 +9,39 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import os
 import secrets
+import threading
 from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
 
 from backend.metrics import inc
+from backend.utils.runtime_env import running_under_tests
 from backend.models import Session
-from backend.models.setting_model import get_setting_value, parse_setting_bool
+from backend.models.setting_model import (
+    get_setting_value,
+    parse_setting_bool,
+    stage_setting_value,
+)
+from backend.models.settings_audit_model import ENTITY_SETTING, redact_audit_value
+from backend.services.diagnostics_service import metrics_snapshot, recent_scan_logs
 from backend.services.dev_admin_service import (
+    LOCKOUT_CONFIRMATION_PHRASE,
     apply_machine_order,
     apply_machine_update,
+    apply_machine_updates,
     apply_settings_changes,
+    read_audit_entries,
+    record_audit_entry,
     build_export_config,
     build_grouped_settings,
     build_machines_payload,
     build_status,
     validate_machine_order,
     validate_machine_update,
+    validate_machine_updates,
     validate_settings_changes,
 )
 
@@ -122,18 +136,48 @@ def update_settings(db):
         if "api_key" in changes:
             sensitive_updates["api_key"] = changes.pop("api_key")
 
+    # Disabling the panel is a one-way door from the browser's point of view, so it
+    # requires an explicit typed phrase and cannot ride along with a bulk save.
+    if "dev_admin_enabled" in changes and not parse_setting_bool(
+        changes["dev_admin_enabled"], default=True
+    ):
+        supplied = str(data.get("confirmation_phrase") or "").strip()
+        if supplied != LOCKOUT_CONFIRMATION_PHRASE:
+            return jsonify({
+                "success": False,
+                "message": (
+                    "Disabling the dev/admin panel locks this browser out. "
+                    f"Send confirmation_phrase=\"{LOCKOUT_CONFIRMATION_PHRASE}\" to proceed."
+                ),
+                "requires_confirmation": "dev_admin_enabled",
+                "confirmation_phrase": LOCKOUT_CONFIRMATION_PHRASE,
+                "errors": {},
+            }), 400
+
     validated, errors = validate_settings_changes(db, changes)
     if errors:
         return jsonify({"success": False, "message": "Invalid settings update.", "errors": errors}), 400
     try:
-        updated = apply_settings_changes(db, validated or {})
-        
-        if sensitive_updates:
-            from backend.models.setting_model import update_setting_value
-            for skey, sval in sensitive_updates.items():
-                update_setting_value(db, skey, str(sval))
-                updated.append({"key": skey, "value": "***", "restart_required": False})
-            
+        # Stage everything, then commit once, so a failure in the secret writes
+        # cannot leave the whitelisted changes already applied.
+        updated = apply_settings_changes(db, validated or {}, commit=False)
+
+        for skey, sval in sensitive_updates.items():
+            previous = get_setting_value(db, skey)
+            stage_setting_value(db, skey, str(sval))
+            # Secrets are audited by presence only, never by value.
+            record_audit_entry(
+                db,
+                entity_type=ENTITY_SETTING,
+                entity_key=skey,
+                field=skey,
+                old_value=redact_audit_value(previous),
+                new_value=redact_audit_value(sval),
+                is_high_risk=True,
+            )
+            updated.append({"key": skey, "value": "***", "restart_required": False})
+
+        db.commit()
     except Exception:
         db.rollback()
         raise
@@ -149,13 +193,22 @@ def generate_api_key(db):
         return jsonify({"success": False, "message": "Current API Key is incorrect or missing."}), 403
     
     new_key = secrets.token_hex(32)
-    # validate_settings_changes is bypassed for direct internal update, but we should import update_setting_value
-    from backend.models.setting_model import update_setting_value
-    update_setting_value(db, "api_key", new_key)
-    
-    import os
-    import threading
-    
+    try:
+        stage_setting_value(db, "api_key", new_key)
+        record_audit_entry(
+            db,
+            entity_type=ENTITY_SETTING,
+            entity_key="api_key",
+            field="api_key",
+            old_value=redact_audit_value(db_key),
+            new_value=redact_audit_value(new_key),
+            is_high_risk=True,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
     def update_env():
         env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", ".env"))
         if os.path.exists(env_path):
@@ -168,8 +221,12 @@ def generate_api_key(db):
                     else:
                         f.write(line)
                         
-    # Wait 1.5 seconds before updating .env so the JSON response reaches the frontend
-    threading.Timer(1.5, update_env).start()
+    # Wait 1.5 seconds before updating .env so the JSON response reaches the frontend.
+    # Never rewrite the developer's real frontend/.env from a test run: the path is
+    # anchored to __file__, so it points at the repository copy regardless of cwd or
+    # database isolation.
+    if not running_under_tests():
+        threading.Timer(1.5, update_env).start()
 
     return jsonify({"success": True, "new_api_key": new_key})
 
@@ -195,6 +252,43 @@ def update_machine(db, machine_name):
     return jsonify({"success": True, "machine": machine})
 
 
+@dev_admin_api.route("/machines", methods=["PATCH"])
+@require_dev_admin
+def update_machines(db):
+    """Save every changed machine card, and the display order, as one transaction.
+
+    The per-machine PATCH above stays for single edits; the panel's Save uses this
+    so a rejected row cannot leave the earlier machines already written.
+    """
+
+    data = request.get_json(silent=True) or {}
+    validated, errors = validate_machine_updates(db, data.get("updates"))
+    if errors:
+        return jsonify({
+            "success": False,
+            "message": "No machines were saved. Fix the errors and save again.",
+            "errors": errors,
+        }), 400
+
+    order = data.get("order")
+    if order is not None:
+        order_validated, order_errors = validate_machine_order(db, order)
+        if order_errors:
+            return jsonify({
+                "success": False,
+                "message": "No machines were saved. Fix the errors and save again.",
+                "errors": {"order": order_errors},
+            }), 400
+        order = order_validated["order"]
+
+    try:
+        payload = apply_machine_updates(db, validated or [], order)
+    except Exception:
+        db.rollback()
+        raise
+    return jsonify({"success": True, **payload})
+
+
 @dev_admin_api.route("/machine-layout", methods=["PATCH"])
 @require_dev_admin
 def update_machine_layout(db):
@@ -214,6 +308,36 @@ def update_machine_layout(db):
 @require_dev_admin
 def export_config(db):
     return jsonify({"success": True, **build_export_config(db)})
+
+
+@dev_admin_api.route("/telemetry", methods=["GET"])
+@require_dev_admin
+def telemetry(db):
+    """Live per-machine readings and thresholds, for tuning on_/off_threshold."""
+
+    from backend.controllers.telemetry import MachineStateStore
+
+    return jsonify({
+        "success": True,
+        "telemetry_enabled": parse_setting_bool(
+            get_setting_value(db, "telemetry_enabled", default="true"), default=True
+        ),
+        "machines": MachineStateStore.instance().get_diagnostic_snapshot(),
+    })
+
+
+@dev_admin_api.route("/diagnostics", methods=["GET"])
+@require_dev_admin
+def diagnostics(db):
+    """Recent scan logs, runtime metrics, and the configuration audit trail."""
+
+    limit = request.args.get("limit", default=50, type=int) or 50
+    return jsonify({
+        "success": True,
+        "scan_logs": recent_scan_logs(db, limit),
+        "metrics": metrics_snapshot(),
+        "audit_log": read_audit_entries(db, limit=100),
+    })
 
 
 @dev_admin_api.route("/kiosk_state", methods=["GET"])

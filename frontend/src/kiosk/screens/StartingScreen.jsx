@@ -73,6 +73,8 @@ function FinalStartingIcon() {
   );
 }
 
+const DEFAULT_RESERVATION_MINUTES = 10;
+
 export default function StartingScreen({
   message,
   currentMachine,
@@ -80,7 +82,11 @@ export default function StartingScreen({
   usesLeft,
   selectionSecondsLeft,
   selectionExpiresAt,
+  reservationMinutes,
 }) {
+  const windowMinutes = Number.isFinite(Number(reservationMinutes)) && Number(reservationMinutes) > 0
+    ? Number(reservationMinutes)
+    : DEFAULT_RESERVATION_MINUTES;
   const { machineId, machineLabel, selectedMachine } = resolveSelectedMachine(currentMachine, machines);
   const focusStatus = selectedMachine?.status === 'error' ? 'error' : 'reserved';
   const usesLeftMessage = usesLeft ?? null;
@@ -89,7 +95,7 @@ export default function StartingScreen({
   const countdownSeconds = resolveCountdown(selectionSecondsLeft, selectionExpiresAt);
   const hasCountdown = countdownSeconds !== null;
   const startWindowLabel = hasCountdown ? 'Start window remaining' : 'Start window';
-  const startWindowValue = hasCountdown ? formatCountdown(countdownSeconds) : '10 min';
+  const startWindowValue = hasCountdown ? formatCountdown(countdownSeconds) : `${windowMinutes} min`;
   const startWindowHint = hasCountdown
     ? 'No use is taken if time runs out.'
     : 'Scan again if the start window expires.';
@@ -131,7 +137,7 @@ export default function StartingScreen({
               <p className="kiosk-final-status-card__status-subtle">{startWindowHint}</p>
             </div>
             <p className="kiosk-final-status-card__helper">
-              You have 10 minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
+              You have {windowMinutes} minutes to choose a program and press Start. If time runs out, no use is taken and you can scan again.
             </p>
           </div>
         </MachineCard>

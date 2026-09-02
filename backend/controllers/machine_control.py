@@ -26,6 +26,7 @@ from backend.services.usage_session_service import (
     STATE_TIMED_OUT,
     update_usage_session,
 )
+from backend.utils import shelly_control
 from backend.utils.logger import get_error_logger, get_event_logger
 from backend.utils.shelly_control import (
     send_shelly_pulse,
@@ -40,11 +41,12 @@ error_logger = get_error_logger()
 SCAN_BUSY_MESSAGE = "System busy. Please wait."
 SELECT_MACHINE_MESSAGE = "Choose an available machine to continue"
 STARTING_INSTRUCTION_TEMPLATE = (
-    "{machine} is powered on. Select a program on the machine (max 10 minutes)."
+    "{machine} is powered on. Select a program on the machine (max {minutes} minutes)."
 )
 RUNNING_NOTICE_TEMPLATE = "{machine} started. You have {uses_left} uses left."
 SELECTION_NOTICE_SECONDS = 3.0
 STARTED_NOTICE_SECONDS = 3.0
+ERROR_NOTICE_SECONDS = 3.0
 # After start is confirmed, simulated “program finished” delay when telemetry is off (bench / no hardware).
 BENCH_SIMULATED_PROGRAM_SECONDS = 1.2
 SELECTION_TIMEOUT_SECONDS = 600.0
@@ -256,7 +258,7 @@ def cancel_reset_timer() -> None:
         _reset_timer = None
 
 
-def show_error_state(message: str, hold_seconds: int = 3) -> None:
+def show_error_state(message: str, hold_seconds: Optional[float] = None) -> None:
     """Display an error message briefly before returning to the ready state."""
 
     update_ui_state(
@@ -267,7 +269,7 @@ def show_error_state(message: str, hold_seconds: int = 3) -> None:
             "uses_left": None,
         }
     )
-    schedule_reset_to_ready(hold_seconds)
+    schedule_reset_to_ready(error_notice_seconds() if hold_seconds is None else hold_seconds)
 
 
 def get_machine_snapshot() -> list:
@@ -288,9 +290,14 @@ def _backend_relay_allows_actuation() -> bool:
     """When false, skip all Shelly relay ON/OFF/pulse (simulation / dry-run)."""
     db = _get_session()
     try:
-        return is_backend_relay_enabled(db)
+        allowed = is_backend_relay_enabled(db)
     finally:
         db.close()
+    if allowed:
+        # Every actuation path passes through this gate, so it is the one place
+        # that keeps the Shelly helper's timeout in sync with the setting.
+        _refresh_shelly_timeout()
+    return allowed
 
 
 def validate_code(code: str) -> Tuple[Optional[ValidatedCode], str]:
@@ -435,7 +442,7 @@ def _show_program_started(machine_id: str, uses_left: int) -> str:
         }
     )
     cancel_reset_timer()
-    schedule_reset_to_ready(STARTED_NOTICE_SECONDS)
+    schedule_reset_to_ready(started_notice_seconds())
     return message
 
 
@@ -594,6 +601,62 @@ def _selection_timeout_seconds() -> float:
     return SELECTION_TIMEOUT_SECONDS
 
 
+def _float_setting(key: str, fallback: float, minimum: float, maximum: float) -> float:
+    """Read a numeric setting, clamped to a sane range, falling back on bad input.
+
+    Mirrors _selection_timeout_seconds/_button_timeout_seconds: values are read on
+    demand so dev/admin edits apply without a restart.
+    """
+
+    db = _get_session()
+    try:
+        raw = get_setting_value(db, key)
+    finally:
+        db.close()
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return fallback
+    if value != value or value in (float("inf"), float("-inf")):
+        return fallback
+    return max(minimum, min(maximum, value))
+
+
+def selection_notice_seconds() -> float:
+    return _float_setting("selection_notice_seconds", SELECTION_NOTICE_SECONDS, 0.5, 30.0)
+
+
+def started_notice_seconds() -> float:
+    return _float_setting("started_notice_seconds", STARTED_NOTICE_SECONDS, 0.5, 30.0)
+
+
+def error_notice_seconds() -> float:
+    return _float_setting("error_notice_seconds", ERROR_NOTICE_SECONDS, 1.0, 30.0)
+
+
+def relay_pulse_duration_sec() -> float:
+    return _float_setting(
+        "relay_pulse_duration_sec", shelly_control.DEFAULT_PULSE_DURATION_SEC, 0.1, 10.0
+    )
+
+
+def _refresh_shelly_timeout() -> None:
+    """Push the configured HTTP timeout into the (DB-unaware) Shelly helper."""
+
+    shelly_control.set_http_timeout(
+        _float_setting(
+            "shelly_http_timeout_sec", shelly_control.DEFAULT_HTTP_TIMEOUT_SEC, 1.0, 15.0
+        )
+    )
+
+
+def reservation_minutes() -> int:
+    """Configured reservation window in whole minutes, for customer-facing copy."""
+
+    minutes = _selection_timeout_seconds() / 60.0
+    return max(1, int(round(minutes)))
+
+
 def _button_timeout_seconds() -> int:
     db = _get_session()
     try:
@@ -651,7 +714,11 @@ def _deactivate_button_box() -> None:
         )
         return
     if device.metric_source == "pulse":
-        ok = send_shelly_pulse(device.ip, relay=device.relay_channel or 0, duration=1)
+        ok = send_shelly_pulse(
+            device.ip,
+            relay=device.relay_channel or 0,
+            duration=relay_pulse_duration_sec(),
+        )
     else:
         ok = shelly_switch_off(device)
     if ok:
@@ -765,7 +832,9 @@ def _resolve_machine(machine_id: str):
 
 def _enter_machine_starting_state(machine_id: str, code_info: ValidatedCode) -> str:
     machine_name = _machine_display_name(machine_id)
-    message = STARTING_INSTRUCTION_TEMPLATE.format(machine=machine_name)
+    message = STARTING_INSTRUCTION_TEMPLATE.format(
+        machine=machine_name, minutes=reservation_minutes()
+    )
     update_ui_state(
         {
             "state": "machine_starting",
@@ -776,7 +845,7 @@ def _enter_machine_starting_state(machine_id: str, code_info: ValidatedCode) -> 
         }
     )
     cancel_reset_timer()
-    schedule_reset_to_ready(SELECTION_NOTICE_SECONDS)
+    schedule_reset_to_ready(selection_notice_seconds())
     events_logger.info(
         "MACHINE_STARTING_UI",
         extra={"machine": machine_id, "code": code_info.code},
@@ -814,6 +883,8 @@ def start_machine(
         backend_control_enabled = is_backend_relay_enabled(db)
     finally:
         db.close()
+    if backend_control_enabled:
+        _refresh_shelly_timeout()
     events_logger.info(
         "START_REQUESTED",
         extra={

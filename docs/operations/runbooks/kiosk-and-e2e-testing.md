@@ -190,6 +190,87 @@ Manual behavior checklist:
 
 ---
 
+## 5.3) Staged pre-beta hardware verification
+
+Run this before beta, in order. **Stage A actuates nothing** -- `backend_relay_enabled`
+stays `false` throughout, so no relay can fire. Only Stage B moves hardware, one machine at
+a time. Do not start Stage B until every Stage A step passes.
+
+Confirm you are in a safe state before starting:
+
+```bash
+source .venv/bin/activate
+sqlite3 codes.db "SELECT key,value FROM settings WHERE key='backend_relay_enabled';"
+```
+
+Expected: `backend_relay_enabled|false`.
+
+### Stage A -- no hardware actuation
+
+| # | Step | Pass condition |
+|---|------|----------------|
+| A1 | `source .venv/bin/activate && python -m backend.app` | Starts clean; telemetry thread up; no import errors |
+| A2 | Open `/dev/admin`, unlock | Every tab loads: Overview, Remote Control, Diagnostics, Settings, Machine Cards |
+| A3 | Machine Cards -- check mappings against the live DB (query below) | Shelly IP, relay channel and I4 button index correct for all four machines |
+| A4 | Machine Cards -- rename two cards, reorder, set one name empty, Save | **Nothing** saves; per-row error; all cards unchanged |
+| A5 | Fix the empty name, Save again | All changes apply together; order updates |
+| A6 | Diagnostics -- Live readings, machines idle | Values update ~1/s; chart draws; readings sit below the OFF threshold |
+| A7 | Diagnostics -- switch to Scan log / Change history / Metrics | Live polling stops; Pi load settles |
+| A8 | Diagnostics -- confirm units per machine | Washer 1 / Dryer 1 report **voltage**, Washer 2 / Dryer 2 report **power**; thresholds are all 8/3, so confirm that is right for both metrics |
+| A9 | Settings -- change a low-risk timing, review the diff, save | OLD -> NEW shown; value applies without restart |
+| A10 | Reisa connectivity (read-only, no start/complete sync) | See below |
+| A11 | Scan a real code with relays still disabled | Kiosk advances to machine selection; no relay clicks |
+
+Reisa read-only connectivity check for A10 -- this only reaches the base URL, it does not
+start or complete a session:
+
+```bash
+source .venv/bin/activate
+python - <<'REISA'
+from backend.models import Session
+from backend.models.setting_model import get_setting_value
+s = Session()
+try:
+    base = get_setting_value(s, "reisa_base_url") or ""
+    token = get_setting_value(s, "reisa_bearer_token") or ""
+finally:
+    s.close()
+print("reisa_base_url:", base or "(EMPTY - configure first)")
+print("reisa_bearer_token:", "set" if token else "(NOT SET - configure first)")
+REISA
+```
+
+If either is empty, configure Reisa (section 3) before continuing. Do not print the token.
+
+Authoritative mapping query (used by A3 and B1):
+
+```bash
+sqlite3 codes.db "SELECT m.name, m.ui_name, d.ip, m.uni_relay_channel, m.i4_button_index, m.is_enabled \
+  FROM machines m JOIN devices d ON d.id = m.uni_device_id ORDER BY m.id;"
+```
+
+### Stage B -- controlled single-machine actuation
+
+Stage B fires real relays. One machine per pass, and verify the mapping immediately before
+enabling actuation.
+
+| # | Step | Pass condition |
+|---|------|----------------|
+| B1 | Re-read the mapping for the **one** machine under test (name -> Shelly IP -> relay channel) | Matches the query below and the physical label on the unit |
+| B2 | Physically confirm which unit that IP is wired to | You can point at the machine that should move |
+| B3 | Enable actuation: set `backend_relay_enabled = true` in `/dev/admin` -> Settings (acknowledge the warning) | Saved; applies without restart |
+| B4 | Scan a code and select **only** that machine | The expected physical machine energises; no other unit reacts |
+| B5 | Check the kiosk copy | Reservation window matches `machine_reservation_minutes` |
+| B6 | Diagnostics -- watch the machine run | Reading rises above the ON threshold; "Above for" climbs; state becomes in-use |
+| B7 | Let the machine finish, or stop it | Reading drops below OFF threshold; kiosk returns to waiting |
+| B8 | Repeat B1-B7 for the next machine | One at a time; never two in the same pass |
+| B9 | Only if a pulse looks wrong: change `relay_pulse_duration_sec`, retest, then **restore the original value** | Documented in Diagnostics -> Change history |
+| B10 | When finished, restore any temporary tuning changes | Change history shows the value back at its intended setting |
+| B11 | Decide the end state for `backend_relay_enabled` | Left `true` for beta, or back to `false` for bench work -- deliberately, not by accident |
+
+If Dryer 2 (`192.168.107.14`) or the i4 box does not respond, confirm the device is on the
+network before treating it as a software fault -- both have been offline before.
+
 ## 6) Device IPs and topology
 
 Default seeded IPs live in `backend/setup/seed_machines.py`. If your Shellys use another subnet, update the `devices` table (or re-seed on a fresh DB) so telemetry and relays hit real hardware.

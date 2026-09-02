@@ -15,14 +15,19 @@ def get_setting_value(session, key, default=None):
     return setting.value if setting else default
 
 
-def update_setting_value(session, key, value):
-    """Helper function to update or add a new setting."""
+def stage_setting_value(session, key, value):
+    """Upsert a setting without committing, so the caller owns the transaction."""
     setting = session.query(Settings).filter_by(key=key).first()
     if setting:
         setting.value = value
     else:
         setting = Settings(key=key, value=value)
         session.add(setting)
+
+
+def update_setting_value(session, key, value):
+    """Helper function to update or add a new setting."""
+    stage_setting_value(session, key, value)
     session.commit()
 
 

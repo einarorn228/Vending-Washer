@@ -61,14 +61,22 @@ Vending Washer is a touch-first kiosk system with:
 
 ## Frontend role
 Frontend is intentionally thin:
-- polls backend `/api/ui_state` every second,
+- polls backend `/api/ui_state` at the backend-supplied cadence (`poll_interval_ms`, default 1s),
 - maps backend state to screen components,
 - sends API key from env/localStorage.
 
 Primary files:
 - `frontend/src/App.jsx`
 - `frontend/src/api/backend.js`
+- `frontend/src/kiosk/hooks/useUiStatePolling.js`
 - `frontend/src/components/*`
+
+### Dev/admin panel (`/dev/admin`)
+- `frontend/src/dev-admin/DevAdminPage.jsx` — unlock, tab routing (URL hash), status refresh
+- `frontend/src/dev-admin/components/SettingsPanel.jsx` — whitelist editor, filter, diff review
+- `frontend/src/dev-admin/components/DiagnosticsPanel.jsx` — live telemetry readings vs thresholds, scan log, change history, metrics
+- `frontend/src/dev-admin/components/DangerZonePanel.jsx` — `dev_admin_enabled` lockout gate
+- Backend: `backend/controllers/dev_admin_api.py`, `backend/services/dev_admin_service.py`
 
 ---
 
@@ -158,8 +166,21 @@ Model definitions: `backend/models/*.py`
 - Code: `backend/providers/reisa_provider.py`, `backend/services/reisa_*`
 
 ### Settings/config change planning
-- Docs: settings catalog
-- Code: `backend/models/setting_model.py`, readers in relevant modules
+- Docs: settings catalog, beta dev/admin panel runbook
+- Code: `backend/services/dev_admin_service.py` (`SETTING_SCHEMA` is the whitelist and the
+  source of truth for type/range/risk), `backend/models/setting_model.py`, readers in relevant modules
+- Timing knobs read on demand: `machine_control._float_setting` and friends; telemetry timeout in
+  `telemetry._refresh_http_timeout`; Shelly timeout pushed via `shelly_control.set_http_timeout`
+
+### Tuning telemetry thresholds during beta
+- Use the Diagnostics tab at `/dev/admin#diagnostics` for live readings against thresholds
+- Code: `telemetry.MachineStateStore.get_diagnostic_snapshot`, `telemetry._classify_band`
+  (bands are `high` / `mid` / `low`)
+
+### Auditing a config change
+- Table: `settings_audit_logs` (`backend/models/settings_audit_model.py`)
+- Written from `dev_admin_service.apply_settings_changes` / `apply_machine_update`, in the same
+  transaction as the change
 
 ### Test failures
 - Docs: install/update runbooks (validation sections)
@@ -171,3 +192,6 @@ Model definitions: `backend/models/*.py`
 - Startup/bootstrap calls exist in both `backend/app.py` and `backend/flask_server.py`.
 - `run-backend.sh` venv path differs from README conventions.
 - Some helper scripts under `Testing_Files/` are legacy and should be used cautiously.
+- `kiosk_input_mode` is dead configuration: it is served on `/api/ui_state` and normalised by
+  `inputModeAdapter.js`, but the only value derived from it (`allowTouchPrimaryActions`) is not
+  consumed by any component. Exposed read-only in the dev/admin panel; wire it up or delete it.

@@ -12,6 +12,26 @@ logger = logging.getLogger(__name__)
 RETRY_ATTEMPTS = 2
 API_GEN_CACHE: Dict[str, str] = {}
 
+# Default HTTP timeout for relay commands, in seconds. This module deliberately
+# has no database access; callers that know the configured value push it in via
+# set_http_timeout() (see machine_control._refresh_shelly_timeout).
+DEFAULT_HTTP_TIMEOUT_SEC = 3.0
+HTTP_TIMEOUT_SEC = DEFAULT_HTTP_TIMEOUT_SEC
+
+
+def set_http_timeout(seconds) -> float:
+    """Set the HTTP timeout used for Shelly relay commands. Returns the value applied."""
+
+    global HTTP_TIMEOUT_SEC
+    try:
+        value = float(seconds)
+    except (TypeError, ValueError):
+        value = DEFAULT_HTTP_TIMEOUT_SEC
+    if not 0 < value <= 60:
+        value = DEFAULT_HTTP_TIMEOUT_SEC
+    HTTP_TIMEOUT_SEC = value
+    return HTTP_TIMEOUT_SEC
+
 
 def detect_api_gen(ip: str) -> str:
     """Detect whether a Shelly device uses the Gen1 or Gen2 API."""
@@ -22,7 +42,8 @@ def detect_api_gen(ip: str) -> str:
 
     try:
         response = requests.get(
-            f"http://{ip}/rpc/Shelly.GetDeviceInfo", timeout=2  # type: ignore[arg-type]
+            f"http://{ip}/rpc/Shelly.GetDeviceInfo",
+            timeout=min(2.0, HTTP_TIMEOUT_SEC),  # type: ignore[arg-type]
         )
         if response.status_code == 200:
             try:
@@ -44,7 +65,7 @@ def _perform_request(url: str, ip: str, action: str) -> Tuple[bool, int]:
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         started = time.perf_counter()
         try:
-            response = requests.get(url, timeout=3)
+            response = requests.get(url, timeout=HTTP_TIMEOUT_SEC)
             latency_ms = int((time.perf_counter() - started) * 1000)
             observe_ms("shelly_request_ms", latency_ms, device=ip, action=action)
             if response.status_code == 200:
@@ -144,7 +165,10 @@ def shelly_switch_toggle(device, relay_override=None) -> bool:
         return False
 
 
-def send_shelly_pulse(ip, relay=0, duration=1):
+DEFAULT_PULSE_DURATION_SEC = 1.0
+
+
+def send_shelly_pulse(ip, relay=0, duration=DEFAULT_PULSE_DURATION_SEC):
     """
     Sends a short pulse to the specified Shelly relay.
     Turns the relay ON, waits for `duration` seconds, then turns it OFF.
