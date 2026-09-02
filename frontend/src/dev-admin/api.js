@@ -138,3 +138,7 @@ export function getDevAdminDiagnostics(apiKey, limit = 50) {
 export function remoteReset(apiKey) {
   return devAdminRequest('/remote_reset', apiKey, { method: 'POST', body: JSON.stringify({}) });
 }
+
+export function getHelpManifest(apiKey) {
+  return devAdminRequest('/help/manifest', apiKey);
+}

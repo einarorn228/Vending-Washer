@@ -707,3 +707,104 @@
     align-items: stretch;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Help Hub: guide view, block-renderer output, badges, fallback notice. */
+/* Not the per-setting tooltip — those own .dev-admin-help*.            */
+/* ------------------------------------------------------------------ */
+
+.dev-admin-guide-view {
+  display: grid;
+  gap: 1rem;
+  line-height: 1.55;
+}
+
+.dev-admin-guide-view__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.dev-admin-guide-view__risk { margin-left: 0.25rem; }
+
+.dev-admin-guide-view__fallback { margin: 0; }
+
+.dev-admin-guide-view section h3 { margin: 0 0 0.5rem; }
+
+.dev-admin-guide-view p,
+.dev-admin-guide-view ul,
+.dev-admin-guide-view ol {
+  margin: 0 0 0.85rem;
+  color: var(--kiosk-text, #f3f6fc);
+}
+
+.dev-admin-guide-view ul,
+.dev-admin-guide-view ol { padding-left: 1.4rem; }
+
+.dev-admin-guide-view li { margin: 0.3rem 0; }
+
+.dev-admin-guide-link {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: var(--kiosk-accent, #70c8ff);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dev-admin-guide-code-block {
+  background: #06111f;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #dbeafe;
+  margin: 0 0 0.85rem;
+}
+
+.dev-admin-guide-callout {
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin: 0 0 0.85rem;
+  border: 1px solid rgba(112, 200, 255, 0.35);
+  background: rgba(112, 200, 255, 0.1);
+  color: #cceeff;
+}
+
+.dev-admin-guide-callout p:last-child { margin-bottom: 0; }
+
+.dev-admin-guide-callout--note {
+  border-color: rgba(112, 200, 255, 0.35);
+  background: rgba(112, 200, 255, 0.1);
+  color: #cceeff;
+}
+
+.dev-admin-guide-callout--warning {
+  border-color: rgba(255, 210, 124, 0.35);
+  background: rgba(255, 210, 124, 0.12);
+  color: #ffe2a8;
+}
+
+.dev-admin-guide-callout--danger {
+  border-color: rgba(255, 133, 133, 0.5);
+  background: rgba(255, 133, 133, 0.13);
+  color: #ffc7c7;
+}
+
+.dev-admin-guide-view__related {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1rem;
+}
+
+.dev-admin-guide-view__related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.dev-admin-guide-view__related-link { font-weight: 700; }
