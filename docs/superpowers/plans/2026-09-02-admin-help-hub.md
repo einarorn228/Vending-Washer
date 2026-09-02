@@ -2480,10 +2480,26 @@ def render_report_text(report, locale="is"):
     return "\n".join(lines)
 ```
 
+> **Corrections applied during execution (Task 9 is complete; the committed
+> `backend/services/support_service.py` and `backend/tests/test_support_service.py` at `da09bd2`
+> are authoritative over the snippets above).**
+> 1. `SAFE_SETTING_KEYS` was decorative — `_settings_group` never consulted it. Shipped code
+>    raises `ValueError` at definition time for any non-allowlisted key (so `GROUP_HANDLERS`
+>    cannot be built with a bad group) and re-checks at read time.
+> 2. `guide_id` was unhardened — a non-string value raised `TypeError` out of
+>    `build_support_report`. Shipped code only passes a non-empty `str` to `get_guide`; anything
+>    else resolves to core groups with `guide_id: None`; `guide.get("id")` replaces `guide["id"]`.
+> 3. The composition, scoping and secret-sweep tests could pass on an EMPTY `MachineStateStore`
+>    (`assert {}` / `skipTest` escape hatches). Shipped tests seed two machines via
+>    `MachineRuntime`/`DeviceInfo`/`MachineConfigInfo`, reset the store in `tearDown`, assert
+>    unconditionally, and sweep `groups=tuple(GROUP_HANDLERS)` for secrets in both structured and
+>    rendered forms. Added `test_settings_group_rejects_non_allowlisted_keys_at_definition` and
+>    `test_malformed_guide_id_falls_back_to_core_without_raising` (23 tests, 0 skipped).
+
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_support_service.py -v`
-Expected: PASS (21 tests)
+Expected: PASS (23 tests, 0 skipped)
 
 - [ ] **Step 5: Commit**
 
