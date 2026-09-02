@@ -1931,10 +1931,26 @@ def get_provenance():
     }
 ```
 
+> **Corrections applied during execution (Task 8 is complete; the committed
+> `backend/services/help_service.py` at `3c5ea99` is authoritative over the snippet above).**
+> The snippet's `_load()` let two exception paths escape the failure boundary — the exact
+> property this task exists to guarantee. Both are closed at the load boundary, so every
+> accessor is safe by construction:
+> 1. `payload.get("schema_version")` ran outside the `try/except`; a valid-JSON non-object
+>    artifact (`[]`, `42`, `null`) raised `AttributeError`. Shipped code checks
+>    `isinstance(payload, dict)` first and reports `manifest_unreadable` (found by the
+>    implementer, who correctly stopped before committing).
+> 2. A dict manifest with a matching `schema_version` but a non-dict `"guides"` was cached, and
+>    `get_guide()` then raised. Shipped code checks `isinstance(guides, dict)` in `_load()`
+>    after the schema check and reports `manifest_unreadable`; `get_guide()` is unchanged.
+>
+> Both are pinned by subtests (`test_non_object_json_degrades_without_raising`,
+> `test_malformed_guides_field_degrades_without_raising`); 9 test methods / 8 subtests.
+
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_service.py -v && python -m pytest backend/tests/ -q`
-Expected: PASS (7 tests), then the whole suite green
+Expected: PASS (9 test methods / 8 subtests), then the whole suite green
 
 - [ ] **Step 5: Commit**
 
