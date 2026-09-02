@@ -108,6 +108,8 @@ markdown-it-py's one genuine edge is certified CommonMark strictness. That matte
 | `useHelpManifest.js` | fetch once, cache, expose load error |
 | `helpSearch.js` | fold, tokenise, score, rank |
 | `helpStrings.js` | Icelandic + English UI chrome |
+| `resolveLocale.js` | pure `resolveLocale(guide, requested)` — stub/fallback rule, node-tested (added during Task 13 review) |
+| `blockDescriptors.js` | pure block → descriptor conversion, node-tested |
 | `BlockRenderer.jsx` | block schema → React elements |
 | `GuideView.jsx` | one guide: header, fallback notice, blocks, checklist, related |
 | `ChecklistPanel.jsx` | check results state |
@@ -3466,6 +3468,11 @@ that only turns descriptors into elements. No component-test toolchain is added.
 > === false`; any other non-ok → `payload.message`. `useHelpManifest` never throws, fetches
 > once per `apiKey`, and exposes `{manifest, status, error, loading}` where `error` is the
 > reason code or message string, or `''`.
+>
+> *Corrections applied during execution (Task 13 review):* `resolveLocale` was first written
+> inside `GuideView.jsx`, where `node --test` cannot reach it. It now lives in plain
+> `resolveLocale.js` with `resolveLocale.test.js` (requested+non-stub, requested+stub,
+> requested missing, requested undefined, canonical entry absent). `GuideView.jsx` imports it.
 >
 > *Strings*: `t(locale, key)` returns `STRINGS[locale]?.[key] ?? STRINGS.en[key] ?? key`.
 > No other UI copy is introduced; technical identifiers (setting keys, guide ids, anchors)
