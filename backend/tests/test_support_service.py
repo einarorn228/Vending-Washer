@@ -99,12 +99,92 @@ class SupportReportTests(unittest.TestCase):
         self.assertIn("manifest_digest", report["help"])
         self.assertIn("build_id", report["help"])
 
-    def test_locale_fields_are_recorded_for_translation_backlog(self):
-        report = support_service.build_support_report(
-            self.db, locale="is", locale_shown="en"
-        )
+    # ----- locale_shown is server-owned -----
+
+    def _guide(self, canonical="en", locales=None, checks=None):
+        """Synthetic compiled guide for locale/checklist derivation tests."""
+        payload = {}
+        for loc, kind in (locales or {"en": "full"}).items():
+            if kind == "full":
+                payload[loc] = {"stub": False, "translation_status": "published",
+                                "sections": [], "checks": checks or []}
+            elif kind == "stub":
+                payload[loc] = {"stub": True, "translation_status": "published"}
+        return {"id": "g", "canonical_locale": canonical, "diagnostics": [], "locales": payload}
+
+    def test_locale_shown_is_requested_when_full_translation_exists(self):
+        guide = self._guide(locales={"en": "full", "is": "full"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "is")
+
+    def test_locale_shown_falls_back_to_canonical_for_a_stub(self):
+        guide = self._guide(locales={"en": "full", "is": "stub"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "en")
+
+    def test_locale_shown_falls_back_to_canonical_when_translation_withheld_or_absent(self):
+        guide = self._guide(locales={"en": "full"})   # `is` withheld/absent
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "en")
+
+    def test_locale_shown_is_requested_for_canonical_locale(self):
+        guide = self._guide(locales={"en": "full"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "en"), "en")
+
+    def test_locale_shown_without_a_guide_is_the_requested_locale(self):
+        report = support_service.build_support_report(self.db, locale="is")
+        self.assertEqual(report["locale_requested"], "is")
+        self.assertEqual(report["locale_shown"], "is")
+
+    def test_report_derives_locale_shown_from_the_resolved_guide(self):
+        from unittest.mock import patch
+        guide = self._guide(locales={"en": "full", "is": "stub"})
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", locale="is")
         self.assertEqual(report["locale_requested"], "is")
         self.assertEqual(report["locale_shown"], "en")
+
+    # ----- machine_id is normalised provenance -----
+
+    def test_reported_machine_id_is_normalised_or_null(self):
+        _seed_two_machines()
+        cases = [(" dryer1 ", "dryer1"), ("dryer1", "dryer1"), ("no-such", None),
+                 ("", None), ("   ", None), ({}, None), ([], None), (0, None),
+                 (7, None), (None, None)]
+        for raw, expected in cases:
+            with self.subTest(machine_id=raw):
+                report = support_service.build_support_report(
+                    self.db, machine_id=raw, groups=("machine.identity",))
+                self.assertEqual(report["machine_id"], expected)
+                if expected:
+                    self.assertEqual(sorted(report["data"]["machines"]), [expected])
+
+    # ----- checklist evidence belongs to the guide -----
+
+    def test_checks_are_discarded_without_a_guide(self):
+        report = support_service.build_support_report(
+            self.db, checks=[{"check_id": "telemetry-enabled", "result": "ok"}])
+        self.assertEqual(report["checks"], [])
+
+    def test_only_checks_declared_by_the_guide_survive(self):
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "telemetry-enabled"}, {"id": "current-reading"}])
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", checks=[
+                {"check_id": "telemetry-enabled", "result": "ok"},
+                {"check_id": "invented", "result": "problem"},
+                {"check_id": "current-reading", "result": "banana"},
+                {"check_id": "current-reading", "result": "unsure"},
+            ])
+        self.assertEqual(report["checks"], [
+            {"check_id": "telemetry-enabled", "result": "ok"},
+            {"check_id": "current-reading", "result": "unsure"},
+        ])
+
+    def test_check_evidence_is_capped(self):
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "c"}])
+        flood = [{"check_id": "c", "result": "ok"}] * (support_service.MAX_CHECKS + 20)
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", checks=flood)
+        self.assertLessEqual(len(report["checks"]), support_service.MAX_CHECKS)
 
     def test_unknown_guide_id_falls_back_to_core_groups(self):
         report = support_service.build_support_report(self.db, guide_id="../../etc/passwd")
@@ -112,9 +192,16 @@ class SupportReportTests(unittest.TestCase):
         self.assertIn("kiosk", report["data"])
 
     def test_checklist_evidence_is_carried_through(self):
-        report = support_service.build_support_report(
-            self.db, checks=[{"check_id": "telemetry-enabled", "result": "problem"}]
-        )
+        # Checklist evidence only survives when it belongs to a resolved guide
+        # (boundary rule 3), so this pins the "carried through" half of that rule
+        # against a guide that declares the check_id being reported.
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "telemetry-enabled"}])
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(
+                self.db, guide_id="g",
+                checks=[{"check_id": "telemetry-enabled", "result": "problem"}],
+            )
         self.assertEqual(report["checks"][0]["result"], "problem")
 
     def test_invalid_check_result_is_dropped(self):

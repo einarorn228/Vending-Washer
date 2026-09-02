@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 CORE_GROUPS = ("core", "kiosk.state", "settings.provider", "scanner.status")
 
+MAX_CHECKS = 50
+MAX_ID_LEN = 128
+
 SAFE_SETTING_KEYS = (
     "telemetry_enabled", "backend_relay_enabled", "button_box_enabled",
     "kiosk_input_mode", "provider_default", "provider_reisa_enabled",
@@ -52,6 +55,38 @@ def _snapshot(machine_id):
     if not isinstance(machine_id, str) or not machine_id.strip():
         return []
     return [r for r in rows if r.get("id") == machine_id.strip()]
+
+
+def resolve_locale_shown(guide, requested):
+    """Server-owned: which locale's body the operator was actually shown.
+
+    A full published translation in the requested locale is shown as-is. A stub,
+    a withheld translation, or an absent locale all fall back to the canonical
+    body, and the report must say so — this field is how translation gaps are
+    measured, so the client can never assert it.
+    """
+    if not guide:
+        return requested
+    payload = (guide.get("locales") or {}).get(requested)
+    if payload and not payload.get("stub") and payload.get("translation_status") == "published":
+        return requested
+    return guide.get("canonical_locale") or requested
+
+
+def normalise_machine_id(machine_id):
+    """The canonical id actually used for scoping, or None.
+
+    Never echoes raw client input: a value only appears if it names a machine in the
+    current diagnostic snapshot.
+    """
+    if not isinstance(machine_id, str):
+        return None
+    candidate = machine_id.strip()
+    if not candidate or len(candidate) > MAX_ID_LEN:
+        return None
+    from backend.controllers.telemetry import MachineStateStore
+    known = {r.get("id") for r in MachineStateStore.instance().get_diagnostic_snapshot()}
+    return candidate if candidate in known else None
 
 
 def _machine_group(group):
@@ -138,24 +173,41 @@ def _resolve_groups(guide_id, groups):
     return guide, resolved
 
 
-def _clean_checks(checks):
+def _declared_check_ids(guide):
+    if not guide:
+        return set()
+    canonical = (guide.get("locales") or {}).get(guide.get("canonical_locale") or "", {})
+    return {c.get("id") for c in (canonical.get("checks") or []) if isinstance(c, dict)}
+
+
+def _clean_checks(checks, guide):
+    """Keep only evidence that belongs to the resolved guide.
+
+    No guide → no trusted checklist → nothing is kept. Result vocabulary is frozen;
+    check ids must be ones the guide actually declares; the list is capped.
+    """
+    allowed = _declared_check_ids(guide)
+    if not allowed or not isinstance(checks, list):
+        return []
     cleaned = []
-    for check in checks or []:
+    for check in checks[:MAX_CHECKS]:
         if not isinstance(check, dict):
             continue
         check_id, result = check.get("check_id"), check.get("result")
-        if result in CHECK_RESULTS and isinstance(check_id, str) and check_id:
+        if (isinstance(check_id, str) and check_id in allowed
+                and result in CHECK_RESULTS):
             cleaned.append({"check_id": check_id, "result": result})
     return cleaned
 
 
 def build_support_report(db, guide_id=None, machine_id=None, checks=None,
-                         locale="is", locale_shown=None, groups=None):
+                         locale="is", groups=None):
     guide, resolved = _resolve_groups(guide_id, groups)
+    scoped_id = normalise_machine_id(machine_id)
     data = {}
     for group in resolved:
         try:
-            GROUP_HANDLERS[group](db, machine_id, data)
+            GROUP_HANDLERS[group](db, scoped_id if scoped_id else machine_id, data)
         except Exception:  # one broken group must not sink the whole report
             # A fixed marker only: never the exception text, which could carry
             # internal paths or values the allowlist exists to keep out.
@@ -168,10 +220,10 @@ def build_support_report(db, guide_id=None, machine_id=None, checks=None,
         "help": get_provenance(),
         "guide_id": guide.get("id") if guide else None,
         "locale_requested": locale,
-        "locale_shown": locale_shown or locale,
+        "locale_shown": resolve_locale_shown(guide, locale),
         "groups": resolved,
-        "machine_id": machine_id,
-        "checks": _clean_checks(checks),
+        "machine_id": scoped_id,
+        "checks": _clean_checks(checks, guide),
         "data": data,
     }
 

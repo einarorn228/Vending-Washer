@@ -44,6 +44,18 @@ from backend.services.dev_admin_service import (
     validate_machine_updates,
     validate_settings_changes,
 )
+from backend.help.schema import LOCALES
+from backend.services.help_service import (
+    get_guide as get_help_guide,
+    get_manifest as get_help_manifest,
+    get_status as get_help_status,
+)
+from backend.services.support_service import (
+    MAX_CHECKS,
+    MAX_ID_LEN,
+    build_support_report,
+    render_report_text,
+)
 
 DEV_ADMIN_DISABLED_MESSAGE = "Beta dev/admin panel is disabled."
 API_KEY_HEADER = "X-API-KEY"
@@ -302,6 +314,91 @@ def update_machine_layout(db):
         db.rollback()
         raise
     return jsonify({"success": True, **payload})
+
+
+def _no_store(response):
+    """Operational documentation never needs HTTP persistence; the browser keeps it in memory."""
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
+def _help_json(payload, status=200):
+    return _no_store(jsonify(payload)), status
+
+
+@dev_admin_api.route("/help/status", methods=["GET"])
+@require_dev_admin
+def help_status(db):
+    return _help_json({"success": True, "status": get_help_status()})
+
+
+@dev_admin_api.route("/help/manifest", methods=["GET"])
+@require_dev_admin
+def help_manifest(db):
+    manifest = get_help_manifest()
+    if manifest is None:
+        # Controlled degradation: reason code only, never exception text or paths.
+        return _help_json({
+            "success": False,
+            "message": "Help content is unavailable.",
+            "reason": get_help_status().get("reason"),
+        }, 503)
+    return _help_json({"success": True, "manifest": manifest, "status": get_help_status()})
+
+
+def _bad_request(message):
+    return _help_json({"success": False, "message": message}, 400)
+
+
+@dev_admin_api.route("/support_report", methods=["POST"])
+@require_dev_admin
+def support_report(db):
+    """Assemble an escalation report.
+
+    HTTP is stricter than the service: a typo in guide_id is a 404, not a silent
+    generic report. Diagnostic groups come from the guide's compiled manifest entry;
+    `groups`, `locale_shown` and any other scope- or provenance-shaping key in the
+    body are ignored. The report is built inside the per-request Session that
+    require_dev_admin supplies, and never writes.
+    """
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return _bad_request("Request body must be a JSON object.")
+
+    guide_id = data.get("guide_id")
+    if guide_id is not None:
+        if not isinstance(guide_id, str) or not guide_id.strip() or len(guide_id) > MAX_ID_LEN:
+            return _bad_request("guide_id must be a non-empty string.")
+        guide_id = guide_id.strip()
+        if get_help_guide(guide_id) is None:
+            return _help_json({"success": False, "message": "Unknown guide."}, 404)
+
+    machine_id = data.get("machine_id")
+    if machine_id is not None and (not isinstance(machine_id, str) or len(machine_id) > MAX_ID_LEN):
+        return _bad_request("machine_id must be a string.")
+
+    locale = data.get("locale", "is")
+    if locale not in LOCALES:
+        return _bad_request(f"locale must be one of {', '.join(LOCALES)}.")
+
+    checks = data.get("checks", [])
+    if not isinstance(checks, list) or len(checks) > MAX_CHECKS:
+        return _bad_request(f"checks must be a list of at most {MAX_CHECKS} entries.")
+    for check in checks:
+        if isinstance(check, dict):
+            cid = check.get("check_id")
+            if isinstance(cid, str) and len(cid) > MAX_ID_LEN:
+                return _bad_request("check_id too long.")
+
+    report = build_support_report(
+        db, guide_id=guide_id, machine_id=machine_id, checks=checks, locale=locale,
+    )
+    return _help_json({
+        "success": True,
+        "report": report,
+        "text": render_report_text(report, report["locale_requested"]),
+    })
 
 
 @dev_admin_api.route("/export-config", methods=["GET"])
