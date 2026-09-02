@@ -3084,10 +3084,29 @@ def support_report(db):
     })
 ```
 
+> **Corrections applied during execution (Task 10 is complete; the committed files at `ddb390f`
+> are authoritative over the snippets above).**
+> 1. `normalise_machine_id` read `MachineStateStore` OUTSIDE the per-group failure boundary, so a
+>    store fault (e.g. `TypeError` in `_classify_band` on a NULL threshold) could 500 a
+>    machine-scoped report. Shipped code wraps the read; a fault yields `machine_id: null` and a
+>    fixed-text warning.
+> 2. `result in CHECK_RESULTS` raised `TypeError` for unhashable values (`{}`, `[]`). Shipped code
+>    guards `isinstance(result, str)` in the service AND rejects non-string `result` with 400 in the
+>    route; `check_id` whitespace is stripped (consistent with `machine_id`).
+> 3. `checks: null` is treated as omitted (`[]`), consistent with `guide_id`/`machine_id` null.
+> 4. The pre-existing `test_checklist_evidence_is_carried_through` and
+>    `test_invalid_check_result_is_dropped` were vacuous under rule 3 (no guide → `[]`); both now
+>    mock a declaring guide. The brief's "24" API tests was a miscount — the file has 22 + 4 added
+>    in the fix round (26). Service tests: 32.
+>
+> Known Minor (deferred): `test_declared_check_survives_end_to_end` patches
+> `help_service.get_guide`, but the route imports it as `get_help_guide` (name-bound at import), so
+> that half of the patch is inert; the filtering assertion is still real.
+
 - [ ] **Step 8: Run all tests**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_api.py backend/tests/test_support_service.py -v && python -m pytest backend/tests/ -q`
-Expected: API tests all pass (24), service tests 32 pass; full suite green.
+Expected: API tests all pass (26), service tests 32 pass; full suite green.
 
 - [ ] **Step 9: Commit**
 
