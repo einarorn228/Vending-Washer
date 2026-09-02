@@ -3,6 +3,7 @@ import '../kiosk/styles/kiosk.css';
 import './styles/dev-admin.css';
 import DevAdminLockScreen from './DevAdminLockScreen.jsx';
 import DevAdminShell, { TAB_IDS } from './DevAdminShell.jsx';
+import { parseHelpHash } from './help/helpRouting.js';
 import OverviewPanel from './components/OverviewPanel.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import MachineCardsPanel from './components/MachineCardsPanel.jsx';
@@ -19,10 +20,9 @@ import {
 const STATUS_REFRESH_MS = 5000;
 const RESTART_PENDING_KEY = 'DEV_ADMIN_RESTART_PENDING';
 
-function readTabFromHash() {
-  if (typeof window === 'undefined') return 'overview';
-  const hash = window.location.hash.replace(/^#/, '');
-  return TAB_IDS.includes(hash) ? hash : 'overview';
+function readHelpRoute() {
+  if (typeof window === 'undefined') return { tab: 'overview', guideId: null, anchor: null, invalid: false };
+  return parseHelpHash(window.location.hash, TAB_IDS);
 }
 
 function readRestartPending() {
@@ -39,7 +39,9 @@ function readRestartPending() {
 export default function DevAdminPage() {
   const [apiKey, setApiKey] = useState(getStoredDevAdminKey());
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [activeTab, setActiveTab] = useState(readTabFromHash);
+  const [activeTab, setActiveTab] = useState(() => readHelpRoute().tab);
+  // Task 15 consumes guideId/anchor/invalid to render a guide or the not-found state.
+  const [helpRoute, setHelpRoute] = useState(readHelpRoute);
   const [restartPending, setRestartPending] = useState(readRestartPending);
   const [status, setStatus] = useState(null);
   const [settingsGroups, setSettingsGroups] = useState([]);
@@ -122,7 +124,11 @@ export default function DevAdminPage() {
   // Keep the tab in the URL so a refresh (common on a kiosk tablet) stays put.
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const syncFromHash = () => setActiveTab(readTabFromHash());
+    const syncFromHash = () => {
+      const route = readHelpRoute();
+      setActiveTab(route.tab);
+      setHelpRoute(route);
+    };
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
   }, []);
@@ -203,6 +209,13 @@ export default function DevAdminPage() {
     content = <RemoteControlPanel apiKey={apiKey} />;
   } else if (activeTab === 'diagnostics') {
     content = <DiagnosticsPanel apiKey={apiKey} />;
+  } else if (activeTab === 'help') {
+    // Placeholder only; Task 15 replaces this with the real Help panel.
+    content = (
+      <section className="dev-admin-panel">
+        <h2>Hjálp</h2>
+      </section>
+    );
   } else {
     content = <OverviewPanel apiKey={apiKey} status={status} onReload={() => loadAll(apiKey)} />;
   }

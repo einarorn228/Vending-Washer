@@ -6,6 +6,7 @@ const TABS = [
   { id: 'diagnostics', label: 'Diagnostics' },
   { id: 'settings', label: 'Settings' },
   { id: 'machines', label: 'Machine Cards' },
+  { id: 'help', label: 'Hjálp' },
 ];
 
 export const TAB_IDS = TABS.map((tab) => tab.id);
