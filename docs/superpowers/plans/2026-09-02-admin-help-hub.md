@@ -3747,6 +3747,16 @@ readings → `tune-thresholds`; each Settings group header → its group guide;
 > *GuideView props.* From Tasks 13/14: `guide, locale, onOpenGuide, titleFor?, apiKey,
 > machineId?`. `titleFor` is derived from the manifest in `HelpPanel`/`HelpDrawer`.
 >
+> *Corrections applied during execution (Task 15 review):* the `notFound` gate is
+> `helpRoute.invalid || (helpRoute.guideId && !guide)` — a malformed id (`invalid: true`,
+> `guideId: null`) must not fall through to the landing. `GuideView` gained an optional
+> `anchor` prop with a post-render effect that calls `scrollIntoView` on the section element
+> (`HelpPanel` passes `helpRoute.anchor`, `HelpDrawer` passes its `anchor`) — the address-bar
+> hash is `#help/<id>/<anchor>`, so native anchor scrolling can never fire. `useHelpManifest`
+> keeps a **module-scope** cache keyed by `apiKey` (resolved result or in-flight promise,
+> cleared on failure) so the drawer and the tab share one fetch; the drawer shows a loading
+> line rather than nothing while it resolves. `LocaleToggle` enumerates `manifest.locales`.
+>
 > *Categories.* The category list uses the frozen category vocabulary in its manifest
 > order of first appearance, labelled with short Icelandic/English strings added to
 > `helpStrings.js` (`category_<id>` keys) — the only new UI copy this task introduces.
