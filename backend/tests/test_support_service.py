@@ -2,10 +2,34 @@
 import re
 import unittest
 
+from backend.controllers.telemetry import (
+    RUNSTATE_AVAILABLE,
+    DeviceInfo,
+    MachineConfigInfo,
+    MachineRuntime,
+    MachineStateStore,
+)
 from backend.models import Session, init_db
 from backend.models.setting_model import update_setting_value
 from backend.services import support_service
 from backend.services.dev_admin_service import SECRET_KEYS
+
+
+def _seed_two_machines():
+    config = MachineConfigInfo(on_threshold=8, off_threshold=3, on_confirm_ms=1200,
+                               off_confirm_ms=3000, poll_interval_ms=1000)
+    washer_dev = DeviceInfo(id=3, name="Washer UNI", role="washer_uni", model="shelly-uni",
+                            ip="192.0.2.11", relay_channel=0, input_channel=None, metric_source="voltage")
+    dryer_dev = DeviceInfo(id=4, name="Dryer UNI", role="dryer_uni", model="shelly-uni",
+                           ip="192.0.2.12", relay_channel=0, input_channel=None, metric_source="power")
+    MachineStateStore.instance().update_definitions({
+        "washer1": MachineRuntime(db_id=1, slug="washer1", ui_name="Washer 1", uni_device=washer_dev,
+                                  config=config, i4_device_id=None, i4_button_index=0,
+                                  is_enabled=True, run_state=RUNSTATE_AVAILABLE),
+        "dryer1": MachineRuntime(db_id=2, slug="dryer1", ui_name="Dryer 1", uni_device=dryer_dev,
+                                 config=config, i4_device_id=None, i4_button_index=1,
+                                 is_enabled=True, run_state=RUNSTATE_AVAILABLE),
+    }, {})
 
 
 class SupportReportTests(unittest.TestCase):
@@ -17,6 +41,7 @@ class SupportReportTests(unittest.TestCase):
         update_setting_value(self.db, "telemetry_enabled", "true")
 
     def tearDown(self):
+        MachineStateStore.instance().update_definitions({}, {})
         self.db.close()
 
     def test_core_report_needs_no_guide(self):
@@ -39,38 +64,30 @@ class SupportReportTests(unittest.TestCase):
             self.assertNotIn(key, support_service.SAFE_SETTING_KEYS)
 
     def test_all_four_machine_groups_compose_without_loss(self):
-        """The bug this guards: four groups describing the same machines used to be
-        merged with dict.update(), so only the last group survived."""
-        from backend.controllers.telemetry import MachineStateStore
-
+        """Guards the bug where four groups describing the same machines were merged
+        with dict.update() and only the last survived."""
+        _seed_two_machines()
         report = support_service.build_support_report(
             self.db,
-            groups=(
-                "machine.identity", "machine.telemetry",
-                "machine.thresholds", "machine.mapping",
-            ),
+            groups=("machine.identity", "machine.telemetry", "machine.thresholds", "machine.mapping"),
         )
         machines = report["data"]["machines"]
-        if not MachineStateStore.instance().get_diagnostic_snapshot():
-            self.assertEqual(machines, {})
-            return
+        self.assertEqual(sorted(machines), ["dryer1", "washer1"])
         for machine_id, sections in machines.items():
-            self.assertEqual(
-                sorted(sections),
-                ["identity", "mapping", "telemetry", "thresholds"],
-                msg=f"machine {machine_id} lost a diagnostic group",
-            )
+            self.assertEqual(sorted(sections), ["identity", "mapping", "telemetry", "thresholds"],
+                             msg=f"machine {machine_id} lost a diagnostic group")
 
     def test_machine_sections_carry_their_own_fields(self):
-        from backend.controllers.telemetry import MachineStateStore
-        if not MachineStateStore.instance().get_diagnostic_snapshot():
-            self.skipTest("no machines loaded in the telemetry runtime")
+        _seed_two_machines()
         report = support_service.build_support_report(
-            self.db, groups=("machine.identity", "machine.telemetry")
+            self.db, groups=("machine.identity", "machine.telemetry", "machine.thresholds", "machine.mapping")
         )
-        sections = next(iter(report["data"]["machines"].values()))
-        self.assertIn("run_state", sections["identity"])
-        self.assertIn("last_value", sections["telemetry"])
+        washer = report["data"]["machines"]["washer1"]
+        self.assertEqual(washer["identity"]["name"], "Washer 1")
+        self.assertIn("run_state", washer["identity"])
+        self.assertIn("last_value", washer["telemetry"])
+        self.assertEqual(washer["thresholds"]["config"]["on_threshold"], 8)
+        self.assertEqual(washer["mapping"]["device"]["ip"], "192.0.2.11")
 
     def test_report_carries_knowledge_provenance(self):
         report = support_service.build_support_report(self.db)
@@ -114,16 +131,16 @@ class SupportReportTests(unittest.TestCase):
                 self.assertEqual(report["data"].get("machines", {}), {})
 
     def test_none_machine_id_means_unscoped(self):
+        _seed_two_machines()
         report = support_service.build_support_report(
             self.db, machine_id=None, groups=("machine.identity",)
         )
-        from backend.controllers.telemetry import MachineStateStore
-        expected = {r["id"] for r in MachineStateStore.instance().get_diagnostic_snapshot()}
-        self.assertEqual(set(report["data"].get("machines", {})), expected)
+        self.assertEqual(set(report["data"].get("machines", {})), {"dryer1", "washer1"})
 
     # ----- authorisation boundary -----
 
     def test_core_report_never_includes_mapping(self):
+        _seed_two_machines()
         report = support_service.build_support_report(self.db)
         for sections in report["data"].get("machines", {}).values():
             self.assertNotIn("mapping", sections)
