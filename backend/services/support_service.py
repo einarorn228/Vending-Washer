@@ -93,10 +93,15 @@ def _scanner(db, machine_id, data):
 
 
 def _settings_group(keys):
+    unsafe = set(keys) - set(SAFE_SETTING_KEYS)
+    if unsafe:
+        raise ValueError(f"settings group names non-allowlisted keys: {sorted(unsafe)}")
+
     def handler(db, machine_id, data):
         section = data.setdefault("settings", {})
         for key in keys:
-            section[key] = get_setting_value(db, key)
+            if key in SAFE_SETTING_KEYS:   # belt and braces at read time too
+                section[key] = get_setting_value(db, key)
     return handler
 
 
@@ -124,7 +129,7 @@ def _resolve_groups(guide_id, groups):
     It exists so tests and future in-process consumers can request a projection
     directly without inventing a fake guide.
     """
-    guide = get_guide(guide_id) if guide_id else None
+    guide = get_guide(guide_id) if isinstance(guide_id, str) and guide_id.strip() else None
     resolved = list(CORE_GROUPS)
     declared = list(groups) if groups else (guide.get("diagnostics", []) if guide else [])
     for group in declared:
@@ -161,7 +166,7 @@ def build_support_report(db, guide_id=None, machine_id=None, checks=None,
         "schema_version": 1,
         "generated_at": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
         "help": get_provenance(),
-        "guide_id": guide["id"] if guide else None,
+        "guide_id": guide.get("id") if guide else None,
         "locale_requested": locale,
         "locale_shown": locale_shown or locale,
         "groups": resolved,

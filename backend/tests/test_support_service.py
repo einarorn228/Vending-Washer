@@ -51,7 +51,10 @@ class SupportReportTests(unittest.TestCase):
         self.assertIsNone(report["guide_id"])
 
     def test_secret_values_never_appear_anywhere(self):
-        blob = repr(support_service.build_support_report(self.db))
+        _seed_two_machines()
+        blob = repr(support_service.build_support_report(
+            self.db, groups=tuple(support_service.GROUP_HANDLERS)
+        ))
         self.assertNotIn("super-secret-key", blob)
         self.assertNotIn("super-secret-token", blob)
 
@@ -124,6 +127,7 @@ class SupportReportTests(unittest.TestCase):
 
     def test_unknown_or_malformed_machine_id_narrows_to_nothing(self):
         """A bad machine_id must never widen the report to every machine."""
+        _seed_two_machines()
         groups = ("machine.identity", "machine.telemetry")
         for bad in ("no-such-machine", "", "   ", {}, [], 0, 7):
             with self.subTest(machine_id=bad):
@@ -261,11 +265,27 @@ class SupportReportTests(unittest.TestCase):
         self.assertLess(text.index("help_manifest_digest"), text.index("## app"))
 
     def test_rendered_text_is_readable_and_secret_free(self):
-        report = support_service.build_support_report(self.db)
+        _seed_two_machines()
+        report = support_service.build_support_report(
+            self.db, groups=tuple(support_service.GROUP_HANDLERS)
+        )
         text = support_service.render_report_text(report, "is")
         self.assertIn("Vending-Washer", text)
         self.assertNotIn("super-secret-key", text)
         self.assertRegex(text, r"help_manifest_digest: [0-9a-f]{12}")
+
+    def test_settings_group_rejects_non_allowlisted_keys_at_definition(self):
+        with self.assertRaises(ValueError):
+            support_service._settings_group(("api_key",))
+        with self.assertRaises(ValueError):
+            support_service._settings_group(("telemetry_enabled", "reisa_bearer_token"))
+
+    def test_malformed_guide_id_falls_back_to_core_without_raising(self):
+        for bad in ({"a": 1}, ["x"], 7, "", "   "):
+            with self.subTest(guide_id=bad):
+                report = support_service.build_support_report(self.db, guide_id=bad)
+                self.assertIsNone(report["guide_id"])
+                self.assertEqual(report["groups"], list(support_service.CORE_GROUPS))
 
 
 if __name__ == "__main__":
