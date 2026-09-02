@@ -44,33 +44,39 @@ def split_frontmatter(text: str):
             continue
         stripped = line.strip()
 
-        if stripped.startswith("- "):
-            if key is None:
-                raise CompileError(f"line {lineno}: list item outside any key")
-            item = stripped[2:].strip()
-            if ":" in item and not item.startswith(("http://", "https://")):
-                field, _, value = item.partition(":")
-                entry = {field.strip(): _coerce(value)}
-                meta[key].append(entry)
+        # Check if line is indented (starts with space)
+        if line and line[0] == ' ':
+            # Indented line: only valid for list items or field continuations
+            if stripped.startswith("- "):
+                # List item under open list key
+                if key is None:
+                    raise CompileError(f"line {lineno}: list item outside any key")
+                item = stripped[2:].strip()
+                if ":" in item and not item.startswith(("http://", "https://")):
+                    field, _, value = item.partition(":")
+                    entry = {field.strip(): _coerce(value)}
+                    meta[key].append(entry)
+                else:
+                    entry = None
+                    meta[key].append(_coerce(item))
+            elif entry is not None and ":" in stripped:
+                # Field continuation in mapping entry
+                field, _, value = stripped.partition(":")
+                entry[field.strip()] = _coerce(value)
             else:
-                entry = None
-                meta[key].append(_coerce(item))
-            continue
-
-        if line.startswith(("    ", "  ")) and entry is not None and ":" in stripped:
-            field, _, value = stripped.partition(":")
-            entry[field.strip()] = _coerce(value)
-            continue
-
-        if ":" not in stripped:
-            raise CompileError(f"line {lineno}: expected 'key: value'")
-        raw_key, _, raw_value = stripped.partition(":")
-        key = raw_key.strip()
-        entry = None
-        if raw_value.strip() == "":
-            meta[key] = []
+                # Indented but no valid context
+                raise CompileError(f"line {lineno}: unexpected indentation")
         else:
-            meta[key] = _coerce(raw_value)
-            key = None
+            # Non-indented line: must be key:value
+            if ":" not in stripped:
+                raise CompileError(f"line {lineno}: expected 'key: value'")
+            raw_key, _, raw_value = stripped.partition(":")
+            key = raw_key.strip()
+            entry = None
+            if raw_value.strip() == "":
+                meta[key] = []
+            else:
+                meta[key] = _coerce(raw_value)
+                key = None
 
     return meta, "\n".join(lines[end + 1:])

@@ -58,6 +58,22 @@ class FrontmatterTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             split_frontmatter("---\nid: g\nrelated_guides:\n\t- a\n---\nbody\n")
 
+    def test_stray_indented_top_level_key_is_a_compile_error(self):
+        with self.assertRaises(CompileError):
+            split_frontmatter("---\nid: g\n  locale: en\n---\nbody\n")
+
+    def test_orphan_indented_line_after_string_list_is_a_compile_error(self):
+        with self.assertRaises(CompileError):
+            split_frontmatter(
+                "---\nid: g\nrelated_guides:\n  - a\n  bogus: orphan\n---\nbody\n"
+            )
+
+    def test_indented_continuation_inside_checks_entry_still_parses(self):
+        meta, _ = split_frontmatter(
+            "---\nid: g\nchecks:\n  - id: c1\n    question: Q\n    route: diagnostics\n---\nbody\n"
+        )
+        self.assertEqual(meta["checks"][0]["route"], "diagnostics")
+
 
 if __name__ == "__main__":
     unittest.main()
