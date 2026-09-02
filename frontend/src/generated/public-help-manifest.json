@@ -1,0 +1,235 @@
+{
+  "build_id": null,
+  "default_locale": "is",
+  "excluded_translations": [],
+  "guide_count": 1,
+  "guides": {
+    "backend-unavailable": {
+      "actions": [],
+      "canonical_locale": "is",
+      "category": "kiosk_display",
+      "common_problem_rank": null,
+      "diagnostics": [],
+      "id": "backend-unavailable",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-02",
+      "locales": {
+        "is": {
+          "search_aliases": [],
+          "sections": [
+            {
+              "anchor": "fyrstu-skref",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Athugaðu hvort ljós logar á tækinu sem stendur við hlið skjásins. Ef ekkert ljós",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "logar gæti verið að tækið sé ekki í sambandi við rafmagn.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Bíddu í eina til tvær mínútur og athugaðu svo skjáinn aftur. Stundum tekur",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kerfið stutta stund að ræsa sig eða jafna sig eftir stutta truflun.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Fyrstu skref"
+            },
+            {
+              "anchor": "villubod",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef skjárinn sýnir villuboð um að samband við kerfið hafi rofnað er líklegast að",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "netsamband sé tímabundið í ólagi. Þetta lagast oftast af sjálfu sér eftir stutta",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "bið.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Ef skjárinn sýnir villuboð"
+            },
+            {
+              "anchor": "vidvarandi",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef skjárinn er enn óvirkur eftir nokkrar mínútur, eða sýnir sömu villu ítrekað,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "skaltu ekki reyna frekari úrræði á staðnum. Hafðu í staðinn samband við",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kerfisstjóra og láttu vita hvað þú sást á skjánum.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Ef vandamálið er viðvarandi"
+            }
+          ],
+          "stub": false,
+          "summary": "Skjárinn svarar ekki eða sýnir villu. Hér eru einföld skref sem þú getur reynt.",
+          "title": "Ekkert samband við kerfið",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [],
+      "related_settings": [],
+      "risk": "low",
+      "status": "published"
+    }
+  },
+  "locales": [
+    "is",
+    "en"
+  ],
+  "schema_version": 1,
+  "search": {
+    "backend-unavailable": {
+      "is": {
+        "aliases": [],
+        "body": [
+          "aftur",
+          "athugadu",
+          "biddu",
+          "eftir",
+          "eina",
+          "ekkert",
+          "frekari",
+          "gaeti",
+          "hafdu",
+          "hafi",
+          "hlid",
+          "hvad",
+          "hvort",
+          "itrekad",
+          "jafna",
+          "kerfid",
+          "kerfisstjora",
+          "lagast",
+          "lattu",
+          "liklegast",
+          "ljos",
+          "logar",
+          "minutur",
+          "netsamband",
+          "nokkrar",
+          "oftast",
+          "olagi",
+          "ovirkur",
+          "raesa",
+          "rafmagn",
+          "reyna",
+          "rofnad",
+          "samband",
+          "sambandi",
+          "sast",
+          "sjalfu",
+          "skaltu",
+          "skjainn",
+          "skjanum",
+          "skjarinn",
+          "skjasins",
+          "somu",
+          "stadinn",
+          "stadnum",
+          "stendur",
+          "stund",
+          "stundum",
+          "stutta",
+          "synir",
+          "taekid",
+          "taekinu",
+          "tekur",
+          "thetta",
+          "timabundid",
+          "truflun",
+          "tvaer",
+          "urraedi",
+          "verid",
+          "villu",
+          "villubod",
+          "vita"
+        ],
+        "headings": [
+          "fyrstu",
+          "skjarinn",
+          "skref",
+          "synir",
+          "vandamalid",
+          "vidvarandi",
+          "villubod"
+        ],
+        "summary": [
+          "einfold",
+          "getur",
+          "reynt",
+          "skjarinn",
+          "skref",
+          "svarar",
+          "synir",
+          "villu"
+        ],
+        "title": [
+          "ekkert",
+          "kerfid",
+          "samband"
+        ]
+      }
+    }
+  },
+  "trust_class": "public_bootstrap"
+}

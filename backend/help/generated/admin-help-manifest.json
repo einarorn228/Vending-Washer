@@ -1,0 +1,336 @@
+{
+  "build_id": null,
+  "default_locale": "is",
+  "excluded_translations": [],
+  "guide_count": 1,
+  "guides": {
+    "admin-panel-orientation": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "daily_operation",
+      "common_problem_rank": null,
+      "diagnostics": [],
+      "id": "admin-panel-orientation",
+      "kind": "concept",
+      "last_reviewed": "2026-09-02",
+      "locales": {
+        "en": {
+          "search_aliases": [],
+          "sections": [
+            {
+              "anchor": "purpose",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "The dev/admin panel (",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": ") is a beta control surface for the kiosk backend.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "It brings together four areas in one place: settings editing, machine card layout",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "management, diagnostics, and a Remote Control panel for exercising the kiosk state",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine without touching the physical hardware.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The panel sits behind HTTP Basic auth using the same admin credentials as the rest",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "of the admin surface, plus a separate kill switch setting that must be enabled",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "before the panel unlocks at all.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "What this panel is for"
+            },
+            {
+              "anchor": "safe-changes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Most settings edits made from this panel take effect immediately and are safe to",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "try, revert, and try again. Machine card layout changes only affect how machines",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "are presented on the kiosk screen and do not change any hardware behaviour.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Some settings are marked higher risk in the catalog because they affect relay",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "control or authentication. Read a setting's description in the panel before",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "changing it, and change one setting at a time so the effect of each change is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "easy to see.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "What is safe to change"
+            },
+            {
+              "anchor": "next-steps",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use the Diagnostics panel to check the current health of a machine or the scanner",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "before making a change. Use the Remote Control panel to walk the kiosk state",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine through a scan and start cycle when you want to see the effect of a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "setting change without waiting for a real customer to scan a code.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Where to look next"
+            }
+          ],
+          "stub": false,
+          "summary": "What the /dev/admin beta panel is for and what is safe to touch in it.",
+          "title": "Admin panel orientation",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [],
+      "related_settings": [],
+      "risk": "low",
+      "status": "published"
+    }
+  },
+  "locales": [
+    "is",
+    "en"
+  ],
+  "schema_version": 1,
+  "search": {
+    "admin-panel-orientation": {
+      "en": {
+        "aliases": [],
+        "body": [
+          "admin",
+          "affect",
+          "again",
+          "areas",
+          "auth",
+          "authentication",
+          "backend",
+          "basic",
+          "because",
+          "before",
+          "behaviour",
+          "behind",
+          "beta",
+          "brings",
+          "card",
+          "catalog",
+          "change",
+          "changes",
+          "changing",
+          "check",
+          "code",
+          "control",
+          "credentials",
+          "current",
+          "customer",
+          "cycle",
+          "description",
+          "diagnostics",
+          "each",
+          "easy",
+          "editing",
+          "edits",
+          "effect",
+          "enabled",
+          "exercising",
+          "four",
+          "hardware",
+          "health",
+          "higher",
+          "http",
+          "immediately",
+          "kill",
+          "kiosk",
+          "layout",
+          "machine",
+          "machines",
+          "made",
+          "making",
+          "management",
+          "marked",
+          "most",
+          "must",
+          "only",
+          "panel",
+          "physical",
+          "place",
+          "plus",
+          "presented",
+          "read",
+          "real",
+          "relay",
+          "remote",
+          "rest",
+          "revert",
+          "risk",
+          "safe",
+          "same",
+          "scan",
+          "scanner",
+          "screen",
+          "separate",
+          "setting",
+          "settings",
+          "sits",
+          "some",
+          "start",
+          "state",
+          "surface",
+          "switch",
+          "take",
+          "they",
+          "through",
+          "time",
+          "together",
+          "touching",
+          "unlocks",
+          "using",
+          "waiting",
+          "walk",
+          "want",
+          "without"
+        ],
+        "headings": [
+          "change",
+          "look",
+          "next",
+          "panel",
+          "safe",
+          "what",
+          "where"
+        ],
+        "summary": [
+          "admin",
+          "beta",
+          "panel",
+          "safe",
+          "touch",
+          "what"
+        ],
+        "title": [
+          "admin",
+          "orientation",
+          "panel"
+        ]
+      }
+    }
+  },
+  "trust_class": "admin"
+}
