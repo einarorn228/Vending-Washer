@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import '../kiosk/styles/kiosk.css';
 import './styles/dev-admin.css';
 import DevAdminLockScreen from './DevAdminLockScreen.jsx';
 import DevAdminShell, { TAB_IDS } from './DevAdminShell.jsx';
 import { parseHelpHash } from './help/helpRouting.js';
+import { HelpDrawerContext } from './help/HelpDrawerContext.js';
+import HelpErrorBoundary from './help/HelpErrorBoundary.jsx';
+import HelpPanel from './help/HelpPanel.jsx';
+import HelpDrawer from './help/HelpDrawer.jsx';
 import OverviewPanel from './components/OverviewPanel.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import MachineCardsPanel from './components/MachineCardsPanel.jsx';
@@ -19,6 +23,16 @@ import {
 
 const STATUS_REFRESH_MS = 5000;
 const RESTART_PENDING_KEY = 'DEV_ADMIN_RESTART_PENDING';
+const HELP_LOCALE_KEY = 'HELP_LOCALE';
+
+function readHelpLocale() {
+  if (typeof window === 'undefined') return 'is';
+  try {
+    return window.localStorage.getItem(HELP_LOCALE_KEY) || 'is';
+  } catch {
+    return 'is';
+  }
+}
 
 function readHelpRoute() {
   if (typeof window === 'undefined') return { tab: 'overview', guideId: null, anchor: null, invalid: false };
@@ -42,6 +56,11 @@ export default function DevAdminPage() {
   const [activeTab, setActiveTab] = useState(() => readHelpRoute().tab);
   // Task 15 consumes guideId/anchor/invalid to render a guide or the not-found state.
   const [helpRoute, setHelpRoute] = useState(readHelpRoute);
+  const [helpLocale, setHelpLocale] = useState(readHelpLocale);
+  // Drawer state is separate from helpRoute/the hash on purpose: the drawer is opened
+  // by ContextualHelpLink from anywhere in the admin tree and must never disturb the
+  // active tab or an in-progress edit underneath it.
+  const [drawerGuide, setDrawerGuide] = useState(null); // {guideId, anchor, machineId} | null
   const [restartPending, setRestartPending] = useState(readRestartPending);
   const [status, setStatus] = useState(null);
   const [settingsGroups, setSettingsGroups] = useState([]);
@@ -161,6 +180,31 @@ export default function DevAdminPage() {
     }
   }
 
+  function handleHelpLocaleChange(nextLocale) {
+    setHelpLocale(nextLocale);
+    try {
+      window.localStorage.setItem(HELP_LOCALE_KEY, nextLocale);
+    } catch {
+      /* localStorage unavailable; the preference just won't survive a reload */
+    }
+  }
+
+  function openHelpDrawer(guideId, anchor, options = {}) {
+    setDrawerGuide({ guideId, anchor: anchor || null, machineId: options.machineId || null });
+  }
+
+  function closeHelpDrawer() {
+    setDrawerGuide(null);
+  }
+
+  // A related guide, guide_link, or checklist problem_guide clicked from inside the
+  // drawer swaps its guide/anchor in place — it stays a drawer navigation, never the hash.
+  function navigateHelpDrawer(guideId, anchor) {
+    setDrawerGuide((current) => ({ guideId, anchor: anchor || null, machineId: current?.machineId || null }));
+  }
+
+  const helpDrawerContextValue = useMemo(() => ({ openHelpDrawer }), []);
+
   function handleLockedOut() {
     setApiKey(null);
     setIsUnlocked(false);
@@ -210,41 +254,56 @@ export default function DevAdminPage() {
   } else if (activeTab === 'diagnostics') {
     content = <DiagnosticsPanel apiKey={apiKey} />;
   } else if (activeTab === 'help') {
-    // Placeholder only; Task 15 replaces this with the real Help panel.
     content = (
-      <section className="dev-admin-panel">
-        <h2>Hjálp</h2>
-      </section>
+      <HelpErrorBoundary locale={helpLocale} resetKey={`${helpRoute.guideId}:${helpRoute.anchor}:${helpLocale}`}>
+        <HelpPanel apiKey={apiKey} helpRoute={helpRoute} locale={helpLocale} onLocaleChange={handleHelpLocaleChange} />
+      </HelpErrorBoundary>
     );
   } else {
     content = <OverviewPanel apiKey={apiKey} status={status} onReload={() => loadAll(apiKey)} />;
   }
 
   return (
-    <DevAdminShell
-      activeTab={activeTab}
-      onTabChange={handleTabChange}
-      onLock={handleLock}
-      restartPending={restartPending}
-      onDismissRestart={handleDismissRestart}
-    >
-      {loading ? <div className="dev-admin-loading">Loading beta dev/admin data…</div> : null}
-      {disabled ? <div className="dev-admin-disabled">{error}</div> : error ? <div className="dev-admin-form-error">{error}</div> : null}
-      
-      {recoveredKey && (
-        <div className="dev-admin-modal-overlay" style={{ zIndex: 9999 }}>
-          <div className="dev-admin-modal dev-admin-modal--important">
-            <h3>New API Key Generated</h3>
-            <p>Here is your new API token for the application. <strong>Please ensure you write it down before closing this window.</strong> It will not be shown again.</p>
-            <div className="dev-admin-code-block">
-              <code>{recoveredKey}</code>
-            </div>
-            <button className="dev-admin-primary" onClick={() => setRecoveredKey('')}>I have written it down</button>
-          </div>
-        </div>
-      )}
+    <HelpDrawerContext.Provider value={helpDrawerContextValue}>
+      <DevAdminShell
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onLock={handleLock}
+        restartPending={restartPending}
+        onDismissRestart={handleDismissRestart}
+      >
+        {loading ? <div className="dev-admin-loading">Loading beta dev/admin data…</div> : null}
+        {disabled ? <div className="dev-admin-disabled">{error}</div> : error ? <div className="dev-admin-form-error">{error}</div> : null}
 
-      {content}
-    </DevAdminShell>
+        {recoveredKey && (
+          <div className="dev-admin-modal-overlay" style={{ zIndex: 9999 }}>
+            <div className="dev-admin-modal dev-admin-modal--important">
+              <h3>New API Key Generated</h3>
+              <p>Here is your new API token for the application. <strong>Please ensure you write it down before closing this window.</strong> It will not be shown again.</p>
+              <div className="dev-admin-code-block">
+                <code>{recoveredKey}</code>
+              </div>
+              <button className="dev-admin-primary" onClick={() => setRecoveredKey('')}>I have written it down</button>
+            </div>
+          </div>
+        )}
+
+        {content}
+
+        {drawerGuide ? (
+          <HelpErrorBoundary locale={helpLocale} resetKey={`${drawerGuide.guideId}:${drawerGuide.anchor}:${helpLocale}`}>
+            <HelpDrawer
+              guideId={drawerGuide.guideId}
+              anchor={drawerGuide.anchor}
+              machineId={drawerGuide.machineId}
+              apiKey={apiKey}
+              locale={helpLocale}
+              onClose={closeHelpDrawer}
+              onNavigate={navigateHelpDrawer}
+            />
+          </HelpErrorBoundary>
+        ) : null}
+      </DevAdminShell>
+    </HelpDrawerContext.Provider>
   );
 }

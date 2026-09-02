@@ -888,3 +888,95 @@
   font-family: monospace;
   font-size: 0.85rem;
 }
+
+/* ------------------------------------------------------------------ */
+/* Help Hub: the Help tab (landing/search/categories), the drawer, and */
+/* the small "?" contextual link placed next to page elements. Not the */
+/* per-setting tooltip — those own .dev-admin-help*.                   */
+/* ------------------------------------------------------------------ */
+
+.dev-admin-helphub-link {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.06);
+  color: #dbeafe;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+.dev-admin-helphub-link:hover,
+.dev-admin-helphub-link:focus-visible {
+  border-color: rgba(112,200,255,0.7);
+  color: #ffffff;
+  background: rgba(112,200,255,0.18);
+  outline: none;
+}
+
+.dev-admin-helphub-locale {
+  display: flex;
+  gap: 0.35rem;
+}
+.dev-admin-helphub-locale button {
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: #dbeafe;
+  padding: 0.3rem 0.65rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.dev-admin-helphub-locale button.is-active {
+  background: linear-gradient(135deg, var(--kiosk-accent, #70c8ff), #3b82f6);
+  color: #06111f;
+  border-color: transparent;
+}
+
+.dev-admin-helphub-search { margin-top: 0.25rem; }
+
+.dev-admin-helphub-search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.dev-admin-helphub-search-results li {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+}
+.dev-admin-helphub-search-summary {
+  margin: 0.35rem 0 0;
+  color: var(--kiosk-muted, #b7c2d5);
+  font-size: 0.88rem;
+}
+
+.dev-admin-helphub-guide-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dev-admin-helphub-notfound {
+  color: var(--kiosk-muted, #b7c2d5);
+}
+
+.dev-admin-helphub-drawer {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}

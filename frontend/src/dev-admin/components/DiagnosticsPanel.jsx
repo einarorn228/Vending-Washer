@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getDevAdminDiagnostics, getDevAdminTelemetry } from '../api.js';
+import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
 
 const TELEMETRY_POLL_MS = 1000;
 const DIAGNOSTICS_POLL_MS = 10000;
@@ -198,7 +199,7 @@ export default function DiagnosticsPanel({ apiKey }) {
 
       {view === 'live' ? (
         <section className="dev-admin-panel">
-          <h3>Live machine readings</h3>
+          <h3>Live machine readings<ContextualHelpLink guideId="tune-thresholds" label="Help: tune thresholds" /></h3>
           <p style={{ color: 'var(--kiosk-muted)', margin: '0 0 1rem' }}>
             Run a machine and watch the value. The ON threshold must sit below the running value,
             the OFF threshold above the idle value. “Above for” tells you whether the confirm window

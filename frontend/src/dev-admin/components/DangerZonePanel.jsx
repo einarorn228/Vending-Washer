@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { clearDevAdminKey, saveDevAdminSettings } from '../api.js';
+import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
 
 export const LOCKOUT_CONFIRMATION_PHRASE = 'DISABLE DEV ADMIN';
 
@@ -91,8 +92,10 @@ export default function DangerZonePanel({ apiKey, onLockedOut }) {
         </div>
       </div>
 
-      <h3>How to switch it back on</h3>
-      <p>Run this on the kiosk host, from the repository root:</p>
+      <p>
+        How to switch it back on
+        <ContextualHelpLink guideId="admin-access-recovery" label="Help: how to switch it back on" />
+      </p>
       <div className="dev-admin-code-block">
         <pre><code>{RECOVERY_COMMAND}</code></pre>
       </div>

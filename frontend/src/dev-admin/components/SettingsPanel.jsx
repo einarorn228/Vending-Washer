@@ -4,6 +4,8 @@ import SettingField from './SettingField.jsx';
 import SecuritySettingsPanel from './SecuritySettingsPanel.jsx';
 import ChangeReviewModal from './ChangeReviewModal.jsx';
 import DangerZonePanel from './DangerZonePanel.jsx';
+import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
+import { SETTINGS_GROUP_GUIDES } from '../help/settingsGroupGuides.js';
 
 // dev_admin_enabled is handled by DangerZonePanel, never as a casual toggle here.
 const DANGER_ZONE_KEYS = new Set(['dev_admin_enabled']);
@@ -193,7 +195,12 @@ export default function SettingsPanel({ apiKey, groups, secretMetadata, onReload
 
       {visibleGroups.map((group) => (
         <article key={group.id} className="dev-admin-group-card">
-          <h3>{group.title}</h3>
+          <h3>
+            {group.title}
+            {SETTINGS_GROUP_GUIDES[group.id] ? (
+              <ContextualHelpLink guideId={SETTINGS_GROUP_GUIDES[group.id]} label={`Help: ${group.title}`} />
+            ) : null}
+          </h3>
           {group.settings.map((setting) => (
             <SettingField
               key={setting.key}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { saveDevAdminMachine } from '../api.js';
+import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
 
 const METRIC_SOURCES = ['none', 'voltage', 'power', 'digital', 'pulse'];
 
@@ -44,7 +45,14 @@ export default function MachineDetailDrawer({ apiKey, machine, onClose, onSaved 
         <header className="dev-admin-drawer__header">
           <div>
             <p className="dev-admin-eyebrow">Advanced / Technical Mapping</p>
-            <h2 id="machine-detail-title">{machine.display_name}</h2>
+            <h2 id="machine-detail-title">
+              {machine.display_name}
+              <ContextualHelpLink
+                guideId="machine-technical-mapping"
+                label="Help: technical mapping"
+                machineId={machine.machine_key}
+              />
+            </h2>
           </div>
           <button type="button" onClick={onClose}>✕</button>
         </header>

@@ -23,6 +23,13 @@ export const STRINGS = {
     unavailable: 'Hjálparefni er ekki tiltækt.',
     noResults: 'Ekkert fannst.',
     riskHigh: 'Mikil áhætta',
+    category_daily_operation: 'Dagleg notkun',
+    category_machines_telemetry: 'Vélar og fjarmæling',
+    category_codes_reisa: 'Kóðar og Reisa',
+    category_scanner: 'Skanni',
+    category_hardware_network: 'Vélbúnaður og net',
+    category_admin_recovery: 'Endurheimt aðgangs',
+    category_kiosk_display: 'Kjósk og skjár',
   },
   en: {
     help: 'Help',
@@ -41,6 +48,13 @@ export const STRINGS = {
     unavailable: 'Help content is unavailable.',
     noResults: 'No results.',
     riskHigh: 'High risk',
+    category_daily_operation: 'Daily operation',
+    category_machines_telemetry: 'Machines & telemetry',
+    category_codes_reisa: 'Codes & Reisa',
+    category_scanner: 'Scanner',
+    category_hardware_network: 'Hardware & network',
+    category_admin_recovery: 'Admin recovery',
+    category_kiosk_display: 'Kiosk display',
   },
 };
 
