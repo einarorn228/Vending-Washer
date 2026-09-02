@@ -547,6 +547,14 @@ class BlockParsingTests(unittest.TestCase):
         self.assertIn("ordered_list", emitted)
         self.assertIn("unordered_list", emitted)
 
+    def test_table_header_and_rows_have_the_right_shape(self):
+        sections = parse_body("## S {#s}\n\n| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |\n", SETTINGS)
+        table = next(b for b in sections[0]["blocks"] if b["type"] == "table")
+        self.assertEqual(len(table["header"]), 2, "header must be one row of two cells")
+        self.assertEqual([c[0]["text"] for c in table["header"]], ["A", "B"])
+        self.assertEqual(len(table["rows"]), 2)
+        self.assertEqual([c[0]["text"] for c in table["rows"][1]], ["3", "4"])
+
     def test_known_setting_key_becomes_setting_ref(self):
         sections = parse_body("## S {#s}\n\nTurn on `telemetry_enabled` and `whatever`.\n", SETTINGS)
         inlines = sections[0]["blocks"][0]["inlines"]
@@ -675,13 +683,21 @@ def _block(node, known_settings):
         return {"type": "ordered_list" if ordered else "unordered_list",
                 "items": _list_items(node, known_settings)}
     if kind == "table":
+        # mistune 3 shape (verified): table_head holds table_cell nodes DIRECTLY,
+        # while table_body -> table_row -> table_cell. Treating the head like a
+        # body would emit one empty "row" per header cell.
         header, rows = [], []
         for part in node.get("children", []):
-            for row in ([part] if part.get("type") == "table_row" else part.get("children", [])):
-                cells = [_inlines(c.get("children", []), known_settings)
-                         for c in row.get("children", [])]
-                (header if part.get("type") == "table_head" else rows).append(cells)
-        return {"type": "table", "header": header[0] if header else [], "rows": rows}
+            if part.get("type") == "table_head":
+                header = [_inlines(c.get("children", []), known_settings)
+                          for c in part.get("children", [])]
+            elif part.get("type") == "table_body":
+                for row in part.get("children", []):
+                    rows.append([_inlines(c.get("children", []), known_settings)
+                                 for c in row.get("children", [])])
+            else:
+                raise CompileError(f"unsupported table part: {part.get('type')!r}")
+        return {"type": "table", "header": header, "rows": rows}
     if kind == "block_quote":
         children = node.get("children", [])
         level = "note"
@@ -738,7 +754,7 @@ def parse_body(markdown_text, known_settings):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_blocks.py -v`
-Expected: PASS (7 tests)
+Expected: PASS (8 tests)
 
 - [ ] **Step 5: Commit**
 
