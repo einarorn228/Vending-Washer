@@ -1560,10 +1560,25 @@ class ArtifactTests(unittest.TestCase):
         An admin guide about credential rotation has to be able to say the word. The
         test that matters is that no credential VALUE is present, not that the
         identifier is banned -- banning it would make legitimate documentation
-        impossible.
+        impossible. Prove the identifier is permitted by compiling a guide that uses it.
         """
-        text = cli.ADMIN_ARTIFACT.read_text(encoding="utf-8")
-        self.assertIsInstance(text, str)  # identifiers are permitted here by design
+        import tempfile
+        from pathlib import Path
+        from backend.help.compiler import compile_help
+
+        root = Path(tempfile.mkdtemp())
+        guide = root / "en" / "admin_recovery" / "rotate-credentials.md"
+        guide.parent.mkdir(parents=True)
+        guide.write_text(
+            "---\nid: rotate-credentials\nlocale: en\ncanonical: true\n"
+            "title: Rotate credentials\nsummary: How to rotate the API key.\n"
+            "category: admin_recovery\nkind: procedure\nrisk: high\nstatus: published\n"
+            "last_reviewed: 2026-09-02\nrelated_settings:\n  - api_key\n---\n\n"
+            "## Steps {#steps}\n\nRotate `api_key` from the Security panel.\n",
+            encoding="utf-8",
+        )
+        manifest = compile_help(root, "admin", cli.known_setting_keys(), build_id=None)
+        self.assertEqual(manifest["guides"]["rotate-credentials"]["related_settings"], ["api_key"])
 
     def test_admin_manifest_contains_no_credential_shaped_values(self):
         import re
