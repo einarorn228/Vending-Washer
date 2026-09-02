@@ -2089,6 +2089,106 @@ class SupportReportTests(unittest.TestCase):
         )
         self.assertEqual(report["checks"], [])
 
+    # ----- machine scoping -----
+
+    def test_unknown_or_malformed_machine_id_narrows_to_nothing(self):
+        """A bad machine_id must never widen the report to every machine."""
+        groups = ("machine.identity", "machine.telemetry")
+        for bad in ("no-such-machine", "", "   ", {}, [], 0, 7):
+            with self.subTest(machine_id=bad):
+                report = support_service.build_support_report(self.db, machine_id=bad, groups=groups)
+                self.assertEqual(report["data"].get("machines", {}), {})
+
+    def test_none_machine_id_means_unscoped(self):
+        report = support_service.build_support_report(
+            self.db, machine_id=None, groups=("machine.identity",)
+        )
+        from backend.controllers.telemetry import MachineStateStore
+        expected = {r["id"] for r in MachineStateStore.instance().get_diagnostic_snapshot()}
+        self.assertEqual(set(report["data"].get("machines", {})), expected)
+
+    # ----- authorisation boundary -----
+
+    def test_core_report_never_includes_mapping(self):
+        report = support_service.build_support_report(self.db)
+        for sections in report["data"].get("machines", {}).values():
+            self.assertNotIn("mapping", sections)
+        self.assertNotIn("machine.mapping", report["groups"])
+
+    def test_unknown_group_names_are_ignored_even_in_process(self):
+        report = support_service.build_support_report(
+            self.db, groups=("secrets.everything", "machine.telemetry", "../etc")
+        )
+        self.assertNotIn("secrets.everything", report["groups"])
+        self.assertNotIn("../etc", report["groups"])
+        self.assertIn("machine.telemetry", report["groups"])
+
+    # ----- partial failure -----
+
+    def test_one_failing_group_yields_a_safe_marker_and_a_complete_report(self):
+        from unittest.mock import patch
+
+        def boom(db, machine_id, data):
+            raise RuntimeError("Bearer super-secret-token /home/pi/internal/path")
+
+        with patch.dict(support_service.GROUP_HANDLERS, {"scanner.status": boom}):
+            report = support_service.build_support_report(self.db)
+        self.assertEqual(report["data"]["errors"]["scanner.status"], "unavailable")
+        self.assertIn("kiosk", report["data"])          # other groups still gathered
+        self.assertIn("provider", report["data"])
+        blob = repr(report)
+        self.assertNotIn("super-secret-token", blob)
+        self.assertNotIn("/home/pi", blob)
+        self.assertNotIn("RuntimeError", blob)
+
+    # ----- provenance -----
+
+    def test_provenance_digest_is_the_loaded_manifest_digest(self):
+        import hashlib
+        from backend.help.cli import ADMIN_ARTIFACT
+        from backend.services import help_service
+
+        help_service.reset_cache()
+        report = support_service.build_support_report(self.db)
+        expected = hashlib.sha256(ADMIN_ARTIFACT.read_bytes()).hexdigest()[:12]
+        self.assertEqual(report["help"]["manifest_digest"], expected)
+        self.assertEqual(report["help"], help_service.get_provenance())
+
+    # ----- no side effects -----
+
+    def test_building_a_report_is_strictly_read_only(self):
+        from unittest.mock import patch
+        from backend.models.setting_model import Settings
+
+        before = sorted((s.key, s.value) for s in self.db.query(Settings).all())
+        with patch("backend.utils.shelly_control.send_shelly_pulse") as pulse, \
+             patch("backend.utils.shelly_control.shelly_switch_on") as on, \
+             patch("backend.utils.shelly_control.shelly_switch_off") as off, \
+             patch("requests.get") as http_get, patch("requests.post") as http_post:
+            support_service.build_support_report(
+                self.db, groups=("machine.identity", "machine.telemetry",
+                                 "machine.thresholds", "machine.mapping",
+                                 "settings.relay", "settings.scanner"),
+            )
+        after = sorted((s.key, s.value) for s in self.db.query(Settings).all())
+        self.assertEqual(before, after)
+        for mock in (pulse, on, off, http_get, http_post):
+            mock.assert_not_called()
+
+    # ----- unknown future sections -----
+
+    def test_unknown_future_sections_render_after_known_ones_deterministically(self):
+        report = {
+            "generated_at": "t", "guide_id": None, "locale_requested": "en", "locale_shown": "en",
+            "help": {"schema_version": 1, "manifest_digest": "abc", "build_id": None},
+            "checks": [],
+            "data": {"zzz_future": {"k": 1}, "kiosk": {"state": "x"}, "aaa_future": {"k": 2},
+                     "app": {"name": "Vending-Washer"}},
+        }
+        text = support_service.render_report_text(report, "en")
+        headings = [l for l in text.splitlines() if l.startswith("## ")]
+        self.assertEqual(headings, ["## app", "## kiosk", "## aaa_future", "## zzz_future"])
+
     def test_rendered_sections_follow_diagnostic_importance_order(self):
         """Pins the human-readable order so it cannot quietly revert to alphabetical.
 
@@ -2157,12 +2257,15 @@ context later. Guides name diagnostic groups; this module decides what a group m
 and which fields are safe. The client never names a group or a field.
 """
 
+import logging
 from datetime import datetime
 
 from backend.help.schema import CHECK_RESULTS
 from backend.models.setting_model import get_setting_value, parse_setting_bool
 from backend.services.dev_admin_service import SECRET_KEYS, scanner_status
 from backend.services.help_service import get_guide, get_provenance
+
+logger = logging.getLogger(__name__)
 
 CORE_GROUPS = ("core", "kiosk.state", "settings.provider", "scanner.status")
 
@@ -2186,9 +2289,20 @@ _MACHINE_SECTIONS = {
 
 
 def _snapshot(machine_id):
+    """Rows for the report's machine scope.
+
+    Only ``None`` means "all machines". Any other value must be a non-empty string
+    matching a machine id; a falsy or non-string value (``""``, ``{}``, ``0`` from a
+    malformed request body) narrows to NOTHING rather than accidentally widening to
+    every machine.
+    """
     from backend.controllers.telemetry import MachineStateStore
     rows = MachineStateStore.instance().get_diagnostic_snapshot()
-    return [r for r in rows if not machine_id or r.get("id") == machine_id]
+    if machine_id is None:
+        return rows
+    if not isinstance(machine_id, str) or not machine_id.strip():
+        return []
+    return [r for r in rows if r.get("id") == machine_id.strip()]
 
 
 def _machine_group(group):
@@ -2289,7 +2403,10 @@ def build_support_report(db, guide_id=None, machine_id=None, checks=None,
         try:
             GROUP_HANDLERS[group](db, machine_id, data)
         except Exception:  # one broken group must not sink the whole report
+            # A fixed marker only: never the exception text, which could carry
+            # internal paths or values the allowlist exists to keep out.
             data.setdefault("errors", {})[group] = "unavailable"
+            logger.warning("support report: diagnostic group %s unavailable", group)
 
     return {
         "schema_version": 1,
@@ -2366,7 +2483,7 @@ def render_report_text(report, locale="is"):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_support_service.py -v`
-Expected: PASS (13 tests)
+Expected: PASS (21 tests)
 
 - [ ] **Step 5: Commit**
 
