@@ -3127,7 +3127,18 @@ git commit -m "feat(help): expose authenticated Help manifest and strict support
 
 **Interfaces:**
 - Consumes: `TAB_IDS` from `DevAdminShell.jsx`.
-- Produces: `parseHelpHash(hash: string, tabIds: string[]) -> {tab: string, guideId: string|null, anchor: string|null}`; `formatHelpHash(guideId, anchor) -> string`.
+- Produces: `parseHelpHash(hash: string, tabIds: string[]) -> {tab: string, guideId: string|null, anchor: string|null, invalid: boolean}`; `formatHelpHash(guideId, anchor) -> string`.
+
+> **Corrections applied during execution (checkpoint 4, before dispatch):** the original
+> shape returned `guideId: null` for both the bare `#help` landing and a malformed
+> `#help/Not Valid`, so the page could not distinguish "landing" from "not found" — spec
+> §11.2 forbids that silent fallback. The result gains a fourth field `invalid`, true only
+> when a `#help/...` route carried a non-empty segment that failed validation (bad guide
+> id, bad anchor, or more than two segments after `help`). Empty segments (`#help/`) are
+> ignored. `invalid` is `false` on every non-help route. Tasks 13/15 render the not-found
+> state when `invalid` is true or the guide id is absent from the manifest. Before Task 15
+> exists the Help tab renders a minimal placeholder panel (heading only) so the route is
+> reachable; Task 15 replaces it.
 
 Fixes the verified defect: `readTabFromHash` currently returns `'overview'` for any hash it does not recognise, so `#help/machine-unavailable` silently opens the wrong screen.
 
@@ -3142,30 +3153,45 @@ import { parseHelpHash, formatHelpHash } from './helpRouting.js';
 const TABS = ['overview', 'remote_control', 'diagnostics', 'settings', 'machines', 'help'];
 
 test('plain tab hashes still work', () => {
-  assert.deepEqual(parseHelpHash('#settings', TABS), { tab: 'settings', guideId: null, anchor: null });
+  assert.deepEqual(parseHelpHash('#settings', TABS), { tab: 'settings', guideId: null, anchor: null, invalid: false });
 });
 
 test('unknown hash falls back to overview', () => {
-  assert.deepEqual(parseHelpHash('#nonsense', TABS), { tab: 'overview', guideId: null, anchor: null });
+  assert.deepEqual(parseHelpHash('#nonsense', TABS), { tab: 'overview', guideId: null, anchor: null, invalid: false });
 });
 
 test('bare help hash opens the help landing', () => {
-  assert.deepEqual(parseHelpHash('#help', TABS), { tab: 'help', guideId: null, anchor: null });
+  assert.deepEqual(parseHelpHash('#help', TABS), { tab: 'help', guideId: null, anchor: null, invalid: false });
+  assert.deepEqual(parseHelpHash('#help/', TABS), { tab: 'help', guideId: null, anchor: null, invalid: false });
 });
 
 test('help hash with a guide id is parsed', () => {
   assert.deepEqual(parseHelpHash('#help/machine-unavailable', TABS),
-    { tab: 'help', guideId: 'machine-unavailable', anchor: null });
+    { tab: 'help', guideId: 'machine-unavailable', anchor: null, invalid: false });
 });
 
 test('help hash with a guide id and anchor is parsed', () => {
   assert.deepEqual(parseHelpHash('#help/machine-unavailable/check-telemetry', TABS),
-    { tab: 'help', guideId: 'machine-unavailable', anchor: 'check-telemetry' });
+    { tab: 'help', guideId: 'machine-unavailable', anchor: 'check-telemetry', invalid: false });
 });
 
 test('malformed guide ids are rejected rather than passed through', () => {
-  assert.equal(parseHelpHash('#help/../../etc/passwd', TABS).guideId, null);
-  assert.equal(parseHelpHash('#help/Not Valid', TABS).guideId, null);
+  assert.deepEqual(parseHelpHash('#help/../../etc/passwd', TABS),
+    { tab: 'help', guideId: null, anchor: null, invalid: true });
+  assert.deepEqual(parseHelpHash('#help/Not Valid', TABS),
+    { tab: 'help', guideId: null, anchor: null, invalid: true });
+});
+
+test('a malformed anchor or extra segments mark the route invalid', () => {
+  assert.deepEqual(parseHelpHash('#help/machine-unavailable/Bad Anchor', TABS),
+    { tab: 'help', guideId: 'machine-unavailable', anchor: null, invalid: true });
+  assert.deepEqual(parseHelpHash('#help/machine-unavailable/check-telemetry/extra', TABS),
+    { tab: 'help', guideId: 'machine-unavailable', anchor: 'check-telemetry', invalid: true });
+});
+
+test('non-string and empty input fall back to overview', () => {
+  assert.deepEqual(parseHelpHash(undefined, TABS), { tab: 'overview', guideId: null, anchor: null, invalid: false });
+  assert.deepEqual(parseHelpHash('', TABS), { tab: 'overview', guideId: null, anchor: null, invalid: false });
 });
 
 test('formatHelpHash round-trips', () => {
@@ -3195,17 +3221,21 @@ export function parseHelpHash(hash, tabIds) {
   const [head, ...rest] = raw.split('/');
 
   if (head === 'help') {
-    const [guideId, anchor] = rest;
+    const segments = rest.filter((segment) => segment !== '');
+    const [guideId, anchor] = segments;
+    const guideOk = guideId === undefined || ID_RE.test(guideId);
+    const anchorOk = anchor === undefined || ID_RE.test(anchor);
     return {
       tab: 'help',
-      guideId: guideId && ID_RE.test(guideId) ? guideId : null,
-      anchor: anchor && ID_RE.test(anchor) ? anchor : null,
+      guideId: guideId !== undefined && guideOk ? guideId : null,
+      anchor: anchor !== undefined && anchorOk ? anchor : null,
+      invalid: !guideOk || !anchorOk || segments.length > 2,
     };
   }
   if (tabIds.includes(head)) {
-    return { tab: head, guideId: null, anchor: null };
+    return { tab: head, guideId: null, anchor: null, invalid: false };
   }
-  return { tab: 'overview', guideId: null, anchor: null };
+  return { tab: 'overview', guideId: null, anchor: null, invalid: false };
 }
 
 export function formatHelpHash(guideId, anchor) {
@@ -3215,14 +3245,19 @@ export function formatHelpHash(guideId, anchor) {
 
 Then in `DevAdminShell.jsx` add `{ id: 'help', label: 'Hjálp' }` to `TABS`, and in
 `DevAdminPage.jsx` replace `readTabFromHash` with a call to `parseHelpHash(window.location.hash, TAB_IDS)`,
-storing `{tab, guideId, anchor}` in state so the Help tab can open directly on a guide.
-An unknown `guideId` (parsed as `null` while the hash had a segment) renders the
-Help not-found state from Task 13 rather than redirecting.
+storing `{tab, guideId, anchor, invalid}` in state so the Help tab can open directly on a
+guide. `activeTab` stays a plain string (the Shell and every existing panel read it); the
+Help route `{guideId, anchor, invalid}` is held beside it and re-read on every `hashchange`.
+An invalid route (`invalid: true`) or a `guideId` absent from the manifest renders the Help
+not-found state from Task 13 rather than redirecting. Until Task 15 lands, `activeTab ===
+'help'` renders a minimal placeholder `<section className="dev-admin-panel">` with a
+heading only — no Help strings or content; Task 15 replaces it. `handleTabChange('help')`
+writes `#help` exactly like the other tabs.
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd frontend && node --test src/dev-admin/help/helpRouting.test.js && npx vite build`
-Expected: PASS (7 tests), build succeeds
+Expected: PASS (9 tests), build succeeds
 
 - [ ] **Step 5: Commit**
 
