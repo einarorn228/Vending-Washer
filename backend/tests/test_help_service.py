@@ -63,6 +63,18 @@ class HelpServiceTests(unittest.TestCase):
                 self.assertFalse(status["available"])
                 self.assertEqual(status["reason"], "manifest_unreadable")
 
+    def test_malformed_guides_field_degrades_without_raising(self):
+        for guides in ("[]", "null", '"text"', "7"):
+            with self.subTest(guides=guides):
+                help_service.reset_cache()
+                payload = '{"schema_version": 1, "guides": ' + guides + '}'
+                with patch.object(help_service, "_read_artifact", return_value=payload):
+                    self.assertIsNone(help_service.get_manifest())
+                    self.assertIsNone(help_service.get_guide("anything"))
+                    status = help_service.get_status()
+                self.assertFalse(status["available"])
+                self.assertEqual(status["reason"], "manifest_unreadable")
+
 
 if __name__ == "__main__":
     unittest.main()

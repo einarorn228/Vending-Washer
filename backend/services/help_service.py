@@ -65,6 +65,19 @@ def _load():
                      payload.get("schema_version"), SCHEMA_VERSION)
         return
 
+    guides = payload.get("guides")
+    if not isinstance(guides, dict):
+        _cache, _status = None, {
+            "available": False,
+            "reason": "manifest_unreadable",
+            "detail": f"guides is {type(guides).__name__}, expected object",
+        }
+        logger.error(
+            "Help manifest 'guides' is %s, expected object; Help disabled, backend unaffected",
+            type(guides).__name__,
+        )
+        return
+
     _cache = payload
     _status = {
         "available": True,
