@@ -9,6 +9,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { requestSupportReport } from '../api.js';
 import { t } from './helpStrings.js';
+import { buildSupportReportBody } from './checklistState.js';
 
 export default function SupportReportButton({ apiKey, guideId, machineId, checks, locale }) {
   const [busy, setBusy] = useState(false);
@@ -27,12 +28,7 @@ export default function SupportReportButton({ apiKey, guideId, machineId, checks
     setBusy(true);
     setStatus(null);
     try {
-      const body = {
-        guide_id: guideId ?? null,
-        machine_id: machineId ?? null,
-        checks: checks || [],
-        locale,
-      };
+      const body = buildSupportReportBody({ guideId, machineId, checks, locale });
       const { ok, payload } = await requestSupportReport(apiKey, body);
       if (!ok || !payload?.success) {
         setStatus({ error: payload?.message || 'Unable to build report.' });

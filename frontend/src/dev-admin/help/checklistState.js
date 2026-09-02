@@ -17,3 +17,18 @@ export function setCheckResult(state, checkId, result) {
 export function toReportChecks(state) {
   return Object.entries(state).map(([check_id, result]) => ({ check_id, result }));
 }
+
+// The exact wire shape for POST /support_report. `locale_shown` is server-owned
+// (Task 10) and deliberately absent here — the backend derives it from the
+// resolved guide, never from the client. Keeping this as one pure function
+// (rather than an inline object literal in SupportReportButton) means the
+// request body's shape is asserted by a test instead of only by reading the
+// component.
+export function buildSupportReportBody({ guideId, machineId, checks, locale }) {
+  return {
+    guide_id: guideId,
+    machine_id: machineId ?? null,
+    checks: checks || [],
+    locale,
+  };
+}

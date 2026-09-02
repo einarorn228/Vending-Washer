@@ -4,18 +4,6 @@ import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
 
 export const LOCKOUT_CONFIRMATION_PHRASE = 'DISABLE DEV ADMIN';
 
-const RECOVERY_COMMAND = `source .venv/bin/activate
-python - <<'PY'
-from backend.models import Session
-from backend.models.setting_model import update_setting_value
-
-session = Session()
-try:
-    update_setting_value(session, "dev_admin_enabled", "true")
-finally:
-    session.close()
-PY`;
-
 export default function DangerZonePanel({ apiKey, onLockedOut }) {
   const [phrase, setPhrase] = useState('');
   const [saving, setSaving] = useState(false);
@@ -55,7 +43,7 @@ export default function DangerZonePanel({ apiKey, onLockedOut }) {
       <div className="dev-admin-warning dev-admin-warning--danger">
         Turning the dev/admin panel off immediately locks this browser — and every other
         browser — out of <code>/dev/admin</code>. There is no way to switch it back on from
-        this page. Someone must run the command below on the kiosk host.
+        this page.
       </div>
 
       <div className="dev-admin-setting">
@@ -93,12 +81,9 @@ export default function DangerZonePanel({ apiKey, onLockedOut }) {
       </div>
 
       <p>
-        How to switch it back on: run this on the kiosk host, from the repository root.
+        Switching it back on is done on the kiosk host — see the protected Help guide.
         <ContextualHelpLink guideId="admin-access-recovery" label="Help: how to switch it back on" />
       </p>
-      <div className="dev-admin-code-block">
-        <pre><code>{RECOVERY_COMMAND}</code></pre>
-      </div>
     </section>
   );
 }
