@@ -142,3 +142,10 @@ export function remoteReset(apiKey) {
 export function getHelpManifest(apiKey) {
   return devAdminRequest('/help/manifest', apiKey);
 }
+
+export function requestSupportReport(apiKey, body) {
+  return devAdminRequest('/support_report', apiKey, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}

@@ -6,20 +6,34 @@
 // Icelandic operator reading an untranslated guide sees the English content
 // plus a visible notice, never a blank page.
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import BlockRenderer from './BlockRenderer.jsx';
+import ChecklistPanel from './ChecklistPanel.jsx';
+import SupportReportButton from './SupportReportButton.jsx';
 import { t } from './helpStrings.js';
 import { resolveLocale } from './resolveLocale.js';
+import { initialCheckState, setCheckResult, toReportChecks } from './checklistState.js';
 
-export default function GuideView({ guide, locale, onOpenGuide, titleFor }) {
-  if (!guide) return null;
-
+export default function GuideView({ guide, locale, onOpenGuide, titleFor, apiKey, machineId }) {
   const { locale: resolvedLocale, isFallback } = resolveLocale(guide, locale);
-  const payload = guide.locales?.[resolvedLocale];
-  if (!payload) return null;
+  const payload = guide?.locales?.[resolvedLocale];
+  const checks = payload?.checks || [];
+
+  const [checkState, setCheckState] = useState(() => initialCheckState(checks));
+
+  useEffect(() => {
+    setCheckState(initialCheckState(checks));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guide?.id, resolvedLocale]);
+
+  if (!guide || !payload) return null;
 
   const sections = payload.sections || [];
   const relatedGuides = guide.related_guides || [];
+
+  const handleSetResult = (checkId, result) => {
+    setCheckState((prev) => setCheckResult(prev, checkId, result));
+  };
 
   return (
     <div className="dev-admin-guide-view">
@@ -45,8 +59,16 @@ export default function GuideView({ guide, locale, onOpenGuide, titleFor }) {
         </section>
       ))}
 
-      {/* Task 14 inserts the guide's checklist here, rendered from payload.checks
-          against resolvedLocale, above the related-guides list below. */}
+      {checks.length > 0 ? (
+        <ChecklistPanel
+          checks={checks}
+          state={checkState}
+          onSetResult={handleSetResult}
+          locale={locale}
+          onOpenGuide={onOpenGuide}
+          titleFor={titleFor}
+        />
+      ) : null}
 
       {relatedGuides.length > 0 ? (
         <section className="dev-admin-guide-view__related">
@@ -66,8 +88,13 @@ export default function GuideView({ guide, locale, onOpenGuide, titleFor }) {
         </section>
       ) : null}
 
-      {/* Task 14 inserts the support-report button here, using guide.id and
-          resolvedLocale to prefill the escalation report. */}
+      <SupportReportButton
+        apiKey={apiKey}
+        guideId={guide.id}
+        machineId={machineId}
+        checks={toReportChecks(checkState)}
+        locale={locale}
+      />
     </div>
   );
 }

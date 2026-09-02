@@ -808,3 +808,83 @@
 }
 
 .dev-admin-guide-view__related-link { font-weight: 700; }
+
+/* ------------------------------------------------------------------ */
+/* Help Hub: checklist evidence and the support-report button.        */
+/* ------------------------------------------------------------------ */
+
+.dev-admin-guide-checklist {
+  display: grid;
+  gap: 0.9rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1rem;
+}
+
+.dev-admin-guide-checklist__item {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.35rem;
+  background: rgba(255,255,255,0.03);
+}
+
+.dev-admin-guide-checklist__question {
+  margin: 0;
+  font-weight: 800;
+}
+
+.dev-admin-guide-checklist__hint {
+  margin: 0;
+  color: rgba(243,246,252,0.75);
+  font-size: 0.9rem;
+}
+
+.dev-admin-guide-checklist__route {
+  margin: 0;
+  color: rgba(243,246,252,0.6);
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.dev-admin-guide-checklist__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.dev-admin-guide-checklist__result {
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.dev-admin-guide-checklist__result[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--kiosk-accent, #70c8ff), #3b82f6);
+  color: #06111f;
+  border-color: transparent;
+}
+
+.dev-admin-guide-report {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.dev-admin-guide-report__button { justify-self: start; }
+
+.dev-admin-guide-report__status { margin: 0; }
+
+.dev-admin-guide-report__textarea {
+  width: 100%;
+  min-height: 10rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
