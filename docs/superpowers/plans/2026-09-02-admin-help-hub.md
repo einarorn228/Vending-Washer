@@ -2513,20 +2513,233 @@ git commit -m "feat(help): add composable allowlisted support projection"
 ### Task 10: Help and support-report API routes
 
 **Files:**
-- Modify: `backend/controllers/dev_admin_api.py`
-- Test: `backend/tests/test_help_api.py` (API contract **and** application-level failure isolation)
+- Modify: `backend/services/support_service.py` (server-owned `locale_shown`, normalised `machine_id`, guide-scoped checklist evidence)
+- Modify: `backend/tests/test_support_service.py` (replace the `locale_shown=` test; add derivation, normalisation and scoping tests)
+- Modify: `backend/controllers/dev_admin_api.py` (three routes with strict request validation and `Cache-Control: no-store`)
+- Test: `backend/tests/test_help_api.py` (API contract, application-level failure isolation, read-only proof)
 
 **Interfaces:**
-- Consumes: `help_service`, `support_service`, `require_dev_admin`.
-- Produces: `GET /api/dev_admin/help/manifest`, `GET /api/dev_admin/help/status`, `POST /api/dev_admin/support_report`.
+- Consumes: `help_service.get_manifest / get_status / get_guide`, `support_service.build_support_report / render_report_text`, `require_dev_admin`, `backend.help.schema.LOCALES`.
+- Produces: `GET /api/dev_admin/help/manifest`, `GET /api/dev_admin/help/status`, `POST /api/dev_admin/support_report`; `support_service.build_support_report(db, guide_id=None, machine_id=None, checks=None, locale="is", groups=None)` — **`locale_shown` is no longer a parameter**; `support_service.resolve_locale_shown(guide, requested) -> str`; `support_service.normalise_machine_id(machine_id) -> str | None`; `support_service.MAX_CHECKS`, `MAX_ID_LEN`.
 
-- [ ] **Step 1: Write the failing test**
+**Boundary rules (maintainer, checkpoint 3 → 4). These are requirements.**
 
-Mirror the established pattern in `backend/tests/test_dev_admin_api.py`: the **real**
-`backend.flask_server.app`, the same `_basic_auth_headers` helper, and the same
-`ADMIN_USERNAME` / `ADMIN_PASSWORD` constants (`"admin"` / `"admin-pass"`). Do not hand-build
-a Flask app and do not invent different credentials — Help must have exactly the same
-authentication and kill-switch semantics as every other `/api/dev_admin` route.
+1. **`locale_shown` is server-owned provenance.** Never read from the request. Derived from the requested locale and the resolved guide: if the guide carries a FULL published translation in the requested locale → that locale; if the requested locale is a stub, withheld, or absent → the guide's `canonical_locale`; with no guide → the requested locale (nothing to fall back from).
+2. **`report["machine_id"]` is the normalised id actually used for scoping**, or `null`. `" dryer1 "` → `"dryer1"` if that machine exists in the diagnostic snapshot; anything that does not name a real machine → `null`. Raw client values never appear as if validated.
+3. **Checklist evidence belongs to the resolved guide.** Result values stay `ok | problem | unsure | not_checked`. When a guide resolves, only `check_id`s declared in that guide's compiled checklist (its canonical locale's `checks`; ids are locale-invariant by validator rule) are kept. With no guide, or a guide with no checks, ALL evidence is discarded.
+4. **HTTP is stricter than the service.** The service keeps its defensive unknown-guide → core fallback for in-process use. The route: omitted `guide_id` → generic report; well-formed known `guide_id` → contextual report; non-string `guide_id` → 400; well-formed but unknown `guide_id` → 404; `machine_id` present but not a string → 400; `locale` not in `LOCALES` → 400. A typo must not silently degrade to a generic report.
+5. **Validate the JSON container before `.get()`.** A body of `[]`, `"text"`, `42`, `null` → clean 400, never `AttributeError`/500. `checks` must be a list (else 400), capped at `MAX_CHECKS = 50` entries; `check_id`/`guide_id`/`machine_id` longer than `MAX_ID_LEN = 128` → 400.
+6. **Authentication contract unchanged.** Real `backend.flask_server.app`, the existing `_basic_auth_headers` helper and constants from `test_dev_admin_api.py`, `require_dev_admin`. No auth → 401; wrong password → 401; kill switch off → 403 with `disabled: true`; enabled → 200.
+7. **No client diagnostic groups.** `groups`, field paths, or any scope-widening key in the body never reach the service.
+8. **`Cache-Control: no-store`** (plus `Pragma: no-cache`) on all three authenticated Help/support responses, success and error alike.
+9. **Application-level failure isolation.** Against the real app, for missing / malformed / unsupported-schema manifests: `/api/ui_state` still 200; `help/manifest` returns the controlled 503; the response body carries only `success`, `message`, `reason` — no traceback, exception text, or path.
+10. **Read-only.** The report is built only inside the fresh per-request `Session` that `require_dev_admin` supplies. Proven at the route level: settings table byte-identical before/after; relay and `requests` never called.
+
+- [ ] **Step 1: Write the failing service tests**
+
+Replace `test_locale_fields_are_recorded_for_translation_backlog` in `backend/tests/test_support_service.py` with the following (it passed `locale_shown=` explicitly, which is no longer permitted), and add the normalisation and scoping tests:
+
+```python
+    # ----- locale_shown is server-owned -----
+
+    def _guide(self, canonical="en", locales=None, checks=None):
+        """Synthetic compiled guide for locale/checklist derivation tests."""
+        payload = {}
+        for loc, kind in (locales or {"en": "full"}).items():
+            if kind == "full":
+                payload[loc] = {"stub": False, "translation_status": "published",
+                                "sections": [], "checks": checks or []}
+            elif kind == "stub":
+                payload[loc] = {"stub": True, "translation_status": "published"}
+        return {"id": "g", "canonical_locale": canonical, "diagnostics": [], "locales": payload}
+
+    def test_locale_shown_is_requested_when_full_translation_exists(self):
+        guide = self._guide(locales={"en": "full", "is": "full"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "is")
+
+    def test_locale_shown_falls_back_to_canonical_for_a_stub(self):
+        guide = self._guide(locales={"en": "full", "is": "stub"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "en")
+
+    def test_locale_shown_falls_back_to_canonical_when_translation_withheld_or_absent(self):
+        guide = self._guide(locales={"en": "full"})   # `is` withheld/absent
+        self.assertEqual(support_service.resolve_locale_shown(guide, "is"), "en")
+
+    def test_locale_shown_is_requested_for_canonical_locale(self):
+        guide = self._guide(locales={"en": "full"})
+        self.assertEqual(support_service.resolve_locale_shown(guide, "en"), "en")
+
+    def test_locale_shown_without_a_guide_is_the_requested_locale(self):
+        report = support_service.build_support_report(self.db, locale="is")
+        self.assertEqual(report["locale_requested"], "is")
+        self.assertEqual(report["locale_shown"], "is")
+
+    def test_report_derives_locale_shown_from_the_resolved_guide(self):
+        from unittest.mock import patch
+        guide = self._guide(locales={"en": "full", "is": "stub"})
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", locale="is")
+        self.assertEqual(report["locale_requested"], "is")
+        self.assertEqual(report["locale_shown"], "en")
+
+    # ----- machine_id is normalised provenance -----
+
+    def test_reported_machine_id_is_normalised_or_null(self):
+        _seed_two_machines()
+        cases = {" dryer1 ": "dryer1", "dryer1": "dryer1", "no-such": None, "": None,
+                 "   ": None, {}: None, []: None, 0: None, 7: None, None: None}
+        for raw, expected in cases.items():
+            with self.subTest(machine_id=raw):
+                report = support_service.build_support_report(
+                    self.db, machine_id=raw, groups=("machine.identity",))
+                self.assertEqual(report["machine_id"], expected)
+                if expected:
+                    self.assertEqual(sorted(report["data"]["machines"]), [expected])
+
+    # ----- checklist evidence belongs to the guide -----
+
+    def test_checks_are_discarded_without_a_guide(self):
+        report = support_service.build_support_report(
+            self.db, checks=[{"check_id": "telemetry-enabled", "result": "ok"}])
+        self.assertEqual(report["checks"], [])
+
+    def test_only_checks_declared_by_the_guide_survive(self):
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "telemetry-enabled"}, {"id": "current-reading"}])
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", checks=[
+                {"check_id": "telemetry-enabled", "result": "ok"},
+                {"check_id": "invented", "result": "problem"},
+                {"check_id": "current-reading", "result": "banana"},
+                {"check_id": "current-reading", "result": "unsure"},
+            ])
+        self.assertEqual(report["checks"], [
+            {"check_id": "telemetry-enabled", "result": "ok"},
+            {"check_id": "current-reading", "result": "unsure"},
+        ])
+
+    def test_check_evidence_is_capped(self):
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "c"}])
+        flood = [{"check_id": "c", "result": "ok"}] * (support_service.MAX_CHECKS + 20)
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(self.db, guide_id="g", checks=flood)
+        self.assertLessEqual(len(report["checks"]), support_service.MAX_CHECKS)
+```
+
+Note: the dict-literal `cases` above cannot use `{}`/`[]` as keys (unhashable). Write it as a list of `(raw, expected)` tuples instead:
+`cases = [(" dryer1 ", "dryer1"), ("dryer1", "dryer1"), ("no-such", None), ("", None), ("   ", None), ({}, None), ([], None), (0, None), (7, None), (None, None)]` and iterate `for raw, expected in cases:`.
+
+- [ ] **Step 2: Run to verify they fail**
+
+Run: `source .venv/bin/activate && python -m pytest backend/tests/test_support_service.py -v -k "locale_shown or normalised or checks_are or declared_by or capped"`
+Expected: FAIL — `AttributeError: module has no attribute 'resolve_locale_shown'` and related.
+
+- [ ] **Step 3: Implement the service changes**
+
+In `backend/services/support_service.py`:
+
+```python
+MAX_CHECKS = 50
+MAX_ID_LEN = 128
+
+
+def resolve_locale_shown(guide, requested):
+    """Server-owned: which locale's body the operator was actually shown.
+
+    A full published translation in the requested locale is shown as-is. A stub,
+    a withheld translation, or an absent locale all fall back to the canonical
+    body, and the report must say so — this field is how translation gaps are
+    measured, so the client can never assert it.
+    """
+    if not guide:
+        return requested
+    payload = (guide.get("locales") or {}).get(requested)
+    if payload and not payload.get("stub") and payload.get("translation_status") == "published":
+        return requested
+    return guide.get("canonical_locale") or requested
+
+
+def normalise_machine_id(machine_id):
+    """The canonical id actually used for scoping, or None.
+
+    Never echoes raw client input: a value only appears if it names a machine in the
+    current diagnostic snapshot.
+    """
+    if not isinstance(machine_id, str):
+        return None
+    candidate = machine_id.strip()
+    if not candidate or len(candidate) > MAX_ID_LEN:
+        return None
+    from backend.controllers.telemetry import MachineStateStore
+    known = {r.get("id") for r in MachineStateStore.instance().get_diagnostic_snapshot()}
+    return candidate if candidate in known else None
+
+
+def _declared_check_ids(guide):
+    if not guide:
+        return set()
+    canonical = (guide.get("locales") or {}).get(guide.get("canonical_locale") or "", {})
+    return {c.get("id") for c in (canonical.get("checks") or []) if isinstance(c, dict)}
+
+
+def _clean_checks(checks, guide):
+    """Keep only evidence that belongs to the resolved guide.
+
+    No guide → no trusted checklist → nothing is kept. Result vocabulary is frozen;
+    check ids must be ones the guide actually declares; the list is capped.
+    """
+    allowed = _declared_check_ids(guide)
+    if not allowed or not isinstance(checks, list):
+        return []
+    cleaned = []
+    for check in checks[:MAX_CHECKS]:
+        if not isinstance(check, dict):
+            continue
+        check_id, result = check.get("check_id"), check.get("result")
+        if (isinstance(check_id, str) and check_id in allowed
+                and result in CHECK_RESULTS):
+            cleaned.append({"check_id": check_id, "result": result})
+    return cleaned
+```
+
+Update `_snapshot` to scope by `normalise_machine_id(machine_id)` (so scoping and provenance agree), change `build_support_report` to:
+
+```python
+def build_support_report(db, guide_id=None, machine_id=None, checks=None,
+                         locale="is", groups=None):
+    guide, resolved = _resolve_groups(guide_id, groups)
+    scoped_id = normalise_machine_id(machine_id)
+    data = {}
+    for group in resolved:
+        try:
+            GROUP_HANDLERS[group](db, scoped_id if scoped_id else machine_id, data)
+        except Exception:
+            data.setdefault("errors", {})[group] = "unavailable"
+            logger.warning("support report: diagnostic group %s unavailable", group)
+
+    return {
+        "schema_version": 1,
+        "generated_at": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+        "help": get_provenance(),
+        "guide_id": guide.get("id") if guide else None,
+        "locale_requested": locale,
+        "locale_shown": resolve_locale_shown(guide, locale),
+        "groups": resolved,
+        "machine_id": scoped_id,
+        "checks": _clean_checks(checks, guide),
+        "data": data,
+    }
+```
+
+(Passing `machine_id` through when `scoped_id` is `None` preserves the existing `_snapshot` behaviour that a bad id narrows to nothing; `None` from an omitted id still means all machines.)
+
+- [ ] **Step 4: Run the service tests**
+
+Run: `source .venv/bin/activate && python -m pytest backend/tests/test_support_service.py -v`
+Expected: PASS — 32 tests, 0 skipped.
+
+- [ ] **Step 5: Write the failing API tests**
 
 ```python
 # backend/tests/test_help_api.py
@@ -2551,97 +2764,157 @@ def _basic_auth_headers(username: str, password: str) -> dict:
     return {"Authorization": f"Basic {token}"}
 
 
-class HelpApiTests(unittest.TestCase):
+def _seed_admin():
+    session.query(Settings).delete()
+    session.commit()
+    update_setting_value(session, "api_key", "test-key")
+    update_setting_value(session, "dev_admin_enabled", "true")
+    update_setting_value(session, "admin_username", ADMIN_USERNAME)
+    update_setting_value(
+        session, "admin_password_hash",
+        hashlib.sha256(ADMIN_PASSWORD.encode("utf-8")).hexdigest(),
+    )
+    update_setting_value(session, "backend_relay_enabled", "false")
+
+
+class HelpApiContractTests(unittest.TestCase):
     def setUp(self):
         init_db()
-        session.query(Settings).delete()
-        session.commit()
-        update_setting_value(session, "api_key", "test-key")
-        update_setting_value(session, "dev_admin_enabled", "true")
-        update_setting_value(session, "admin_username", ADMIN_USERNAME)
-        update_setting_value(
-            session, "admin_password_hash",
-            hashlib.sha256(ADMIN_PASSWORD.encode("utf-8")).hexdigest(),
-        )
+        _seed_admin()
         help_service.reset_cache()
         self.client = app.test_client()
         self.headers = _basic_auth_headers(ADMIN_USERNAME, ADMIN_PASSWORD)
+        self.known_guide = next(iter(help_service.get_manifest()["guides"]))
 
     def tearDown(self):
         help_service.reset_cache()
 
-    # ----- identical auth contract to the rest of /api/dev_admin -----
+    # ----- authentication contract, identical to the rest of /api/dev_admin -----
 
-    def test_manifest_requires_credentials(self):
-        self.assertEqual(self.client.get("/api/dev_admin/help/manifest").status_code, 401)
+    def test_no_auth_is_rejected(self):
+        for path in ("/api/dev_admin/help/manifest", "/api/dev_admin/help/status"):
+            self.assertEqual(self.client.get(path).status_code, 401, path)
+        self.assertEqual(self.client.post("/api/dev_admin/support_report", json={}).status_code, 401)
 
-    def test_manifest_rejects_wrong_password(self):
+    def test_wrong_password_is_rejected(self):
         bad = _basic_auth_headers(ADMIN_USERNAME, "wrong")
-        self.assertEqual(
-            self.client.get("/api/dev_admin/help/manifest", headers=bad).status_code, 401
-        )
+        self.assertEqual(self.client.get("/api/dev_admin/help/manifest", headers=bad).status_code, 401)
 
     def test_kill_switch_returns_403_like_every_other_dev_admin_route(self):
         update_setting_value(session, "dev_admin_enabled", "false")
-        resp = self.client.get("/api/dev_admin/help/manifest", headers=self.headers)
+        for path in ("/api/dev_admin/help/manifest", "/api/dev_admin/help/status"):
+            resp = self.client.get(path, headers=self.headers)
+            self.assertEqual(resp.status_code, 403, path)
+            self.assertTrue(resp.get_json()["disabled"])
+        resp = self.client.post("/api/dev_admin/support_report", json={}, headers=self.headers)
         self.assertEqual(resp.status_code, 403)
-        self.assertTrue(resp.get_json()["disabled"])
 
-    def test_support_report_requires_credentials(self):
-        self.assertEqual(
-            self.client.post("/api/dev_admin/support_report", json={}).status_code, 401
-        )
-
-    # ----- behaviour -----
-
-    def test_manifest_returns_the_compiled_corpus(self):
+    def test_authenticated_and_enabled_succeeds(self):
         payload = self.client.get("/api/dev_admin/help/manifest", headers=self.headers).get_json()
         self.assertTrue(payload["success"])
         self.assertIn("guides", payload["manifest"])
+        status = self.client.get("/api/dev_admin/help/status", headers=self.headers).get_json()
+        self.assertTrue(status["status"]["available"])
 
-    def test_status_reports_availability(self):
-        payload = self.client.get("/api/dev_admin/help/status", headers=self.headers).get_json()
-        self.assertTrue(payload["status"]["available"])
+    # ----- cache headers -----
 
-    def test_support_report_returns_structured_and_rendered_forms(self):
-        resp = self.client.post(
-            "/api/dev_admin/support_report",
-            json={"locale": "is", "checks": [{"check_id": "c", "result": "ok"}]},
-            headers=self.headers,
-        )
-        payload = resp.get_json()
+    def test_help_responses_are_no_store(self):
+        for resp in (
+            self.client.get("/api/dev_admin/help/manifest", headers=self.headers),
+            self.client.get("/api/dev_admin/help/status", headers=self.headers),
+            self.client.post("/api/dev_admin/support_report", json={}, headers=self.headers),
+            self.client.post("/api/dev_admin/support_report", json=[], headers=self.headers),
+        ):
+            self.assertIn("no-store", resp.headers.get("Cache-Control", ""), resp.request.path)
+
+    # ----- request validation: HTTP is stricter than the service -----
+
+    def _post(self, body):
+        return self.client.post("/api/dev_admin/support_report", json=body, headers=self.headers)
+
+    def test_omitted_guide_id_is_a_generic_report(self):
+        resp = self._post({})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(payload["report"]["checks"][0]["result"], "ok")
-        self.assertIn("manifest_digest", payload["report"]["help"])
-        self.assertIn("text", payload)
+        self.assertIsNone(resp.get_json()["report"]["guide_id"])
 
-    def test_support_report_ignores_client_supplied_groups(self):
-        resp = self.client.post(
-            "/api/dev_admin/support_report",
-            json={"groups": ["machine.mapping"]},
-            headers=self.headers,
-        )
-        self.assertNotIn("machine.mapping", resp.get_json()["report"]["groups"])
+    def test_known_guide_id_is_a_contextual_report(self):
+        resp = self._post({"guide_id": self.known_guide})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["report"]["guide_id"], self.known_guide)
+
+    def test_unknown_guide_id_is_404_not_a_silent_generic_report(self):
+        resp = self._post({"guide_id": "no-such-guide"})
+        self.assertEqual(resp.status_code, 404)
+        self.assertFalse(resp.get_json()["success"])
+
+    def test_malformed_guide_id_is_400(self):
+        for bad in (7, {"a": 1}, ["x"], "", "x" * 200):
+            with self.subTest(guide_id=bad):
+                self.assertEqual(self._post({"guide_id": bad}).status_code, 400)
+
+    def test_malformed_machine_id_type_is_400(self):
+        for bad in (7, {"a": 1}, ["x"], "x" * 200):
+            with self.subTest(machine_id=bad):
+                self.assertEqual(self._post({"machine_id": bad}).status_code, 400)
+
+    def test_unsupported_locale_is_400(self):
+        for bad in ("de", "", 7, None):
+            with self.subTest(locale=bad):
+                self.assertEqual(self._post({"locale": bad}).status_code, 400)
+
+    def test_non_object_json_body_is_400_not_500(self):
+        for body in ([], "text", 42, None):
+            with self.subTest(body=body):
+                resp = self._post(body)
+                self.assertEqual(resp.status_code, 400)
+                self.assertFalse(resp.get_json()["success"])
+
+    def test_checks_must_be_a_list_and_bounded(self):
+        self.assertEqual(self._post({"checks": {"a": 1}}).status_code, 400)
+        self.assertEqual(self._post({"checks": "ok"}).status_code, 400)
+        flood = [{"check_id": "c", "result": "ok"}] * 500
+        self.assertEqual(self._post({"checks": flood}).status_code, 400)
+
+    # ----- boundary: client cannot widen scope or forge provenance -----
+
+    def test_client_groups_and_locale_shown_are_ignored(self):
+        resp = self._post({"groups": ["machine.mapping", "secrets"], "locale_shown": "xx",
+                           "fields": ["api_key"], "locale": "is"})
+        report = resp.get_json()["report"]
+        self.assertNotIn("machine.mapping", report["groups"])
+        self.assertEqual(report["locale_shown"], "is")
+
+    def test_report_carries_provenance(self):
+        report = self._post({"locale": "is"}).get_json()["report"]
+        self.assertEqual(report["help"], help_service.get_provenance())
+        self.assertEqual(report["locale_requested"], "is")
+
+    def test_response_includes_rendered_text(self):
+        payload = self._post({"locale": "is"}).get_json()
+        self.assertIn("help_manifest_digest", payload["text"])
+
+    # ----- read-only at the route level -----
+
+    def test_support_report_route_is_read_only(self):
+        before = sorted((s.key, s.value) for s in session.query(Settings).all())
+        with patch("backend.utils.shelly_control.send_shelly_pulse") as pulse, \
+             patch("backend.utils.shelly_control.shelly_switch_on") as on, \
+             patch("backend.utils.shelly_control.shelly_switch_off") as off, \
+             patch("requests.get") as http_get, patch("requests.post") as http_post:
+            self.assertEqual(self._post({"guide_id": self.known_guide}).status_code, 200)
+        session.expire_all()
+        after = sorted((s.key, s.value) for s in session.query(Settings).all())
+        self.assertEqual(before, after)
+        for mock in (pulse, on, off, http_get, http_post):
+            mock.assert_not_called()
 
 
 class HelpFailureIsolationTests(unittest.TestCase):
-    """Help may fail; the kiosk may not fail because Help failed.
-
-    Asserted at the application level, not by importing a module: a broken manifest
-    must leave the real Flask app serving the real kiosk contract.
-    """
+    """Help may fail; the kiosk may not fail because Help failed — at the app level."""
 
     def setUp(self):
         init_db()
-        session.query(Settings).delete()
-        session.commit()
-        update_setting_value(session, "api_key", "test-key")
-        update_setting_value(session, "dev_admin_enabled", "true")
-        update_setting_value(session, "admin_username", ADMIN_USERNAME)
-        update_setting_value(
-            session, "admin_password_hash",
-            hashlib.sha256(ADMIN_PASSWORD.encode("utf-8")).hexdigest(),
-        )
+        _seed_admin()
         self.client = app.test_client()
         self.headers = _basic_auth_headers(ADMIN_USERNAME, ADMIN_PASSWORD)
 
@@ -2654,71 +2927,93 @@ class HelpFailureIsolationTests(unittest.TestCase):
 
     def _assert_kiosk_unaffected(self):
         resp = self.client.get("/api/ui_state", headers={"X-API-KEY": "test-key"})
-        self.assertEqual(resp.status_code, 200, "kiosk UI state must survive a Help failure")
+        self.assertEqual(resp.status_code, 200)
         self.assertIn("state", resp.get_json())
 
     def _assert_help_unavailable(self, reason):
         resp = self.client.get("/api/dev_admin/help/manifest", headers=self.headers)
         self.assertEqual(resp.status_code, 503)
-        self.assertEqual(resp.get_json()["reason"], reason)
+        body = resp.get_json()
+        self.assertEqual(body["reason"], reason)
+        self.assertEqual(set(body), {"success", "message", "reason"})
+        text = resp.get_data(as_text=True)
+        for leak in ("Traceback", "Error:", "/home/", "backend/help/generated"):
+            self.assertNotIn(leak, text)
+        self.assertIn("no-store", resp.headers.get("Cache-Control", ""))
 
-    def test_missing_manifest_leaves_the_kiosk_serving(self):
+    def test_missing_manifest(self):
         with self._broken(side_effect=FileNotFoundError):
             self._assert_help_unavailable("manifest_missing")
             self._assert_kiosk_unaffected()
 
-    def test_malformed_manifest_leaves_the_kiosk_serving(self):
+    def test_malformed_manifest(self):
         with self._broken(return_value="{not json"):
             self._assert_help_unavailable("manifest_unreadable")
             self._assert_kiosk_unaffected()
 
-    def test_unsupported_schema_leaves_the_kiosk_serving(self):
+    def test_unsupported_schema(self):
         with self._broken(return_value='{"schema_version": 999, "guides": {}}'):
             self._assert_help_unavailable("schema_version_unsupported")
             self._assert_kiosk_unaffected()
 
+    def test_support_report_still_answers_when_help_is_broken(self):
+        with self._broken(side_effect=OSError("io")):
+            resp = self.client.post("/api/dev_admin/support_report", json={}, headers=self.headers)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIsNone(resp.get_json()["report"]["help"]["manifest_digest"])
+
     def test_other_dev_admin_tabs_still_work_while_help_is_broken(self):
         with self._broken(side_effect=OSError("io")):
-            for path in ("/api/dev_admin/status", "/api/dev_admin/settings",
-                         "/api/dev_admin/machines"):
-                self.assertEqual(
-                    self.client.get(path, headers=self.headers).status_code, 200,
-                    msg=f"{path} must not be affected by a broken Help manifest",
-                )
-
-    def test_scanner_and_machine_control_initialise_with_help_broken(self):
-        with self._broken(side_effect=OSError("io")):
-            help_service.reset_cache()
-            self.assertIsNone(help_service.get_manifest())
-            from backend.controllers import machine_control, qr_scanner  # noqa: F401
-            self.assertIsNotNone(machine_control.UI_STATE.get("state"))
+            for path in ("/api/dev_admin/status", "/api/dev_admin/settings", "/api/dev_admin/machines"):
+                self.assertEqual(self.client.get(path, headers=self.headers).status_code, 200, path)
 
 
 if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 6: Run to verify they fail**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_api.py -v`
-Expected: FAIL — 404 on `/help/manifest`
+Expected: FAIL — 404 on `/api/dev_admin/help/manifest` (routes do not exist yet).
 
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 7: Implement the routes**
 
 Add to the imports in `backend/controllers/dev_admin_api.py`:
 
 ```python
-from backend.services.help_service import get_manifest as get_help_manifest, get_status as get_help_status
-from backend.services.support_service import build_support_report, render_report_text
+from backend.help.schema import LOCALES
+from backend.services.help_service import (
+    get_guide as get_help_guide,
+    get_manifest as get_help_manifest,
+    get_status as get_help_status,
+)
+from backend.services.support_service import (
+    MAX_CHECKS,
+    MAX_ID_LEN,
+    build_support_report,
+    render_report_text,
+)
 ```
 
 Add the routes immediately before `@dev_admin_api.route("/export-config", methods=["GET"])`:
 
 ```python
+def _no_store(response):
+    """Operational documentation never needs HTTP persistence; the browser keeps it in memory."""
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
+def _help_json(payload, status=200):
+    return _no_store(jsonify(payload)), status
+
+
 @dev_admin_api.route("/help/status", methods=["GET"])
 @require_dev_admin
 def help_status(db):
-    return jsonify({"success": True, "status": get_help_status()})
+    return _help_json({"success": True, "status": get_help_status()})
 
 
 @dev_admin_api.route("/help/manifest", methods=["GET"])
@@ -2726,13 +3021,17 @@ def help_status(db):
 def help_manifest(db):
     manifest = get_help_manifest()
     if manifest is None:
-        status = get_help_status()
-        return jsonify({
+        # Controlled degradation: reason code only, never exception text or paths.
+        return _help_json({
             "success": False,
             "message": "Help content is unavailable.",
-            "reason": status.get("reason"),
-        }), 503
-    return jsonify({"success": True, "manifest": manifest, "status": get_help_status()})
+            "reason": get_help_status().get("reason"),
+        }, 503)
+    return _help_json({"success": True, "manifest": manifest, "status": get_help_status()})
+
+
+def _bad_request(message):
+    return _help_json({"success": False, "message": message}, 400)
 
 
 @dev_admin_api.route("/support_report", methods=["POST"])
@@ -2740,35 +3039,62 @@ def help_manifest(db):
 def support_report(db):
     """Assemble an escalation report.
 
-    Diagnostic groups come from the guide's compiled `diagnostics` list, never from
-    the request: a `groups` key in the body is accepted by JSON and then ignored.
+    HTTP is stricter than the service: a typo in guide_id is a 404, not a silent
+    generic report. Diagnostic groups come from the guide's compiled manifest entry;
+    `groups`, `locale_shown` and any other scope- or provenance-shaping key in the
+    body are ignored. The report is built inside the per-request Session that
+    require_dev_admin supplies, and never writes.
     """
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return _bad_request("Request body must be a JSON object.")
+
+    guide_id = data.get("guide_id")
+    if guide_id is not None:
+        if not isinstance(guide_id, str) or not guide_id.strip() or len(guide_id) > MAX_ID_LEN:
+            return _bad_request("guide_id must be a non-empty string.")
+        guide_id = guide_id.strip()
+        if get_help_guide(guide_id) is None:
+            return _help_json({"success": False, "message": "Unknown guide."}, 404)
+
+    machine_id = data.get("machine_id")
+    if machine_id is not None and (not isinstance(machine_id, str) or len(machine_id) > MAX_ID_LEN):
+        return _bad_request("machine_id must be a string.")
+
+    locale = data.get("locale", "is")
+    if locale not in LOCALES:
+        return _bad_request(f"locale must be one of {', '.join(LOCALES)}.")
+
+    checks = data.get("checks", [])
+    if not isinstance(checks, list) or len(checks) > MAX_CHECKS:
+        return _bad_request(f"checks must be a list of at most {MAX_CHECKS} entries.")
+    for check in checks:
+        if isinstance(check, dict):
+            cid = check.get("check_id")
+            if isinstance(cid, str) and len(cid) > MAX_ID_LEN:
+                return _bad_request("check_id too long.")
+
     report = build_support_report(
-        db,
-        guide_id=data.get("guide_id"),
-        machine_id=data.get("machine_id"),
-        checks=data.get("checks"),
-        locale=str(data.get("locale") or "is"),
-        locale_shown=data.get("locale_shown"),
+        db, guide_id=guide_id, machine_id=machine_id, checks=checks, locale=locale,
     )
-    return jsonify({
+    return _help_json({
         "success": True,
         "report": report,
         "text": render_report_text(report, report["locale_requested"]),
     })
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 8: Run all tests**
 
-Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_api.py -v && python -m pytest backend/tests/ -q`
-Expected: PASS (13 tests), full suite green
+Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_api.py backend/tests/test_support_service.py -v && python -m pytest backend/tests/ -q`
+Expected: API tests all pass (24), service tests 32 pass; full suite green.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add backend/controllers/dev_admin_api.py backend/tests/test_help_api.py
-git commit -m "feat(help): expose authenticated Help manifest and support-report routes"
+git add backend/services/support_service.py backend/tests/test_support_service.py \
+        backend/controllers/dev_admin_api.py backend/tests/test_help_api.py
+git commit -m "feat(help): expose authenticated Help manifest and strict support-report routes"
 ```
 
 ---
