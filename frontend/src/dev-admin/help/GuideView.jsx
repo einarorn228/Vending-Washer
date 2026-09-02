@@ -1,22 +1,15 @@
 // frontend/src/dev-admin/help/GuideView.jsx
 //
-// Renders one compiled guide record. resolveLocale() picks which locale
-// payload to show — a stub payload (no sections, no checks) never wins over
-// a real one, so an Icelandic operator reading an untranslated guide sees
-// the English content plus a visible notice, never a blank page.
+// Renders one compiled guide record. resolveLocale() (plain JS, tested in
+// resolveLocale.test.js) picks which locale payload to show — a stub
+// payload (no sections, no checks) never wins over a real one, so an
+// Icelandic operator reading an untranslated guide sees the English content
+// plus a visible notice, never a blank page.
 
 import React from 'react';
 import BlockRenderer from './BlockRenderer.jsx';
 import { t } from './helpStrings.js';
-
-export function resolveLocale(guide, requested) {
-  const locales = guide?.locales || {};
-  const requestedPayload = locales[requested];
-  if (requestedPayload && !requestedPayload.stub) {
-    return { locale: requested, isFallback: false };
-  }
-  return { locale: guide?.canonical_locale, isFallback: true };
-}
+import { resolveLocale } from './resolveLocale.js';
 
 export default function GuideView({ guide, locale, onOpenGuide, titleFor }) {
   if (!guide) return null;
