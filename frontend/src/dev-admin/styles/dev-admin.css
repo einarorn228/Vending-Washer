@@ -975,6 +975,16 @@
   color: var(--kiosk-muted, #b7c2d5);
 }
 
+.dev-admin-helphub-unavailable { margin: 0; }
+
+.dev-admin-helphub-common-problems {
+  border-color: rgba(112, 200, 255, 0.3);
+}
+
+.dev-admin-helphub-category h3 {
+  color: var(--kiosk-accent, #70c8ff);
+}
+
 .dev-admin-helphub-drawer {
   display: grid;
   gap: 1rem;

@@ -14,7 +14,7 @@ import { t } from './helpStrings.js';
 import { resolveLocale } from './resolveLocale.js';
 import { initialCheckState, setCheckResult, toReportChecks } from './checklistState.js';
 
-export default function GuideView({ guide, locale, onOpenGuide, titleFor, apiKey, machineId }) {
+export default function GuideView({ guide, locale, onOpenGuide, titleFor, apiKey, machineId, anchor }) {
   const { locale: resolvedLocale, isFallback } = resolveLocale(guide, locale);
   const payload = guide?.locales?.[resolvedLocale];
   const checks = payload?.checks || [];
@@ -25,6 +25,18 @@ export default function GuideView({ guide, locale, onOpenGuide, titleFor, apiKey
     setCheckState(initialCheckState(checks));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guide?.id, resolvedLocale]);
+
+  // Scroll to the requested anchor once the sections (id={section.anchor}) have
+  // painted. scrollIntoView({block:'start'}) scrolls whichever ancestor actually
+  // scrolls — the page for the Help tab, the drawer's own scroll container for
+  // HelpDrawer — so one implementation serves both surfaces. Native browser
+  // anchor-scroll cannot fire here: the address bar hash is `#help/<id>/<anchor>`,
+  // not `#<anchor>`.
+  useEffect(() => {
+    if (!anchor || typeof document === 'undefined') return;
+    const target = document.getElementById(anchor);
+    target?.scrollIntoView({ block: 'start' });
+  }, [guide?.id, anchor, guide]);
 
   if (!guide || !payload) return null;
 

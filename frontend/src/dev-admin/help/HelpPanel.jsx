@@ -14,7 +14,7 @@ import { useHelpManifest } from './useHelpManifest.js';
 import { searchGuides } from './helpSearch.js';
 import { commonProblems } from './commonProblems.js';
 import { formatHelpHash } from './helpRouting.js';
-import { t, STRINGS } from './helpStrings.js';
+import { t } from './helpStrings.js';
 
 function makeTitleFor(manifest, locale) {
   return (id) => {
@@ -63,10 +63,11 @@ function navigateToLanding() {
   window.location.hash = 'help';
 }
 
-function LocaleToggle({ locale, onLocaleChange }) {
+function LocaleToggle({ locale, onLocaleChange, manifest }) {
+  const codes = manifest?.locales || ['is', 'en'];
   return (
     <div className="dev-admin-helphub-locale" role="group" aria-label="Help language">
-      {Object.keys(STRINGS).map((code) => (
+      {codes.map((code) => (
         <button
           key={code}
           type="button"
@@ -138,12 +139,12 @@ export default function HelpPanel({ apiKey, helpRoute, locale: preferredLocale, 
 
   const guide = helpRoute.guideId ? manifest.guides?.[helpRoute.guideId] : null;
 
-  if (helpRoute.guideId && (helpRoute.invalid || !guide)) {
+  if (helpRoute.invalid || (helpRoute.guideId && !guide)) {
     return (
       <section className="dev-admin-panel">
         <div className="dev-admin-panel__header">
           <h2>{t(locale, 'help')}</h2>
-          <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} />
+          <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} manifest={manifest} />
         </div>
         <p className="dev-admin-helphub-notfound">{t(locale, 'notFound')}</p>
         <button type="button" className="dev-admin-guide-link" onClick={navigateToLanding}>
@@ -160,7 +161,7 @@ export default function HelpPanel({ apiKey, helpRoute, locale: preferredLocale, 
           <button type="button" className="dev-admin-guide-link" onClick={navigateToLanding}>
             ← {t(locale, 'guides')}
           </button>
-          <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} />
+          <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} manifest={manifest} />
         </div>
         <GuideView
           guide={guide}
@@ -169,6 +170,7 @@ export default function HelpPanel({ apiKey, helpRoute, locale: preferredLocale, 
           titleFor={titleFor}
           apiKey={apiKey}
           machineId={machineId}
+          anchor={helpRoute.anchor}
         />
       </section>
     );
@@ -182,7 +184,7 @@ export default function HelpPanel({ apiKey, helpRoute, locale: preferredLocale, 
     <section className="dev-admin-panel">
       <div className="dev-admin-panel__header">
         <h2>{t(locale, 'help')}</h2>
-        <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} />
+        <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} manifest={manifest} />
       </div>
 
       <input
@@ -217,7 +219,7 @@ export default function HelpPanel({ apiKey, helpRoute, locale: preferredLocale, 
 
       {categories.map((category) => (
         <article key={category.id} className="dev-admin-group-card dev-admin-helphub-category">
-          <h3>{t(locale, `category_${category.id}`) || category.id}</h3>
+          <h3>{t(locale, `category_${category.id}`)}</h3>
           <ul className="dev-admin-helphub-guide-list">
             {category.guides.map((categoryGuide) => (
               <li key={categoryGuide.id}>

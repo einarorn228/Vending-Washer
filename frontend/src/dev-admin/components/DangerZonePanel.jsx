@@ -93,7 +93,7 @@ export default function DangerZonePanel({ apiKey, onLockedOut }) {
       </div>
 
       <p>
-        How to switch it back on
+        How to switch it back on: run this on the kiosk host, from the repository root.
         <ContextualHelpLink guideId="admin-access-recovery" label="Help: how to switch it back on" />
       </p>
       <div className="dev-admin-code-block">

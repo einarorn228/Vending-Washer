@@ -47,7 +47,7 @@ export default function HelpDrawer({ guideId, anchor, machineId, apiKey, locale:
   if (error) {
     body = <p className="dev-admin-warning dev-admin-helphub-unavailable">{t(locale, 'unavailable')}</p>;
   } else if (loading) {
-    body = null;
+    body = <p className="dev-admin-save-message">{t(locale, 'help')}…</p>;
   } else if (!guide) {
     body = <p className="dev-admin-helphub-notfound">{t(locale, 'notFound')}</p>;
   } else {
@@ -59,6 +59,7 @@ export default function HelpDrawer({ guideId, anchor, machineId, apiKey, locale:
         titleFor={titleFor}
         apiKey={apiKey}
         machineId={machineId}
+        anchor={anchor}
       />
     );
   }
