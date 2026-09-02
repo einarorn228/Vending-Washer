@@ -3895,6 +3895,50 @@ if (window.location.pathname.startsWith(PUBLIC_HELP_PATH)) {
 `PublicHelpPage.jsx` imports the generated public manifest directly, so it works with the
 backend completely down — which is the only reason this tier exists.
 
+> **Corrections applied during execution (checkpoint 5 approved, before dispatch):**
+>
+> *Snapshot test.* Task 7 already committed `test_public_manifest_guide_ids_are_snapshotted`
+> asserting `["backend-unavailable"]`. Task 16 **replaces that assertion** with the three-ID
+> list — one snapshot test, not two; Step 1's separate test is not added.
+>
+> *Forbidden-content sweep.* `test_public_manifest_rejects_privileged_identifiers_entirely`
+> is widened to the maintainer's list (all lower-case substring checks against the public
+> artifact): `api_key`, `admin_password_hash`, `reisa_bearer_token`, `reisa`, `bearer`,
+> `dev_admin_enabled`, `dev_admin`, `backend_relay_enabled`, `relay`, `shelly`,
+> `update_setting_value`, `.venv/bin/activate`, `python -`, `python3`, `sqlite`, `codes.db`,
+> `backend.models`, `session()`, `<<'py'`, `/dev/admin`, `x-api-key`, `basic auth`,
+> `seed_settings`, `get_api_key`. Guide authors must write around these words (e.g. say
+> "kerfisstjóri" / "the system maintainer", never name the admin panel, tokens, keys, relays
+> or devices).
+>
+> *Lockout line.* The exact text *"Stjórnandaaðgangur er ekki tiltækur. Hafðu samband við
+> kerfisstjóra."* is rendered by `PublicHelpPage` as fixed page chrome under a small heading
+> (`Stjórnandaaðgangur`), not inside a guide, so it is present whichever guide is open.
+>
+> *Public guides.* Canonical `locale: is` (Task 7 ruling), `status: published`, `kind:
+> troubleshooting`, `risk: low`, category `kiosk_display` for `kiosk-screen-blank` and
+> `hardware_network` for `network-unavailable`, no `checks`, no `related_settings`, no
+> `diagnostics`, no `actions`. Sections carry `{#anchor}` headings. Content: safe physical
+> checks (power light, cable seated, screen on), retry/refresh guidance (wait one to two
+> minutes), basic observations to report (what the screen shows, whether other devices on
+> site have internet), and escalation to the system maintainer. Nothing else.
+>
+> *Page.* `/help` (and `/help#<guide-id>` to open one guide) renders from the statically
+> imported JSON with **no network call of any kind** — no polling hook, no API import.
+> Icelandic-only chrome: list of the three guides with summaries, guide view via
+> `BlockRenderer` (`resolveLocale` for the payload), a "Til baka" link, the lockout line.
+> Styling reuses `dev-admin/styles/dev-admin.css`'s `dev-admin-guide-*` rules inside a
+> minimal `public-help` container; no new CSS beyond a few lines. `App.jsx` checks
+> `PUBLIC_HELP_PATH` **before** the dev-admin branch is irrelevant (paths differ) but must sit
+> before `RealKioskApp` so the kiosk poller never mounts on `/help`.
+>
+> *Verification (Step 4 widened).* After recompiling: the artifact tests pass; the committed
+> public manifest is byte-current; `npx vite build`; and a bundle sweep proves the built
+> `dist/assets/*.js` contains the three public guide ids but **none** of the admin guide ids
+> (`admin-panel-orientation` etc.) and none of the forbidden strings above except those the
+> admin panel itself legitimately uses (`dev_admin_enabled`, `/dev/admin`, `python -m
+> backend.app`, `relay` in settings labels) — record the counts in the report.
+
 - [ ] **Step 4: Recompile and run the tests**
 
 Run: `source .venv/bin/activate && python -m backend.help.cli && python -m pytest backend/tests/test_help_artifacts.py -v && cd frontend && npx vite build`
