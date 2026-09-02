@@ -70,6 +70,24 @@ class BlockParsingTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             parse_body("## No anchor here\n\ntext\n", SETTINGS)
 
+    def test_multi_paragraph_list_item_parses(self):
+        sections = parse_body("## S {#s}\n\n- a\n\n  second para in a\n\n- b\n", SETTINGS)
+        lst = next(b for b in sections[0]["blocks"] if b["type"] == "unordered_list")
+        self.assertEqual(len(lst["items"]), 2)
+        self.assertEqual(len(lst["items"][0]), 2, "first item should hold two paragraphs")
+
+    def test_callout_with_blank_separator_line_parses(self):
+        sections = parse_body("## S {#s}\n\n> [!WARNING]\n>\n> Careful.\n", SETTINGS)
+        callout = next(b for b in sections[0]["blocks"] if b["type"] == "callout")
+        self.assertEqual(callout["level"], "warning")
+
+    def test_callout_body_has_no_marker_or_stray_whitespace(self):
+        sections = parse_body("## S {#s}\n\n> [!WARNING]\n> Careful.\n", SETTINGS)
+        callout = next(b for b in sections[0]["blocks"] if b["type"] == "callout")
+        inlines = callout["blocks"][0]["inlines"]
+        texts = [i["text"] for i in inlines if i["type"] == "text"]
+        self.assertEqual(texts, ["Careful."])
+
 
 if __name__ == "__main__":
     unittest.main()

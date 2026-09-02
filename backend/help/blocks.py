@@ -69,6 +69,8 @@ def _list_items(node, known_settings):
     for item in node.get("children", []):
         blocks = []
         for child in item.get("children", []):
+            if child.get("type") == "blank_line":
+                continue
             if child.get("type") in ("block_text", "paragraph"):
                 blocks.append({"type": "paragraph",
                                "inlines": _inlines(child.get("children", []), known_settings)})
@@ -118,12 +120,18 @@ def _block(node, known_settings):
                 level = match.group(1).lower()
         blocks = []
         for child in children:
+            if child.get("type") == "blank_line":
+                continue
             block = _block(child, known_settings)
             if block["type"] == "paragraph":
-                block["inlines"] = [
+                inlines = [
                     i for i in block["inlines"]
                     if not (i["type"] == "text" and _ALERT_RE.match(i["text"].strip()))
                 ]
+                # Remove any whitespace-only text inline that follows the removed marker
+                if inlines and inlines[0]["type"] == "text" and not inlines[0]["text"].strip():
+                    inlines = inlines[1:]
+                block["inlines"] = inlines
                 if not block["inlines"]:
                     continue
             blocks.append(block)
