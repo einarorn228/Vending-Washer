@@ -186,6 +186,20 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             self.compile()
 
+    def test_scalar_in_list_field_is_a_compile_error(self):
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("related_settings:\n  - telemetry_enabled",
+                          "related_settings: telemetry_enabled"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
+    def test_scalar_search_alias_in_translation_is_a_compile_error(self):
+        _write(self.tmp, "is/machines_telemetry/machine-unavailable.md",
+               IS_STUB_PUBLISHED.replace("search_aliases:\n  - þvottavél",
+                                         "search_aliases: þvottavél"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
 
 if __name__ == "__main__":
     unittest.main()

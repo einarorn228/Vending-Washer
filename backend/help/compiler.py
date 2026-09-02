@@ -26,11 +26,22 @@ _LIST_FIELDS = ("related_guides", "related_settings", "diagnostics", "actions", 
 
 
 def _as_list(value):
-    if value is None:
-        return []
-    return value if isinstance(value, list) else [value]
+    return list(value) if value else []
 
 
+def _validate_list_fields(meta, path):
+    for field in _LIST_FIELDS:
+        if field in meta and not isinstance(meta[field], list):
+            raise CompileError(
+                f"{path}: {field} must be a list (use '- item' syntax), got {meta[field]!r}"
+            )
+        if field in meta and not all(isinstance(item, str) and item for item in meta[field]):
+            raise CompileError(f"{path}: {field} items must be non-empty strings")
+
+
+# With list-typed fields validated strictly before this is ever called, `_as_list`
+# can no longer return a single-item wrap for a scalar, so the scalar-vs-list
+# asymmetry this used to guard against cannot arise; sorting a list is always correct.
 def _normalised(value):
     return sorted(_as_list(value)) if isinstance(value, list) else value
 
@@ -87,6 +98,7 @@ def compile_help(root, trust_class, known_settings, build_id=None):
         if unknown:
             raise CompileError(f"{path}: unknown field(s) {sorted(unknown)}")
         _validate_checks(meta, path)
+        _validate_list_fields(meta, path)
         if not isinstance(meta["id"], str) or not meta["id"]:
             raise CompileError(f"{path}: id must be a non-empty string, got {meta['id']!r}")
         if meta["locale"] not in LOCALES:
