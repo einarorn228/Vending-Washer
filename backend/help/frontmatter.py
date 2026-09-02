@@ -37,6 +37,7 @@ def split_frontmatter(text: str):
     meta = {}
     key = None            # current list-valued key
     entry = None          # current mapping inside a list-of-mappings
+    item_indent = None    # indentation level of the current list marker
     for lineno, line in enumerate(lines[1:end], start=2):
         if "\t" in line:
             raise CompileError(f"line {lineno}: tabs are not allowed in frontmatter")
@@ -51,6 +52,7 @@ def split_frontmatter(text: str):
                 # List item under open list key
                 if key is None:
                     raise CompileError(f"line {lineno}: list item outside any key")
+                item_indent = len(line) - len(line.lstrip(" "))
                 item = stripped[2:].strip()
                 if ":" in item and not item.startswith(("http://", "https://")):
                     field, _, value = item.partition(":")
@@ -61,6 +63,10 @@ def split_frontmatter(text: str):
                     meta[key].append(_coerce(item))
             elif entry is not None and ":" in stripped:
                 # Field continuation in mapping entry
+                # Require continuation to be strictly deeper than the list marker
+                cont_indent = len(line) - len(line.lstrip(" "))
+                if cont_indent <= item_indent:
+                    raise CompileError(f"line {lineno}: unexpected indentation")
                 field, _, value = stripped.partition(":")
                 entry[field.strip()] = _coerce(value)
             else:
@@ -73,6 +79,7 @@ def split_frontmatter(text: str):
             raw_key, _, raw_value = stripped.partition(":")
             key = raw_key.strip()
             entry = None
+            item_indent = None
             if raw_value.strip() == "":
                 meta[key] = []
             else:

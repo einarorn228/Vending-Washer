@@ -74,6 +74,12 @@ class FrontmatterTests(unittest.TestCase):
         )
         self.assertEqual(meta["checks"][0]["route"], "diagnostics")
 
+    def test_orphan_at_list_item_indent_after_checks_entry_is_a_compile_error(self):
+        with self.assertRaises(CompileError):
+            split_frontmatter(
+                "---\nid: g\nchecks:\n  - id: c1\n    question: Q\n  bogus: orphan\n---\nbody\n"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
