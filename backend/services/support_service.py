@@ -84,8 +84,13 @@ def normalise_machine_id(machine_id):
     candidate = machine_id.strip()
     if not candidate or len(candidate) > MAX_ID_LEN:
         return None
-    from backend.controllers.telemetry import MachineStateStore
-    known = {r.get("id") for r in MachineStateStore.instance().get_diagnostic_snapshot()}
+    try:
+        from backend.controllers.telemetry import MachineStateStore
+        known = {r.get("id") for r in MachineStateStore.instance().get_diagnostic_snapshot()}
+    except Exception:
+        # Same contract as a failing diagnostic group: never let a store fault escape.
+        logger.warning("support report: machine store unavailable during machine_id normalisation")
+        return None
     return candidate if candidate in known else None
 
 
@@ -194,8 +199,10 @@ def _clean_checks(checks, guide):
         if not isinstance(check, dict):
             continue
         check_id, result = check.get("check_id"), check.get("result")
-        if (isinstance(check_id, str) and check_id in allowed
-                and result in CHECK_RESULTS):
+        if not isinstance(check_id, str) or not isinstance(result, str):
+            continue
+        check_id = check_id.strip()
+        if check_id in allowed and result in CHECK_RESULTS:
             cleaned.append({"check_id": check_id, "result": result})
     return cleaned
 

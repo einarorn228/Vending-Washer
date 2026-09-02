@@ -205,10 +205,15 @@ class SupportReportTests(unittest.TestCase):
         self.assertEqual(report["checks"][0]["result"], "problem")
 
     def test_invalid_check_result_is_dropped(self):
-        report = support_service.build_support_report(
-            self.db, checks=[{"check_id": "c", "result": "banana"}]
-        )
-        self.assertEqual(report["checks"], [])
+        from unittest.mock import patch
+        guide = self._guide(checks=[{"id": "c"}])
+        with patch.object(support_service, "get_guide", return_value=guide):
+            report = support_service.build_support_report(
+                self.db, guide_id="g",
+                checks=[{"check_id": "c", "result": "banana"}, {"check_id": "c", "result": {}},
+                        {"check_id": "c", "result": []}, {"check_id": " c ", "result": "ok"}],
+            )
+        self.assertEqual(report["checks"], [{"check_id": "c", "result": "ok"}])
 
     # ----- machine scoping -----
 

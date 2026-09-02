@@ -382,14 +382,18 @@ def support_report(db):
     if locale not in LOCALES:
         return _bad_request(f"locale must be one of {', '.join(LOCALES)}.")
 
-    checks = data.get("checks", [])
+    checks = data.get("checks")
+    if checks is None:
+        checks = []
     if not isinstance(checks, list) or len(checks) > MAX_CHECKS:
         return _bad_request(f"checks must be a list of at most {MAX_CHECKS} entries.")
     for check in checks:
         if isinstance(check, dict):
-            cid = check.get("check_id")
+            cid, result = check.get("check_id"), check.get("result")
             if isinstance(cid, str) and len(cid) > MAX_ID_LEN:
                 return _bad_request("check_id too long.")
+            if result is not None and not isinstance(result, str):
+                return _bad_request("check result must be a string.")
 
     report = build_support_report(
         db, guide_id=guide_id, machine_id=machine_id, checks=checks, locale=locale,

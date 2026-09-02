@@ -164,6 +164,44 @@ class HelpApiContractTests(unittest.TestCase):
         for mock in (pulse, on, off, http_get, http_post):
             mock.assert_not_called()
 
+    # ----- fix round 1: store-fault and unhashable-result hardening -----
+
+    def test_declared_check_survives_end_to_end(self):
+        """Patches both get_guide seams so compiled-shape drift cannot silently discard evidence."""
+        guide = {"id": self.known_guide, "canonical_locale": "en", "diagnostics": [],
+                 "locales": {"en": {"stub": False, "translation_status": "published",
+                                    "sections": [], "checks": [{"id": "telemetry-enabled"}]}}}
+        from backend.services import support_service
+        with patch.object(help_service, "get_guide", return_value=guide), \
+             patch.object(support_service, "get_guide", return_value=guide):
+            resp = self._post({"guide_id": self.known_guide,
+                               "checks": [{"check_id": "telemetry-enabled", "result": "problem"},
+                                          {"check_id": "invented", "result": "ok"}]})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["report"]["checks"],
+                         [{"check_id": "telemetry-enabled", "result": "problem"}])
+
+    def test_unhashable_check_result_is_400_not_500(self):
+        for bad in ({}, [], {"a": 1}):
+            with self.subTest(result=bad):
+                resp = self._post({"guide_id": self.known_guide,
+                                   "checks": [{"check_id": "x", "result": bad}]})
+                self.assertEqual(resp.status_code, 400)
+                self.assertIn("no-store", resp.headers.get("Cache-Control", ""))
+
+    def test_null_checks_is_treated_as_omitted(self):
+        resp = self._post({"checks": None})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["report"]["checks"], [])
+
+    def test_store_fault_during_machine_normalisation_does_not_500(self):
+        from backend.controllers.telemetry import MachineStateStore
+        with patch.object(MachineStateStore.instance(), "get_diagnostic_snapshot",
+                          side_effect=TypeError("NULL threshold")):
+            resp = self._post({"machine_id": "dryer1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(resp.get_json()["report"]["machine_id"])
+
 
 class HelpFailureIsolationTests(unittest.TestCase):
     """Help may fail; the kiosk may not fail because Help failed — at the app level."""
