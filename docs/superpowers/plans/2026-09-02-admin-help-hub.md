@@ -1303,10 +1303,26 @@ def compile_help(root, trust_class, known_settings, build_id=None):
     }
 ```
 
+> **Corrections applied during execution (Task 5 is complete; the committed
+> `backend/help/compiler.py` at `428777b` is authoritative over the snippet above).** Review
+> found three defects in the snippet, fixed in the shipped code:
+> 1. Inherited list-field equality was order-sensitive; shipped code compares
+>    `sorted(_as_list(...))` on both sides (`_normalised`), so a translation may re-list
+>    `related_guides`/`related_settings`/`diagnostics`/`actions` in any order.
+> 2. A canonical guide omitting `last_reviewed` raised a bare `KeyError`; shipped code validates
+>    it in `_validate_neutral` and raises `CompileError`.
+> 3. `checks` entries were unvalidated; shipped code (`_validate_checks`, run for EVERY locale's
+>    file) requires a list of mappings each with a non-empty string `id`, so Task 6's
+>    `c["id"]` can never `KeyError`.
+>
+> The test file gained `test_translation_may_list_inherited_fields_in_any_order`,
+> `test_missing_last_reviewed_is_a_compile_error`, `test_check_without_id_is_a_compile_error`
+> (18 tests total).
+
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_compiler.py -v`
-Expected: PASS (15 tests)
+Expected: PASS (18 tests)
 
 - [ ] **Step 5: Commit**
 
