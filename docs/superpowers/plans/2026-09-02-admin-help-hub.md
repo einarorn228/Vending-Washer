@@ -1304,7 +1304,7 @@ def compile_help(root, trust_class, known_settings, build_id=None):
 ```
 
 > **Corrections applied during execution (Task 5 is complete; the committed
-> `backend/help/compiler.py` at `428777b` is authoritative over the snippet above).** Review
+> `backend/help/compiler.py` at `fd5ede7` is authoritative over the snippet above).** Review
 > found three defects in the snippet, fixed in the shipped code:
 > 1. Inherited list-field equality was order-sensitive; shipped code compares
 >    `sorted(_as_list(...))` on both sides (`_normalised`), so a translation may re-list
@@ -1315,14 +1315,21 @@ def compile_help(root, trust_class, known_settings, build_id=None):
 >    file) requires a list of mappings each with a non-empty string `id`, so Task 6's
 >    `c["id"]` can never `KeyError`.
 >
+> 4. (Maintainer-directed, `fd5ede7`.) List-typed fields (`related_guides`, `related_settings`,
+>    `diagnostics`, `actions`, `search_aliases`) are strict: absent or a list of non-empty strings,
+>    else `CompileError` — for every locale's file. `_as_list` can no longer wrap a bare scalar,
+>    so an author who writes `related_settings: telemetry_enabled` gets a build error instead of
+>    silent normalisation.
+>
 > The test file gained `test_translation_may_list_inherited_fields_in_any_order`,
-> `test_missing_last_reviewed_is_a_compile_error`, `test_check_without_id_is_a_compile_error`
-> (18 tests total).
+> `test_missing_last_reviewed_is_a_compile_error`, `test_check_without_id_is_a_compile_error`,
+> `test_scalar_in_list_field_is_a_compile_error`,
+> `test_scalar_search_alias_in_translation_is_a_compile_error` (20 tests total).
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `source .venv/bin/activate && python -m pytest backend/tests/test_help_compiler.py -v`
-Expected: PASS (18 tests)
+Expected: PASS (20 tests)
 
 - [ ] **Step 5: Commit**
 
