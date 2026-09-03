@@ -22,7 +22,7 @@ class ArtifactTests(unittest.TestCase):
         committed = json.loads(cli.PUBLIC_ARTIFACT.read_text(encoding="utf-8"))
         self.assertEqual(
             sorted(committed["guides"]),
-            ["backend-unavailable"],
+            ["backend-unavailable", "kiosk-screen-blank", "network-unavailable"],
             msg="public help content changed: this list is a deliberate security review gate",
         )
 
@@ -65,9 +65,12 @@ class ArtifactTests(unittest.TestCase):
         """The public tier is stricter on purpose: it is readable by anyone on the LAN,
         so even naming a privileged setting or procedure is out of bounds."""
         text = cli.PUBLIC_ARTIFACT.read_text(encoding="utf-8").lower()
-        for forbidden in ("api_key", "admin_password_hash", "reisa_bearer_token",
-                          "dev_admin_enabled", "backend_relay_enabled",
-                          "update_setting_value", ".venv/bin/activate", "sqlite3"):
+        for forbidden in ("api_key", "admin_password_hash", "reisa_bearer_token", "reisa",
+                          "bearer", "dev_admin_enabled", "dev_admin", "backend_relay_enabled",
+                          "relay", "shelly", "update_setting_value", ".venv/bin/activate",
+                          "python -", "python3", "sqlite", "codes.db", "backend.models",
+                          "session()", "<<'py'", "/dev/admin", "x-api-key", "basic auth",
+                          "seed_settings", "get_api_key"):
             self.assertNotIn(forbidden, text,
                              msg=f"{forbidden!r} must never reach the public tier")
 

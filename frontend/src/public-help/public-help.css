@@ -1,0 +1,47 @@
+/* frontend/src/public-help/public-help.css
+   A few lines beyond the reused dev-admin-guide-* rules (see
+   frontend/src/dev-admin/styles/dev-admin.css) for the public /help tier. */
+
+.public-help {
+  display: grid;
+  place-items: start center;
+  padding: 2rem 1rem;
+}
+
+.public-help-panel {
+  width: min(640px, 100%);
+  margin: 0 auto;
+}
+
+.public-help-guide-list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.public-help-guide-summary {
+  margin: 0.2rem 0 0;
+  color: var(--kiosk-text, #f3f6fc);
+  opacity: 0.85;
+}
+
+.public-help-back {
+  margin-bottom: 0.5rem;
+}
+
+.public-help-lockout {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.public-help-lockout h3 {
+  margin: 0 0 0.35rem;
+}
+
+.public-help-lockout p {
+  margin: 0;
+  opacity: 0.85;
+}

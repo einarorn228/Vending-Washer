@@ -2,7 +2,7 @@
   "build_id": null,
   "default_locale": "is",
   "excluded_translations": [],
-  "guide_count": 1,
+  "guide_count": 3,
   "guides": {
     "backend-unavailable": {
       "actions": [],
@@ -130,6 +130,268 @@
       "related_settings": [],
       "risk": "low",
       "status": "published"
+    },
+    "kiosk-screen-blank": {
+      "actions": [],
+      "canonical_locale": "is",
+      "category": "kiosk_display",
+      "common_problem_rank": null,
+      "diagnostics": [],
+      "id": "kiosk-screen-blank",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-02",
+      "locales": {
+        "is": {
+          "search_aliases": [],
+          "sections": [
+            {
+              "anchor": "fyrstu-skref",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Athugaðu hvort ljós logar einhvers staðar á skjánum eða á tækinu sem stendur",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "við hlið hans. Ef ekkert ljós logar gæti verið að straumur hafi rofnað —",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "athugaðu hvort snúran í vegginn er í lagi og vel í sambandi.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef ljós logar en skjárinn er samt svartur skaltu snerta skjáinn varlega til",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "að athuga hvort hann vaknar.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Fyrstu skref"
+            },
+            {
+              "anchor": "bidu-og-reyndu",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef ekkert gerist skaltu bíða í eina til tvær mínútur og athuga svo aftur.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Stundum þarf skjárinn stutta stund til að ræsa sig.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Bíddu og reyndu aftur"
+            },
+            {
+              "anchor": "kviknar-ekki",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef skjárinn er enn svartur eftir nokkrar mínútur og engin ljós loga skaltu",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "ekki reyna frekari úrræði á staðnum. Hafðu í staðinn samband við",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kerfisstjóra og láttu vita hvenær þú tókst fyrst eftir vandamálinu.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Ef skjárinn kviknar ekki"
+            }
+          ],
+          "stub": false,
+          "summary": "Skjárinn sýnir ekkert. Hér eru einföld skref sem þú getur reynt.",
+          "title": "Skjárinn er svartur",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [],
+      "related_settings": [],
+      "risk": "low",
+      "status": "published"
+    },
+    "network-unavailable": {
+      "actions": [],
+      "canonical_locale": "is",
+      "category": "hardware_network",
+      "common_problem_rank": null,
+      "diagnostics": [],
+      "id": "network-unavailable",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-02",
+      "locales": {
+        "is": {
+          "search_aliases": [],
+          "sections": [
+            {
+              "anchor": "fyrstu-skref",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Athugaðu hvort önnur tæki á staðnum, til dæmis síminn þinn, ná sambandi við",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "netið núna. Ef þau gera það ekki heldur er líklegt að vandamálið sé í",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "netinu sjálfu en ekki í skjánum.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Athugaðu líka hvort einhver snúra sem tengist tækinu við hlið skjásins",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "virðist laus eða illa í sambandi.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Fyrstu skref"
+            },
+            {
+              "anchor": "bidu-og-reyndu",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Bíddu í eina til tvær mínútur og athugaðu svo skjáinn aftur. Netsamband",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "lagast oft af sjálfu sér eftir stutta truflun.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Bíddu og reyndu aftur"
+            },
+            {
+              "anchor": "vidvarandi",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Ef skjárinn nær enn ekki sambandi eftir nokkrar mínútur skaltu ekki reyna",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "frekari úrræði á staðnum. Hafðu í staðinn samband við kerfisstjóra og",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "láttu vita hvað þú sást á skjánum og hvort önnur tæki á staðnum ná",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "netsambandi.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Ef vandamálið er viðvarandi"
+            }
+          ],
+          "stub": false,
+          "summary": "Skjárinn virðist ekki ná sambandi við netið. Hér eru einföld skref sem þú getur reynt.",
+          "title": "Ekkert net",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [],
+      "related_settings": [],
+      "risk": "low",
+      "status": "published"
     }
   },
   "locales": [
@@ -227,6 +489,180 @@
           "ekkert",
           "kerfid",
           "samband"
+        ]
+      }
+    },
+    "kiosk-screen-blank": {
+      "is": {
+        "aliases": [],
+        "body": [
+          "aftur",
+          "athuga",
+          "athugadu",
+          "bida",
+          "eftir",
+          "eina",
+          "einhvers",
+          "ekkert",
+          "engin",
+          "frekari",
+          "fyrst",
+          "gaeti",
+          "gerist",
+          "hafdu",
+          "hafi",
+          "hann",
+          "hans",
+          "hlid",
+          "hvenaer",
+          "hvort",
+          "kerfisstjora",
+          "lagi",
+          "lattu",
+          "ljos",
+          "loga",
+          "logar",
+          "minutur",
+          "nokkrar",
+          "raesa",
+          "reyna",
+          "rofnad",
+          "samband",
+          "sambandi",
+          "samt",
+          "skaltu",
+          "skjainn",
+          "skjanum",
+          "skjarinn",
+          "snerta",
+          "snuran",
+          "stadar",
+          "stadinn",
+          "stadnum",
+          "stendur",
+          "straumur",
+          "stund",
+          "stundum",
+          "stutta",
+          "svartur",
+          "taekinu",
+          "tharf",
+          "tokst",
+          "tvaer",
+          "urraedi",
+          "vaknar",
+          "vandamalinu",
+          "varlega",
+          "vegginn",
+          "verid",
+          "vita"
+        ],
+        "headings": [
+          "aftur",
+          "biddu",
+          "fyrstu",
+          "kviknar",
+          "reyndu",
+          "skjarinn",
+          "skref"
+        ],
+        "summary": [
+          "einfold",
+          "ekkert",
+          "getur",
+          "reynt",
+          "skjarinn",
+          "skref",
+          "synir"
+        ],
+        "title": [
+          "skjarinn",
+          "svartur"
+        ]
+      }
+    },
+    "network-unavailable": {
+      "is": {
+        "aliases": [],
+        "body": [
+          "aftur",
+          "athugadu",
+          "biddu",
+          "daemis",
+          "eftir",
+          "eina",
+          "einhver",
+          "frekari",
+          "gera",
+          "hafdu",
+          "heldur",
+          "hlid",
+          "hvad",
+          "hvort",
+          "illa",
+          "kerfisstjora",
+          "lagast",
+          "lattu",
+          "laus",
+          "lika",
+          "liklegt",
+          "minutur",
+          "naer",
+          "netid",
+          "netinu",
+          "netsamband",
+          "netsambandi",
+          "nokkrar",
+          "nuna",
+          "onnur",
+          "reyna",
+          "samband",
+          "sambandi",
+          "sast",
+          "siminn",
+          "sjalfu",
+          "skaltu",
+          "skjainn",
+          "skjanum",
+          "skjarinn",
+          "skjasins",
+          "snura",
+          "stadinn",
+          "stadnum",
+          "stutta",
+          "taeki",
+          "taekinu",
+          "tengist",
+          "thau",
+          "thinn",
+          "truflun",
+          "tvaer",
+          "urraedi",
+          "vandamalid",
+          "virdist",
+          "vita"
+        ],
+        "headings": [
+          "aftur",
+          "biddu",
+          "fyrstu",
+          "reyndu",
+          "skref",
+          "vandamalid",
+          "vidvarandi"
+        ],
+        "summary": [
+          "einfold",
+          "getur",
+          "netid",
+          "reynt",
+          "sambandi",
+          "skjarinn",
+          "skref",
+          "virdist"
+        ],
+        "title": [
+          "ekkert"
         ]
       }
     }
