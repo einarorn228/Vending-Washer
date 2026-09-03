@@ -15,7 +15,6 @@ related_guides:
   - machine-does-not-start
 related_settings:
   - telemetry_enabled
-  - telemetry_http_timeout_sec
 diagnostics:
   - machine.identity
   - machine.telemetry
@@ -28,7 +27,7 @@ search_aliases:
 checks:
   - id: telemetry-setting-on
     question: "Is telemetry polling enabled in Settings?"
-    look_for: "Settings, Runtime group, Telemetry polling enabled."
+    look_for: "Settings, the Shelly / Runtime Toggles group, Telemetry polling enabled."
     expected: "On. Off explains every machine reporting available."
     route: settings
     diagnostics: settings.telemetry
@@ -102,8 +101,8 @@ too.
 3. Start or find a machine you know is running and compare its value and band
    text against what you can hear. A running machine that reads the same number
    as an idle one is not being read.
-4. Go to Settings, Runtime group, and check **Telemetry polling enabled**
-   (`telemetry_enabled`). If it is off, turning it on is the fix; it takes effect
+4. Go to Settings, open the **Shelly / Runtime Toggles** group, and check
+   **Telemetry polling enabled** (`telemetry_enabled`). If it is off, turning it on is the fix; it takes effect
    without a restart. Change only this one setting.
 5. Go back to Diagnostics and confirm recovery: **Last read** should drop back to
    a small number, values should start moving, and a running machine should

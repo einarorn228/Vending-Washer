@@ -57,8 +57,8 @@ vélunum er sjálf stöðnuð. Það síðara er
 ## Mögulegar orsakir {#causes}
 
 **Skjásíðan nær ekki í bakendann.** Skjárinn spyr bakendann um núverandi ástand
-á fárra sekúndna fresti — á fresti `kiosk_poll_interval_ms`, sjálfgefið einni
-sekúndu. Þegar beiðni mistekst heldur skjárinn síðasta ástandi sem hann fékk og
+um það bil einu sinni á sekúndu — á fresti `kiosk_poll_interval_ms`, sjálfgefið
+einni sekúndu. Þegar beiðni mistekst heldur skjárinn síðasta ástandi sem hann fékk og
 sýnir borða um að sambandið hafi rofnað. Myndin á skjánum er þá einfaldlega
 gömul, ekki röng af ásettu ráði.
 
@@ -97,11 +97,11 @@ getur ekki jafnað sig af sjálfu sér.
    - Þau passa saman: skjárinn er í lagi og bakendinn situr raunverulega í því
      ástandi.
    - Þau passa ekki: skjámyndin er úrelt.
-5. Endurhlaðið skjásíðuna og fylgstu með í eina mínútu. Úrelt síða sem fer að
+5. Endurhlaððu skjásíðuna og fylgstu með í eina mínútu. Úrelt síða sem fer að
    fylgjast með aftur eftir endurhleðslu var vafravandi, og það er þess virði að
    skrá þótt búið sé að laga orsökina.
 6. Ef skjárinn uppfærist en virkar seinn, athugaðu `kiosk_poll_interval_ms` í
-   Settings áður en þú gerir ráð fyrir bilun. Langt millibil er stillt val en
+   Settings, undir **Screen Timing**, áður en þú gerir ráð fyrir bilun. Langt millibil er stillt val en
    ekki tengivandi.
 7. Ekki slá inn eða líma lykla í vafra skjásins til að komast fram hjá borða um
    vantandi lykil. Tilkynntu það í staðinn.

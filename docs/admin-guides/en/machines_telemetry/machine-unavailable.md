@@ -98,7 +98,8 @@ where nothing changes at all.
 also removes it from selection. On the card the value shows as a dash while
 **Last read** keeps resetting to a small number: the backend is still reading on
 schedule and every attempt is failing. That is a network or device problem, not
-a threshold problem.
+a threshold problem. A device that answers too slowly counts as a failed read
+once it passes `telemetry_http_timeout_sec`.
 
 ## Steps {#steps}
 
@@ -119,9 +120,10 @@ a threshold problem.
    still be small, because the backend keeps trying and each attempt fails.
    Check whether other machines on the same device or the same network are also
    affected before you touch anything.
-6. If **Run state** is `available` but the kiosk still shows the machine as
-   busy, the kiosk screen is out of date rather than the backend. Reload the
-   kiosk page and compare again.
+6. Only when **Run state** is `available` *and* **Pending start** is no should
+   the kiosk offer the machine. If both of those are true and the kiosk still
+   shows it as busy, the kiosk screen is out of date rather than the backend:
+   reload the kiosk page and compare again.
 7. Note whether the telemetry-off banner is showing at the top of Diagnostics.
    With polling off, whatever state a machine was in when polling stopped is
    frozen in place.

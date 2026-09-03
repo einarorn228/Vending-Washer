@@ -12,7 +12,7 @@ search_aliases:
 checks:
   - id: telemetry-setting-on
     question: "Er kveikt á fjarmælingu í Settings?"
-    look_for: "Settings, Runtime hópurinn, Telemetry polling enabled."
+    look_for: "Settings, hópurinn Shelly / Runtime Toggles, Telemetry polling enabled."
     expected: "Kveikt. Slökkt skýrir að allar vélar sýnast lausar."
     route: settings
     diagnostics: settings.telemetry
@@ -84,8 +84,8 @@ farið í gang birtast strik í stað frosinna talna, og Last read sýnir líka 
 3. Finndu vél sem þú veist að er í gangi og berðu gildið og bandtextann saman
    við það sem þú heyrir. Vél í gangi sem sýnir sömu tölu og ónotuð vél er ekki
    lesin.
-4. Farðu í Settings, Runtime hópinn, og athugaðu **Telemetry polling enabled**
-   (`telemetry_enabled`). Ef slökkt er á því er lausnin að kveikja á því. Það
+4. Farðu í Settings, opnaðu hópinn **Shelly / Runtime Toggles**, og athugaðu
+   **Telemetry polling enabled** (`telemetry_enabled`). Ef slökkt er á því er lausnin að kveikja á því. Það
    tekur gildi án endurræsingar. Breyttu aðeins þessari einu stillingu.
 5. Farðu aftur í Diagnostics og staðfestu bata: **Last read** á að detta niður í
    lága tölu, gildin eiga að fara á hreyfingu og vél í gangi á að skipta yfir í

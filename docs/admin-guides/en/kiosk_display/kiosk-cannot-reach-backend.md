@@ -16,7 +16,6 @@ related_guides:
 related_settings:
   - kiosk_poll_interval_ms
   - api_key
-  - cors_allowed_origins
 diagnostics:
   - core
   - kiosk.state
@@ -72,7 +71,7 @@ or the backend's own picture of the machines is stale. The second one is
 ## Possible causes {#causes}
 
 **The kiosk page cannot reach the backend.** The screen asks the backend for the
-current state a few times a minute — every `kiosk_poll_interval_ms`, one second
+current state about once a second — every `kiosk_poll_interval_ms`, one second
 by default. When a request fails, the screen keeps the last state it received
 and shows a *Backend connection lost* banner. The picture on screen is then
 simply old, not wrong on purpose.
@@ -115,7 +114,7 @@ kiosk cannot recover on its own.
    following again after a reload was a browser problem, and that is worth
    recording even though it is now fixed.
 6. If the screen updates but feels sluggish, check `kiosk_poll_interval_ms` in
-   Settings before assuming a fault. A long interval is a configured choice, not
+   Settings, under **Screen Timing**, before assuming a fault. A long interval is a configured choice, not
    a connection failure.
 7. Do not type or paste keys into the kiosk browser to get past a missing-key
    banner. Report it instead.

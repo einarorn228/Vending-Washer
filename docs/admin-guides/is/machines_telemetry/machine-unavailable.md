@@ -78,7 +78,9 @@ losnar aldrei. Sama gerist ef gildið situr fast á milli þröskuldanna tveggja
 **Tækið hætti að svara.** Misheppnaður lestur merkir vélina offline og þá dettur
 hún líka út úr vali. Á spjaldinu birtist strik í stað gildis á meðan
 **Last read** núllstillist áfram í lága tölu: bakendinn les enn á áætlun og
-hver tilraun mistekst. Það er net- eða tækjavandi, ekki þröskuldavandi.
+hver tilraun mistekst. Það er net- eða tækjavandi, ekki þröskuldavandi. Tæki sem
+svarar of hægt telst misheppnaður lestur um leið og `telemetry_http_timeout_sec`
+er liðinn.
 
 ## Skref {#steps}
 
@@ -99,9 +101,10 @@ hver tilraun mistekst. Það er net- eða tækjavandi, ekki þröskuldavandi.
    því bakendinn heldur áfram að reyna og hver tilraun mistekst. Athugaðu hvort
    aðrar vélar á sama tæki eða sama neti eru líka í vandræðum áður en þú snertir
    nokkuð.
-6. Ef **Run state** er `available` en skjárinn sýnir vélina samt sem upptekna,
-   þá er skjámyndin úrelt frekar en bakendinn. Endurhlaðið skjásíðuna og berðu
-   saman aftur.
+6. Skjárinn á aðeins að bjóða vélina þegar **Run state** er `available` *og*
+   **Pending start** er nei. Ef hvort tveggja er rétt en skjárinn sýnir hana samt
+   sem upptekna, þá er skjámyndin úrelt frekar en bakendinn: endurhlaððu
+   skjásíðuna og berðu saman aftur.
 7. Taktu eftir hvort borðinn um að slökkt sé á fjarmælingu birtist efst í
    Diagnostics. Þegar fjarmæling er slökkt frýs það ástand sem hver vél var í
    þegar lesturinn stöðvaðist.

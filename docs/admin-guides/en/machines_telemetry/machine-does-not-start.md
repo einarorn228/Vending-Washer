@@ -132,8 +132,8 @@ machines at all, so a real run can never be confirmed. See
 6. Open Diagnostics, Change history, and look for a recent change to a runtime
    or hardware setting. A start problem that began today usually began with a
    change today.
-7. Wait for the reservation to expire, or let it run out, before the next test.
-   A machine that is still holding a pending start cannot be chosen again.
+7. Let the reservation run out before the next test. A machine that is still
+   holding a pending start cannot be chosen again.
 
 ## If this did not fix it {#escalate}
 

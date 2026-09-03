@@ -255,7 +255,7 @@
               "diagnostics": "settings.telemetry",
               "expected": "On. Off explains every machine reporting available.",
               "id": "telemetry-setting-on",
-              "look_for": "Settings, Runtime group, Telemetry polling enabled.",
+              "look_for": "Settings, the Shelly / Runtime Toggles group, Telemetry polling enabled.",
               "question": "Is telemetry polling enabled in Settings?",
               "route": "settings"
             },
@@ -713,7 +713,24 @@
                       {
                         "inlines": [
                           {
-                            "text": "Go to Settings, Runtime group, and check ",
+                            "text": "Go to Settings, open the ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Shelly / Runtime Toggles",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " group, and check",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
                             "type": "text"
                           },
                           {
@@ -726,11 +743,7 @@
                             "type": "strong"
                           },
                           {
-                            "text": " ",
-                            "type": "text"
-                          },
-                          {
-                            "text": "(",
+                            "text": " (",
                             "type": "text"
                           },
                           {
@@ -957,8 +970,7 @@
         "machine-unavailable"
       ],
       "related_settings": [
-        "telemetry_enabled",
-        "telemetry_http_timeout_sec"
+        "telemetry_enabled"
       ],
       "risk": "medium",
       "status": "published"
@@ -1934,7 +1946,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "current state a few times a minute — every ",
+                      "text": "current state about once a second — every ",
                       "type": "text"
                     },
                     {
@@ -2374,7 +2386,20 @@
                             "type": "text"
                           },
                           {
-                            "text": "Settings before assuming a fault. A long interval is a configured choice, not",
+                            "text": "Settings, under ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Screen Timing",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", before assuming a fault. A long interval is a configured choice, not",
                             "type": "text"
                           },
                           {
@@ -2535,7 +2560,6 @@
       ],
       "related_settings": [
         "api_key",
-        "cors_allowed_origins",
         "kiosk_poll_interval_ms"
       ],
       "risk": "medium",
@@ -3290,7 +3314,7 @@
                       {
                         "inlines": [
                           {
-                            "text": "Wait for the reservation to expire, or let it run out, before the next test.",
+                            "text": "Let the reservation run out before the next test. A machine that is still",
                             "type": "text"
                           },
                           {
@@ -3298,7 +3322,7 @@
                             "type": "text"
                           },
                           {
-                            "text": "A machine that is still holding a pending start cannot be chosen again.",
+                            "text": "holding a pending start cannot be chosen again.",
                             "type": "text"
                           }
                         ],
@@ -3817,7 +3841,23 @@
                       "type": "text"
                     },
                     {
-                      "text": "a threshold problem.",
+                      "text": "a threshold problem. A device that answers too slowly counts as a failed read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "once it passes ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_http_timeout_sec"
+                    },
+                    {
+                      "text": ".",
                       "type": "text"
                     }
                   ],
@@ -4111,7 +4151,7 @@
                       {
                         "inlines": [
                           {
-                            "text": "If ",
+                            "text": "Only when ",
                             "type": "text"
                           },
                           {
@@ -4132,7 +4172,33 @@
                             "type": "code"
                           },
                           {
-                            "text": " but the kiosk still shows the machine as",
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "and",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Pending start",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " is no should",
                             "type": "text"
                           },
                           {
@@ -4140,7 +4206,7 @@
                             "type": "text"
                           },
                           {
-                            "text": "busy, the kiosk screen is out of date rather than the backend. Reload the",
+                            "text": "the kiosk offer the machine. If both of those are true and the kiosk still",
                             "type": "text"
                           },
                           {
@@ -4148,7 +4214,15 @@
                             "type": "text"
                           },
                           {
-                            "text": "kiosk page and compare again.",
+                            "text": "shows it as busy, the kiosk screen is out of date rather than the backend:",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "reload the kiosk page and compare again.",
                             "type": "text"
                           }
                         ],
@@ -5305,6 +5379,7 @@
           "setting",
           "settings",
           "shape",
+          "shelly",
           "show",
           "showing",
           "shows",
@@ -5332,6 +5407,7 @@
           "than",
           "them",
           "time",
+          "toggles",
           "treat",
           "trustworthy",
           "turned",
@@ -5743,6 +5819,7 @@
           "none",
           "note",
           "nothing",
+          "once",
           "open",
           "over",
           "overview",
@@ -5825,8 +5902,9 @@
           "they",
           "though",
           "time",
-          "times",
+          "timing",
           "type",
+          "under",
           "until",
           "updates",
           "usual",
@@ -5949,7 +6027,6 @@
           "enabled",
           "escalate",
           "exact",
-          "expire",
           "failed",
           "find",
           "full",
@@ -6093,7 +6170,6 @@
           "used",
           "usually",
           "value",
-          "wait",
           "watch",
           "whether",
           "which",
@@ -6149,6 +6225,7 @@
           "already",
           "also",
           "answering",
+          "answers",
           "anything",
           "appear",
           "attempt",
@@ -6167,6 +6244,7 @@
           "between",
           "blind",
           "blocks",
+          "both",
           "bottom",
           "busy",
           "cannot",
@@ -6183,6 +6261,7 @@
           "confirmed",
           "confirms",
           "copy",
+          "counts",
           "customer",
           "customers",
           "dash",
@@ -6210,6 +6289,7 @@
           "heater",
           "here",
           "holds",
+          "http",
           "idle",
           "instead",
           "into",
@@ -6237,12 +6317,15 @@
           "note",
           "nothing",
           "number",
+          "offer",
           "offline",
+          "once",
           "only",
           "open",
           "other",
           "page",
           "panel",
+          "passes",
           "pending",
           "place",
           "polling",
@@ -6281,6 +6364,7 @@
           "showing",
           "shows",
           "sits",
+          "slowly",
           "small",
           "someone",
           "stale",
@@ -6303,11 +6387,14 @@
           "them",
           "then",
           "therefore",
+          "those",
           "three",
           "threshold",
           "thresholds",
           "time",
+          "timeout",
           "touch",
+          "true",
           "trying",
           "turned",
           "until",
