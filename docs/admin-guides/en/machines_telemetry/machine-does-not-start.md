@@ -15,6 +15,7 @@ related_guides:
   - admin-panel-orientation
   - machine-technical-mapping
   - wrong-machine-starts
+  - tune-thresholds
 related_settings:
   - backend_relay_enabled
   - telemetry_enabled

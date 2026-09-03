@@ -13,6 +13,7 @@ related_guides:
   - machine-unavailable
   - all-machines-available-telemetry-stale
   - machine-technical-mapping
+  - tune-thresholds
 related_settings:
   - telemetry_enabled
   - telemetry_http_timeout_sec

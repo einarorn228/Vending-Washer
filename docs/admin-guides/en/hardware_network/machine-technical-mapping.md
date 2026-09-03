@@ -14,6 +14,7 @@ related_guides:
   - machine-does-not-start
   - machine-unavailable
   - no-telemetry-reading
+  - tune-thresholds
   - admin-panel-orientation
 related_settings:
   - backend_relay_enabled

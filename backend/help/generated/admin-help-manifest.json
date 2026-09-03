@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 10,
+  "guide_count": 11,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -3429,6 +3429,7 @@
         "admin-panel-orientation",
         "machine-technical-mapping",
         "machine-unavailable",
+        "tune-thresholds",
         "wrong-machine-starts"
       ],
       "related_settings": [
@@ -4842,6 +4843,7 @@
         "machine-does-not-start",
         "machine-unavailable",
         "no-telemetry-reading",
+        "tune-thresholds",
         "wrong-machine-starts"
       ],
       "related_settings": [
@@ -5756,7 +5758,8 @@
       "related_guides": [
         "all-machines-available-telemetry-stale",
         "machine-does-not-start",
-        "no-telemetry-reading"
+        "no-telemetry-reading",
+        "tune-thresholds"
       ],
       "related_settings": [
         "machine_reservation_minutes",
@@ -6895,7 +6898,8 @@
       "related_guides": [
         "all-machines-available-telemetry-stale",
         "machine-technical-mapping",
-        "machine-unavailable"
+        "machine-unavailable",
+        "tune-thresholds"
       ],
       "related_settings": [
         "telemetry_enabled",
@@ -7643,6 +7647,1373 @@
         "scan_timeout",
         "serial_baudrate",
         "serial_port"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "tune-thresholds": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "machine.identity",
+        "machine.telemetry",
+        "machine.thresholds",
+        "settings.telemetry"
+      ],
+      "id": "tune-thresholds",
+      "kind": "procedure",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "settings.telemetry",
+              "expected": "Enabled, with no telemetry-off banner. With polling off the readings never move and nothing can be tuned.",
+              "id": "telemetry-running",
+              "look_for": "The banner at the top of Diagnostics, and Telemetry on Overview.",
+              "problem_guide": "all-machines-available-telemetry-stale",
+              "question": "Is telemetry polling running before you start?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "A number that refreshes. A dash means there is no reading to tune against.",
+              "id": "machine-is-polled",
+              "look_for": "Diagnostics, Live readings, the value and Last read on that machine's card.",
+              "problem_guide": "no-telemetry-reading",
+              "question": "Is this machine actually being read at all?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "A steady idle number, watched for at least a minute.",
+              "id": "idle-value-recorded",
+              "look_for": "Diagnostics, Live readings, the value and the chart with the machine switched off.",
+              "question": "Have you written down what the machine reads when it is standing idle?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "The lowest value reached while the machine is genuinely running, not just the peak.",
+              "id": "running-value-recorded",
+              "look_for": "Diagnostics, Live readings, the chart during a full wash or dry cycle.",
+              "question": "Have you written down what it reads across a whole program?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.thresholds",
+              "expected": "OFF below ON. Nothing in the panel refuses the opposite, and the opposite makes the machine behave unpredictably.",
+              "id": "thresholds-ordered",
+              "look_for": "Diagnostics, Live readings, ON threshold and OFF threshold on the card.",
+              "question": "Is the OFF threshold below the ON threshold, with a clear gap between them?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.thresholds",
+              "expected": "Above for passes ON confirm shortly after the machine starts, Below for passes OFF confirm after it stops.",
+              "id": "confirm-windows-reached",
+              "look_for": "Diagnostics, Live readings, Above for against ON confirm and Below for against OFF confirm.",
+              "question": "Do Above for and Below for actually reach the confirm times during a real cycle?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "machine flips between free and busy",
+            "machine never registers as running",
+            "on confirm time too short",
+            "reading does not reach the threshold",
+            "threshold too high"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this procedure when a machine's readings are healthy but the backend draws",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the wrong conclusion from them: a running machine is never confirmed as started,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "an idle machine is never released, or a machine flips between free and busy in",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the middle of a program.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Do not use it as an incident fix. If a machine is stuck right now, read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-unavailable",
+                      "text": "Machine shows unavailable while it is idle",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-does-not-start",
+                      "text": "Machine does not start after selection",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " first.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Threshold changes take effect within a second or two and there is nothing to",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "compare against afterwards if you did not record what the machine was doing",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "before.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If the value is missing altogether rather than wrong, this is the wrong guide:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "read ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "no-telemetry-reading",
+                      "text": "No telemetry reading for one machine",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "How the backend decides a machine is running.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Each machine is read on its own",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "poll interval. When the reading is at or above the machine's ON threshold and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "stays there for the ON confirm time, the backend marks the machine as running and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "releases the pending start. When the reading is at or below the OFF threshold and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "stays there for the OFF confirm time, the machine goes back to available. A",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reading between the two thresholds changes nothing and resets both timers — that",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "gap is what stops a machine flickering between the two states.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Where the numbers live.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " They are per machine, not global settings. Open the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Machine Cards",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " tab, find the machine's row, and press ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Advanced / Technical",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "Mapping",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". The drawer holds ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "On threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Off threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "On confirm",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "ms",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Off confirm ms",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Poll interval ms",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", alongside the hardware mapping",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "fields described in",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-technical-mapping",
+                      "text": "Machine technical mapping",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ". All five are whole",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "numbers: thresholds from 0 to 100000, both confirm times from 0 to 60000",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "milliseconds, and the poll interval from 500 to 60000 milliseconds.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Where you watch the effect.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Diagnostics, ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Live readings",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". Each card shows",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the current value, the band text under it (",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "at or above ON threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "between",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "thresholds",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "at or below OFF threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": "), ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Above for",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Below for",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", and the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine's own ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "ON threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "OFF threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "ON confirm",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "OFF confirm",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Poll interval",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". The chart behind them plots roughly the last two minutes of",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "readings with both thresholds drawn as lines, which is the fastest way to see",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "whether a threshold sits in the right place.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "What you need before touching anything.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Two recorded numbers for this",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine: what it reads while standing idle, and the ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "lowest",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " value it reaches",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "across a whole program while genuinely running. A threshold picked from a peak",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "value will drop out during the quiet part of a cycle.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Two settings that stop this working.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " off nothing is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "read at all and Diagnostics says so in a banner at the top of the tab. And a read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that takes longer than ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_http_timeout_sec"
+                    },
+                    {
+                      "text": " counts as a failed read, which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "blanks the value instead of producing a low one — a machine losing readings is not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a machine that needs different thresholds.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Nothing in the panel checks that the OFF threshold is below the ON threshold.",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "Saving them the wrong way round, or equal, leaves the machine with no band",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "between them and its behaviour becomes hard to predict. Check the two numbers",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "against each other before you save.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Before you start"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Confirm telemetry is running and that this machine has a live value. Note its",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Poll interval",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " — everything below happens at that rhythm.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "With the machine standing idle and switched off, watch Diagnostics for at",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "least a minute and write down the idle value and how much it wanders.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Run a full program on the machine by hand. Watch the chart for the whole",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "cycle and write down the lowest value it reaches while it is running. Note",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "how many seconds pass between the machine starting and the value rising.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Choose the OFF threshold above the highest idle value you saw, and the ON",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "threshold below the lowest running value you saw. Leave a clear gap between",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "them. A machine with a standby light, a pump or a heater has an idle value",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "well above zero, and the OFF threshold has to clear it or the machine is never",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "released.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Change ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "one",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " value on ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "one",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " machine. Open ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Advanced / Technical Mapping",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "for that machine, edit the field, tick the acknowledgement box and save. The",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "change is recorded in Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and applies to the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "running backend within a second or two — no restart.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Watch a full cycle again before changing anything else. On the card, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Above",
+                                "type": "text"
+                              },
+                              {
+                                "text": " ",
+                                "type": "text"
+                              },
+                              {
+                                "text": "for",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " should pass ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "ON confirm",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " shortly after the machine really starts, and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Below for",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " should pass ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "OFF confirm",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " after it really stops.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the run is confirmed too late, or never: the reading is not holding at or",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "above the ON threshold for long enough. Lower the ON threshold towards the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "running value first; shorten ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "On confirm ms",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " only if the reading is clearly",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "above the threshold and the delay is the problem.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the machine is released in the middle of a program, the reading dips to or",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "below the OFF threshold during a quiet phase. Lengthen ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Off confirm ms",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " so a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "short dip is ridden out, or lower the OFF threshold below that dip while",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "keeping it above the idle value.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the machine flips repeatedly between free and busy, the two thresholds are",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "too close together for how much this machine's reading moves. Widen the gap",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "rather than chasing it with confirm times.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Write the final numbers down next to the machine's name. ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "records them too, but a note you can read on the floor is faster.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when the idle value overlaps the running value so there is no honest gap",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "to place thresholds in, when the reading is missing rather than wrong, or when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the same machine needs its thresholds moved again a short time later. Repeated",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "re-tuning usually means the metric being read does not describe this machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "well, which is a mapping question rather than a threshold question.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine, the idle and running values you recorded, the thresholds and confirm",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "times before and after your change, and what the machine did on the cycle you",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "watched.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "How to pick the ON and OFF thresholds and the confirm times for one machine without taking it out of service.",
+          "title": "Tuning a machine's ON and OFF thresholds safely",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "mælingin nær ekki upp fyrir mörkin",
+            "mörkin eru of há",
+            "staðfestingartími of stuttur",
+            "vélin skráist aldrei sem í gangi",
+            "vélin sveiflast milli laus og upptekin"
+          ],
+          "stub": true,
+          "summary": "Hvernig þú velur ON- og OFF-mörk og staðfestingartíma fyrir eina vél án þess að taka hana úr notkun.",
+          "title": "Stilla ON- og OFF-mörk vélar á öruggan hátt",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "all-machines-available-telemetry-stale",
+        "machine-does-not-start",
+        "machine-technical-mapping",
+        "machine-unavailable",
+        "no-telemetry-reading"
+      ],
+      "related_settings": [
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
       ],
       "risk": "medium",
       "status": "published"
@@ -10835,6 +12206,353 @@
         "title": [
           "scanner",
           "scanning"
+        ]
+      }
+    },
+    "tune-thresholds": {
+      "en": {
+        "aliases": [
+          "between",
+          "busy",
+          "confirm",
+          "does",
+          "flips",
+          "free",
+          "high",
+          "machine",
+          "never",
+          "reach",
+          "reading",
+          "registers",
+          "running",
+          "short",
+          "threshold",
+          "time"
+        ],
+        "body": [
+          "100000",
+          "60000",
+          "above",
+          "acknowledgement",
+          "across",
+          "advanced",
+          "after",
+          "afterwards",
+          "again",
+          "against",
+          "alongside",
+          "altogether",
+          "anything",
+          "applies",
+          "available",
+          "back",
+          "backend",
+          "band",
+          "banner",
+          "becomes",
+          "before",
+          "behaviour",
+          "behind",
+          "being",
+          "below",
+          "between",
+          "blanks",
+          "both",
+          "bottom",
+          "busy",
+          "card",
+          "cards",
+          "change",
+          "changes",
+          "changing",
+          "chart",
+          "chasing",
+          "check",
+          "checks",
+          "choose",
+          "clear",
+          "clearly",
+          "close",
+          "compare",
+          "conclusion",
+          "confirm",
+          "confirmed",
+          "copy",
+          "counts",
+          "current",
+          "cycle",
+          "decides",
+          "delay",
+          "describe",
+          "described",
+          "diagnostics",
+          "different",
+          "dips",
+          "does",
+          "doing",
+          "down",
+          "drawer",
+          "drawn",
+          "draws",
+          "drop",
+          "during",
+          "each",
+          "edit",
+          "effect",
+          "else",
+          "enabled",
+          "enough",
+          "equal",
+          "escalate",
+          "everything",
+          "failed",
+          "faster",
+          "fastest",
+          "field",
+          "fields",
+          "final",
+          "find",
+          "first",
+          "five",
+          "flickering",
+          "flips",
+          "floor",
+          "free",
+          "full",
+          "genuinely",
+          "global",
+          "goes",
+          "guide",
+          "hand",
+          "happens",
+          "hard",
+          "hardware",
+          "healthy",
+          "heater",
+          "highest",
+          "history",
+          "holding",
+          "holds",
+          "honest",
+          "http",
+          "idle",
+          "incident",
+          "instead",
+          "interval",
+          "keeping",
+          "last",
+          "late",
+          "later",
+          "least",
+          "leave",
+          "leaves",
+          "lengthen",
+          "light",
+          "lines",
+          "live",
+          "long",
+          "longer",
+          "losing",
+          "lower",
+          "lowest",
+          "machine",
+          "many",
+          "mapping",
+          "marks",
+          "means",
+          "metric",
+          "middle",
+          "milliseconds",
+          "minute",
+          "minutes",
+          "missing",
+          "moved",
+          "moves",
+          "much",
+          "name",
+          "need",
+          "needs",
+          "never",
+          "next",
+          "note",
+          "nothing",
+          "numbers",
+          "only",
+          "open",
+          "other",
+          "overlaps",
+          "panel",
+          "part",
+          "pass",
+          "peak",
+          "pending",
+          "phase",
+          "picked",
+          "place",
+          "plots",
+          "poll",
+          "predict",
+          "press",
+          "problem",
+          "procedure",
+          "producing",
+          "program",
+          "pump",
+          "question",
+          "quiet",
+          "rather",
+          "reaches",
+          "read",
+          "reading",
+          "readings",
+          "reads",
+          "really",
+          "record",
+          "recorded",
+          "records",
+          "released",
+          "releases",
+          "repeated",
+          "repeatedly",
+          "report",
+          "resets",
+          "restart",
+          "rhythm",
+          "ridden",
+          "right",
+          "rising",
+          "roughly",
+          "round",
+          "running",
+          "same",
+          "save",
+          "saving",
+          "says",
+          "second",
+          "seconds",
+          "selection",
+          "send",
+          "settings",
+          "short",
+          "shorten",
+          "shortly",
+          "shows",
+          "sits",
+          "standby",
+          "standing",
+          "start",
+          "started",
+          "starting",
+          "starts",
+          "states",
+          "stays",
+          "stop",
+          "stops",
+          "stuck",
+          "support",
+          "switched",
+          "take",
+          "takes",
+          "technical",
+          "telemetry",
+          "text",
+          "than",
+          "them",
+          "there",
+          "they",
+          "threshold",
+          "thresholds",
+          "tick",
+          "time",
+          "timeout",
+          "timers",
+          "times",
+          "together",
+          "touching",
+          "towards",
+          "tuning",
+          "unavailable",
+          "under",
+          "usually",
+          "value",
+          "values",
+          "wanders",
+          "watch",
+          "watched",
+          "well",
+          "what",
+          "where",
+          "whether",
+          "which",
+          "while",
+          "whole",
+          "widen",
+          "will",
+          "within",
+          "working",
+          "write",
+          "wrong",
+          "zero"
+        ],
+        "headings": [
+          "before",
+          "start",
+          "steps"
+        ],
+        "summary": [
+          "confirm",
+          "machine",
+          "pick",
+          "service",
+          "taking",
+          "thresholds",
+          "times",
+          "without"
+        ],
+        "title": [
+          "machine",
+          "safely",
+          "thresholds",
+          "tuning"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "aldrei",
+          "fyrir",
+          "gangi",
+          "laus",
+          "maelingin",
+          "milli",
+          "morkin",
+          "naer",
+          "skraist",
+          "stadfestingartimi",
+          "stuttur",
+          "sveiflast",
+          "upptekin",
+          "velin"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "eina",
+          "fyrir",
+          "hana",
+          "hvernig",
+          "mork",
+          "notkun",
+          "stadfestingartima",
+          "taka",
+          "thess",
+          "velur"
+        ],
+        "title": [
+          "hatt",
+          "mork",
+          "oruggan",
+          "stilla",
+          "velar"
         ]
       }
     },
