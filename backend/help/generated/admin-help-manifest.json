@@ -1161,13 +1161,23 @@
       "canonical_locale": "en",
       "category": "daily_operation",
       "common_problem_rank": null,
-      "diagnostics": [],
+      "diagnostics": [
+        "core",
+        "kiosk.state"
+      ],
       "id": "admin-panel-orientation",
       "kind": "concept",
-      "last_reviewed": "2026-09-02",
+      "last_reviewed": "2026-09-03",
       "locales": {
         "en": {
-          "search_aliases": [],
+          "search_aliases": [
+            "back up before changing settings",
+            "export the configuration",
+            "is it safe to change this",
+            "what is this panel",
+            "where do i start",
+            "which tab do i need"
+          ],
           "sections": [
             {
               "anchor": "purpose",
@@ -1175,7 +1185,7 @@
                 {
                   "inlines": [
                     {
-                      "text": "The dev/admin panel (",
+                      "text": "The panel at ",
                       "type": "text"
                     },
                     {
@@ -1183,7 +1193,7 @@
                       "type": "code"
                     },
                     {
-                      "text": ") is a beta control surface for the kiosk backend.",
+                      "text": " is a temporary beta control surface for the kiosk",
                       "type": "text"
                     },
                     {
@@ -1191,7 +1201,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "It brings together four areas in one place: settings editing, machine card layout",
+                      "text": "backend. It exists so that whoever looks after the site can read the system's",
                       "type": "text"
                     },
                     {
@@ -1199,7 +1209,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "management, diagnostics, and a Remote Control panel for exercising the kiosk state",
+                      "text": "state and adjust it without a terminal: settings, machine cards, diagnostics, a",
                       "type": "text"
                     },
                     {
@@ -1207,7 +1217,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "machine without touching the physical hardware.",
+                      "text": "remote control for the kiosk state machine, and the help you are reading now.",
                       "type": "text"
                     }
                   ],
@@ -1216,7 +1226,7 @@
                 {
                   "inlines": [
                     {
-                      "text": "The panel sits behind HTTP Basic auth using the same admin credentials as the rest",
+                      "text": "It is not a production admin system. There is one shared admin account, no roles",
                       "type": "text"
                     },
                     {
@@ -1224,7 +1234,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "of the admin surface, plus a separate kill switch setting that must be enabled",
+                      "text": "and no per-person audit — the change log records what changed, not who changed",
                       "type": "text"
                     },
                     {
@@ -1232,7 +1242,53 @@
                       "type": "text"
                     },
                     {
-                      "text": "before the panel unlocks at all.",
+                      "text": "it. Do not expose it beyond the site's own network.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Getting in needs two things: ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "dev_admin_enabled"
+                    },
+                    {
+                      "text": " must be on in the backend, and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "you must sign in with the admin username and password. If the panel says it is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "disabled, or the login is refused, that is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "admin-access-recovery",
+                      "text": "Admin access and dev/admin panel recovery",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
                       "type": "text"
                     }
                   ],
@@ -1242,12 +1298,299 @@
               "heading": "What this panel is for"
             },
             {
+              "anchor": "tabs",
+              "blocks": [
+                {
+                  "header": [
+                    [
+                      {
+                        "text": "Tab",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "What it is for",
+                        "type": "text"
+                      }
+                    ]
+                  ],
+                  "rows": [
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Overview",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The whole system's current state on one screen, plus ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Export current config",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ". The first place to look for almost anything.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Remote Control",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The kiosk state machine: what the kiosk is showing, ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Inject Scan",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Select Machine",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", and ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Reset Kiosk",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ". Useful for reproducing a customer's report without standing at the kiosk.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Diagnostics",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Live readings",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " per machine, ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scan log",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Change history",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " and ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Metrics",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ". The instrument panel for every telemetry question.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Settings",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The whitelisted settings editor, then ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Sensitive Settings",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " for secret rotation, then the Danger Zone at the bottom.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Machine Cards",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How machines are named, labelled and ordered on the kiosk, and the way in to each machine's ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Advanced / Technical Mapping",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ".",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Hjálp",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "This help hub: guides, search, checklists and the support report.",
+                          "type": "text"
+                        }
+                      ]
+                    ]
+                  ],
+                  "type": "table"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Overview and Diagnostics are covered field by field in",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "using-diagnostics",
+                      "text": "Reading Overview and Diagnostics",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "The tabs"
+            },
+            {
               "anchor": "safe-changes",
               "blocks": [
                 {
                   "inlines": [
                     {
-                      "text": "Most settings edits made from this panel take effect immediately and are safe to",
+                      "text": "Most of what an operator needs day to day is safe, reversible and applies",
                       "type": "text"
                     },
                     {
@@ -1255,24 +1598,165 @@
                       "type": "text"
                     },
                     {
-                      "text": "try, revert, and try again. Machine card layout changes only affect how machines",
-                      "type": "text"
-                    },
-                    {
-                      "text": " ",
-                      "type": "text"
-                    },
-                    {
-                      "text": "are presented on the kiosk screen and do not change any hardware behaviour.",
+                      "text": "immediately.",
                       "type": "text"
                     }
                   ],
                   "type": "paragraph"
                 },
                 {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Card presentation.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Display names, short labels, machine type, description",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "and the order machines appear in on the kiosk. These change what the customer",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "reads, never what the hardware does.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Screen timing.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "selection_notice_seconds"
+                          },
+                          {
+                            "text": ", ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "started_notice_seconds"
+                          },
+                          {
+                            "text": " and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "error_notice_seconds"
+                          },
+                          {
+                            "text": " decide how long the kiosk holds each notice before",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "returning to the ready screen. ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "kiosk_poll_interval_ms"
+                          },
+                          {
+                            "text": " decides how often the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk screen asks the backend for the current state — lower feels snappier and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "costs more load, higher is calmer and laggier.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Reading anything.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Overview, all four Diagnostics views, the help hub and the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "support report change nothing at all.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "unordered_list"
+                },
+                {
                   "inlines": [
                     {
-                      "text": "Some settings are marked higher risk in the catalog because they affect relay",
+                      "text": "Two things make a change safer regardless of what it is: change one setting at a",
                       "type": "text"
                     },
                     {
@@ -1280,7 +1764,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "control or authentication. Read a setting's description in the panel before",
+                      "text": "time, and read the setting's own description in the panel before you change it.",
                       "type": "text"
                     },
                     {
@@ -1288,7 +1772,20 @@
                       "type": "text"
                     },
                     {
-                      "text": "changing it, and change one setting at a time so the effect of each change is",
+                      "text": "Saving is a two-step action — ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Review N changes",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " shows every change as old →",
                       "type": "text"
                     },
                     {
@@ -1296,7 +1793,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "easy to see.",
+                      "text": "new with its risk before anything is written.",
                       "type": "text"
                     }
                   ],
@@ -1306,12 +1803,665 @@
               "heading": "What is safe to change"
             },
             {
+              "anchor": "high-risk",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "These are not forbidden; they are the ones to stop and think about, and each of",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "them asks for a separate confirmation before it is applied.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "type": "setting_ref",
+                                "value": "backend_relay_enabled"
+                              },
+                              {
+                                "text": ".",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Turning it on means a machine selection sends real",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "power to real hardware. Turning it off is the fastest way to make a mapping",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "problem safe. Either way, tell staff, because with it off the kiosk still",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "accepts scans and reserves machines while nothing switches on.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Advanced / Technical Mapping.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Shelly addresses, relay channels, I4 button",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "indexes, metric sources and thresholds. A wrong value here starts the wrong",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "physical machine. See",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "machine-technical-mapping",
+                            "text": "Machine technical mapping",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Provider settings.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Which provider validates codes, its address, its token",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "and its action identifiers. A wrong value stops every customer from washing.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "See ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "reisa-configuration",
+                            "text": "Reisa connection and configuration",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "Secret rotation.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Generate New API Key",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Update Reisa Token",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " in",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Sensitive Settings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Both require the current API key first, and a new API key",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "is shown once and never again.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "text": "The Danger Zone.",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " Turning ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "dev_admin_enabled"
+                          },
+                          {
+                            "text": " off locks every browser out of",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "this panel immediately, and it cannot be turned back on from here. It requires",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "typing a confirmation phrase exactly, and the way back is on the kiosk host.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "type": "setting_ref",
+                                "value": "telemetry_enabled"
+                              },
+                              {
+                                "text": ".",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " With it off nothing reads the machines, so every",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "machine reports as available and customers are sent to machines that are",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "already running.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "inlines": [
+                              {
+                                "type": "setting_ref",
+                                "value": "cors_allowed_origins"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and the scanner settings. These only take effect",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "after the backend is restarted, so a mistake in them can surface hours later.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "See ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "settings-requiring-restart",
+                            "text": "Settings that need a restart",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "unordered_list"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Two settings look like controls and are not quite. ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "kiosk_input_mode"
+                    },
+                    {
+                      "text": " is legacy:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it is read-only and has no runtime effect today, because touch selection on the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk is always allowed. The setting that actually controls the physical button",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "box is ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "button_box_enabled"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "What is high risk"
+            },
+            {
+              "anchor": "backup",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "There is no undo button in this panel, and no configuration import. Before any",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "high-risk change, spend the minute it takes to record what things look like now.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "On Overview, press ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Export current config",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". It downloads a JSON file",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "containing the settings, the machines, the devices, the machine configs and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the kiosk card layout. Raw secrets are not in it — each secret appears only as",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "whether it is set. Keep the file somewhere you will find it again, named for",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the day and the change.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Write down, or photograph, the specific fields you are about to change and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "what they currently say. That matters most in ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Advanced / Technical Mapping",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "where the values are per machine and easy to mix up once two of them have been",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "edited.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Note the time. ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " in Diagnostics records every change with its",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "old and new value, so knowing roughly when you started is usually enough to",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "reconstruct a session.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The export is a record to retype from, not a restore button — nothing in the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "panel reads it back. A true rollback means restoring the backend's database file",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "on the kiosk host, which also rolls back codes, usage sessions and the audit",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "trail, so it is a maintainer step of last resort. In practice the better path is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "almost always to put the value back through the panel, reading the previous value",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "out of ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change history",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Back up before you change anything risky"
+            },
+            {
               "anchor": "next-steps",
               "blocks": [
                 {
                   "inlines": [
                     {
-                      "text": "Use the Diagnostics panel to check the current health of a machine or the scanner",
+                      "text": "Start with Overview whenever you do not yet know which part of the system is",
                       "type": "text"
                     },
                     {
@@ -1319,7 +2469,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "before making a change. Use the Remote Control panel to walk the kiosk state",
+                      "text": "unhappy, and with Diagnostics whenever you already know it is a machine. Use the",
                       "type": "text"
                     },
                     {
@@ -1327,7 +2477,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "machine through a scan and start cycle when you want to see the effect of a",
+                      "text": "help hub's search rather than browsing when you have a symptom in words: the",
                       "type": "text"
                     },
                     {
@@ -1335,7 +2485,40 @@
                       "type": "text"
                     },
                     {
-                      "text": "setting change without waiting for a real customer to scan a code.",
+                      "text": "guides are indexed by the phrases operators actually use.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "When a change is needed, do it in this order: record the current state, make one",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "change, watch its effect, and only then decide whether a second change is needed.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Almost every difficult situation in this system began as two changes made at",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "once.",
                       "type": "text"
                     }
                   ],
@@ -1346,13 +2529,43 @@
             }
           ],
           "stub": false,
-          "summary": "What the /dev/admin beta panel is for and what is safe to touch in it.",
+          "summary": "What the /dev/admin panel is for, what each tab does, what is safe to change, and what to record before changing anything.",
           "title": "Admin panel orientation",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "er óhætt að breyta þessu",
+            "flytja út stillingar",
+            "hvar byrja ég",
+            "hvað er þetta stjórnborð",
+            "hvaða flipa þarf ég",
+            "taka afrit áður en stillingum er breytt"
+          ],
+          "stub": true,
+          "summary": "Til hvers stjórnborðið á /dev/admin er, hvað hver flipi gerir, hverju er óhætt að breyta og hvað á að skrá niður áður en einhverju er breytt.",
+          "title": "Yfirlit yfir stjórnborðið",
           "translation_status": "published"
         }
       },
-      "related_guides": [],
-      "related_settings": [],
+      "related_guides": [
+        "admin-access-recovery",
+        "machine-technical-mapping",
+        "reisa-configuration",
+        "settings-requiring-restart",
+        "using-diagnostics"
+      ],
+      "related_settings": [
+        "backend_relay_enabled",
+        "button_box_enabled",
+        "dev_admin_enabled",
+        "error_notice_seconds",
+        "kiosk_input_mode",
+        "kiosk_poll_interval_ms",
+        "selection_notice_seconds",
+        "started_notice_seconds",
+        "telemetry_enabled"
+      ],
       "risk": "low",
       "status": "published"
     },
@@ -14955,121 +16168,455 @@
     },
     "admin-panel-orientation": {
       "en": {
-        "aliases": [],
-        "body": [
-          "admin",
-          "affect",
-          "again",
-          "areas",
-          "auth",
-          "authentication",
-          "backend",
-          "basic",
-          "because",
+        "aliases": [
+          "back",
           "before",
-          "behaviour",
-          "behind",
-          "beta",
-          "brings",
-          "card",
-          "catalog",
           "change",
-          "changes",
           "changing",
-          "check",
-          "code",
+          "configuration",
+          "export",
+          "need",
+          "panel",
+          "safe",
+          "settings",
+          "start",
+          "what",
+          "where",
+          "which"
+        ],
+        "body": [
+          "about",
+          "accepts",
+          "access",
+          "account",
+          "action",
+          "actually",
+          "address",
+          "addresses",
+          "adjust",
+          "admin",
+          "advanced",
+          "after",
+          "again",
+          "allowed",
+          "almost",
+          "already",
+          "also",
+          "always",
+          "anything",
+          "appear",
+          "appears",
+          "applied",
+          "applies",
+          "asks",
+          "audit",
+          "available",
+          "back",
+          "backend",
+          "because",
+          "been",
+          "before",
+          "began",
+          "beta",
+          "better",
+          "beyond",
+          "both",
+          "bottom",
+          "browser",
+          "browsing",
+          "button",
+          "calmer",
+          "cannot",
+          "card",
+          "cards",
+          "change",
+          "changed",
+          "changes",
+          "channels",
+          "checklists",
+          "codes",
+          "config",
+          "configs",
+          "configuration",
+          "confirmation",
+          "connection",
+          "containing",
           "control",
-          "credentials",
+          "controls",
+          "cors",
+          "costs",
+          "covered",
           "current",
+          "currently",
           "customer",
-          "cycle",
+          "customers",
+          "danger",
+          "database",
+          "decide",
+          "decides",
           "description",
+          "devices",
           "diagnostics",
+          "difficult",
+          "disabled",
+          "display",
+          "does",
+          "down",
+          "downloads",
           "each",
           "easy",
-          "editing",
-          "edits",
+          "edited",
+          "editor",
           "effect",
+          "either",
           "enabled",
-          "exercising",
+          "enough",
+          "error",
+          "every",
+          "exactly",
+          "exists",
+          "export",
+          "expose",
+          "fastest",
+          "feels",
+          "field",
+          "fields",
+          "file",
+          "find",
+          "first",
+          "forbidden",
           "four",
+          "generate",
+          "getting",
+          "guides",
           "hardware",
-          "health",
+          "have",
+          "help",
+          "here",
+          "high",
           "higher",
-          "http",
+          "history",
+          "hjalp",
+          "holds",
+          "host",
+          "hours",
+          "identifiers",
           "immediately",
-          "kill",
+          "import",
+          "indexed",
+          "indexes",
+          "inject",
+          "input",
+          "instrument",
+          "interval",
+          "json",
+          "keep",
           "kiosk",
+          "know",
+          "knowing",
+          "labelled",
+          "labels",
+          "laggier",
+          "last",
+          "later",
           "layout",
+          "legacy",
+          "like",
+          "live",
+          "load",
+          "locks",
+          "login",
+          "long",
+          "look",
+          "looks",
+          "lower",
           "machine",
           "machines",
           "made",
-          "making",
-          "management",
-          "marked",
+          "maintainer",
+          "make",
+          "mapping",
+          "matters",
+          "means",
+          "metric",
+          "metrics",
+          "minute",
+          "mistake",
+          "mode",
+          "more",
           "most",
           "must",
+          "named",
+          "names",
+          "need",
+          "needed",
+          "needs",
+          "network",
+          "never",
+          "note",
+          "nothing",
+          "notice",
+          "often",
+          "once",
+          "ones",
           "only",
+          "operator",
+          "operators",
+          "order",
+          "ordered",
+          "origins",
+          "overview",
           "panel",
+          "part",
+          "password",
+          "path",
+          "person",
+          "photograph",
+          "phrase",
+          "phrases",
           "physical",
           "place",
           "plus",
-          "presented",
+          "poll",
+          "power",
+          "practice",
+          "presentation",
+          "press",
+          "previous",
+          "problem",
+          "production",
+          "provider",
+          "question",
+          "quite",
+          "rather",
           "read",
+          "reading",
+          "readings",
+          "reads",
+          "ready",
           "real",
+          "reconstruct",
+          "record",
+          "records",
+          "recovery",
+          "refused",
+          "regardless",
+          "reisa",
           "relay",
           "remote",
-          "rest",
-          "revert",
+          "report",
+          "reports",
+          "reproducing",
+          "require",
+          "requires",
+          "reserves",
+          "reset",
+          "resort",
+          "restart",
+          "restarted",
+          "restore",
+          "restoring",
+          "returning",
+          "retype",
+          "reversible",
+          "review",
           "risk",
+          "roles",
+          "rollback",
+          "rolls",
+          "rotation",
+          "roughly",
+          "running",
+          "runtime",
           "safe",
-          "same",
+          "safer",
+          "saving",
+          "says",
           "scan",
           "scanner",
+          "scans",
           "screen",
+          "search",
+          "second",
+          "seconds",
+          "secret",
+          "secrets",
+          "select",
+          "selection",
+          "sends",
+          "sensitive",
+          "sent",
           "separate",
+          "session",
+          "sessions",
           "setting",
           "settings",
-          "sits",
-          "some",
+          "shared",
+          "shelly",
+          "short",
+          "showing",
+          "shown",
+          "shows",
+          "sign",
+          "site",
+          "situation",
+          "snappier",
+          "somewhere",
+          "sources",
+          "specific",
+          "spend",
+          "staff",
+          "standing",
           "start",
+          "started",
+          "starts",
           "state",
+          "step",
+          "still",
+          "stop",
+          "stops",
+          "support",
           "surface",
-          "switch",
+          "switches",
+          "symptom",
+          "system",
           "take",
+          "takes",
+          "technical",
+          "telemetry",
+          "tell",
+          "temporary",
+          "terminal",
+          "than",
+          "them",
+          "then",
+          "there",
+          "these",
           "they",
+          "things",
+          "think",
+          "thresholds",
           "through",
           "time",
-          "together",
-          "touching",
-          "unlocks",
-          "using",
-          "waiting",
-          "walk",
-          "want",
-          "without"
+          "timing",
+          "today",
+          "token",
+          "touch",
+          "trail",
+          "true",
+          "turned",
+          "turning",
+          "type",
+          "typing",
+          "undo",
+          "unhappy",
+          "update",
+          "usage",
+          "useful",
+          "username",
+          "usually",
+          "validates",
+          "value",
+          "values",
+          "views",
+          "washing",
+          "watch",
+          "what",
+          "whenever",
+          "where",
+          "whether",
+          "which",
+          "while",
+          "whitelisted",
+          "whoever",
+          "whole",
+          "will",
+          "without",
+          "words",
+          "write",
+          "written",
+          "wrong",
+          "zone"
         ],
         "headings": [
+          "anything",
+          "back",
+          "before",
           "change",
+          "high",
           "look",
           "next",
           "panel",
+          "risk",
+          "risky",
           "safe",
+          "tabs",
           "what",
           "where"
         ],
         "summary": [
           "admin",
-          "beta",
+          "anything",
+          "before",
+          "change",
+          "changing",
+          "does",
+          "each",
           "panel",
+          "record",
           "safe",
-          "touch",
           "what"
         ],
         "title": [
           "admin",
           "orientation",
           "panel"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "adur",
+          "afrit",
+          "breyta",
+          "breytt",
+          "byrja",
+          "flipa",
+          "flytja",
+          "hvad",
+          "hvada",
+          "hvar",
+          "ohaett",
+          "stillingar",
+          "stillingum",
+          "stjornbord",
+          "taka",
+          "tharf",
+          "thessu",
+          "thetta"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "admin",
+          "adur",
+          "breyta",
+          "breytt",
+          "einhverju",
+          "flipi",
+          "gerir",
+          "hvad",
+          "hver",
+          "hverju",
+          "hvers",
+          "nidur",
+          "ohaett",
+          "skra",
+          "stjornbordid"
+        ],
+        "title": [
+          "stjornbordid",
+          "yfir",
+          "yfirlit"
         ]
       }
     },
