@@ -1,8 +1,24 @@
 {
   "build_id": null,
   "default_locale": "is",
-  "excluded_translations": [],
-  "guide_count": 1,
+  "excluded_translations": [
+    {
+      "guide_id": "all-machines-available-telemetry-stale",
+      "locale": "is",
+      "translation_status": "review"
+    },
+    {
+      "guide_id": "machine-does-not-start",
+      "locale": "is",
+      "translation_status": "review"
+    },
+    {
+      "guide_id": "machine-unavailable",
+      "locale": "is",
+      "translation_status": "review"
+    }
+  ],
+  "guide_count": 4,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -203,6 +219,2444 @@
       "related_settings": [],
       "risk": "low",
       "status": "published"
+    },
+    "all-machines-available-telemetry-stale": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": 3,
+      "diagnostics": [
+        "machine.identity",
+        "machine.telemetry",
+        "settings.telemetry"
+      ],
+      "id": "all-machines-available-telemetry-stale",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "settings.telemetry",
+              "expected": "On. Off explains every machine reporting available.",
+              "id": "telemetry-setting-on",
+              "look_for": "Settings, Runtime group, Telemetry polling enabled.",
+              "question": "Is telemetry polling enabled in Settings?",
+              "route": "settings"
+            },
+            {
+              "diagnostics": "settings.telemetry",
+              "expected": "No banner when polling is running.",
+              "id": "telemetry-off-banner",
+              "look_for": "The red banner at the top of the Diagnostics tab.",
+              "question": "Does Diagnostics show the telemetry-off warning banner?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "A small number that resets, roughly the machine's poll interval.",
+              "id": "last-read-age",
+              "look_for": "Diagnostics, Live readings, Last read on each card.",
+              "question": "Is Last read climbing on every machine?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "The value moves. A value frozen to the same number is the symptom.",
+              "id": "values-frozen",
+              "look_for": "Diagnostics, Live readings, the value and the chart for a running machine.",
+              "question": "Do the values change at all while a machine is definitely running?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.identity",
+              "expected": "A running machine should read in_use.",
+              "id": "run-state-all-available",
+              "look_for": "Diagnostics, Live readings, Run state on every card.",
+              "question": "Does every machine report run state available, including one you can hear running?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "availability is wrong for every machine",
+            "customer sent to a running machine",
+            "everything shows free",
+            "readings do not update"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when the kiosk shows ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "every",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine as available, including",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machines that are visibly or audibly running, and customers end up paying for a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine that is already in use.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "This is the more expensive failure of the two availability problems, because the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "customer's use is spent before anyone notices. If only ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "one",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine is wrong,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and it is stuck the other way — showing as busy while it is idle — read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-unavailable",
+                      "text": "Machine shows unavailable while it is idle",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Machines only ever change state because telemetry reads them. When the readings",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "stop, every machine keeps the state it had at that moment, and a backend that",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "has just been started holds every machine as available. So \"everything is free\"",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is almost always the shape of ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "nothing is being read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", not of a device fault:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "devices that stop answering individually are marked offline and disappear from",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "selection instead.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Telemetry polling is switched off.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " off, the polling",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "loop keeps running but reads nothing at all. Diagnostics says so directly with a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "red banner, and the live values stand still.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The running backend is not the one you configured.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " This is the recorded",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "field incident: polling had been turned off, and the process that was running",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "was not picking up the change either, so every machine reported available for a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "whole afternoon. The operator-visible signal is the same in both halves —",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " climbing on every card while the values stay frozen.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Nothing at all was ever read.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " On a backend where polling has never run,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "values show as dashes rather than as frozen numbers, and Last read shows a dash",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "too.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", go to Diagnostics and stay on ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Live readings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Look at",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the top of the tab first: a red telemetry-off banner answers the question on",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "its own.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Watch the cards for about ten seconds. Note whether ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " resets to a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "small number, or keeps counting up on every machine at once.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Start or find a machine you know is running and compare its value and band",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "text against what you can hear. A running machine that reads the same number",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "as an idle one is not being read.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Go to Settings, Runtime group, and check ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Telemetry polling enabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "(",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "telemetry_enabled"
+                          },
+                          {
+                            "text": "). If it is off, turning it on is the fix; it takes effect",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "without a restart. Change only this one setting.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Go back to Diagnostics and confirm recovery: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " should drop back to",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a small number, values should start moving, and a running machine should",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "switch to ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "in_use",
+                            "type": "code"
+                          },
+                          {
+                            "text": " after its ON confirm time.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the setting was already on and the readings are still frozen, the running",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "backend is not applying the configuration. Note that, and stop — restarting",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the backend on the kiosk host is a maintainer step, and the panel shows the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "exact command in its restart banner when one is needed.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Until availability is trustworthy again, tell staff not to rely on the kiosk",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "screen for which machines are free.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "While telemetry is stale the kiosk cannot tell a busy machine from a free one.",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "Treat every machine as unknown until Last read is small again on every card.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate immediately if customers are still being sent to running machines",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "after telemetry polling is confirmed on, or if the values stay frozen.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: how",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "many machines are affected, the Last read values you saw, whether the telemetry",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "banner was showing, and roughly when the first customer complained.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "Every machine looks free on the kiosk, so customers are sent to machines that are already running.",
+          "title": "All machines show available while telemetry is stale",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "machine-does-not-start",
+        "machine-unavailable"
+      ],
+      "related_settings": [
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "machine-does-not-start": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": 2,
+      "diagnostics": [
+        "kiosk.state",
+        "machine.identity",
+        "machine.telemetry",
+        "machine.thresholds",
+        "settings.relay"
+      ],
+      "id": "machine-does-not-start",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "expected": "The machine only runs once its own program is started.",
+              "id": "program-selected",
+              "look_for": "The machine's own dial or buttons, not the kiosk screen.",
+              "question": "Was a program selected on the machine itself after it was chosen on the screen?"
+            },
+            {
+              "diagnostics": "kiosk.state",
+              "expected": "A start message naming the machine. Machine start failed means the relay command did not get through.",
+              "id": "kiosk-message",
+              "look_for": "Overview, Current UI state, while you repeat the attempt.",
+              "question": "What did the kiosk show right after the machine was chosen?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "settings.relay",
+              "expected": "Enabled. When it is disabled the backend never sends a power command to any machine.",
+              "id": "relay-control-enabled",
+              "look_for": "Overview, Backend relay.",
+              "question": "Is backend relay control enabled?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "machine.identity",
+              "expected": "Yes right after an attempt, then no once the reservation ends.",
+              "id": "pending-start-held",
+              "look_for": "Diagnostics, Live readings, Pending start for that machine.",
+              "question": "Is the machine still holding a pending start?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "The value rises within a few seconds of the machine actually running.",
+              "id": "reading-responds",
+              "look_for": "Diagnostics, Live readings, the value and Last read for that machine.",
+              "question": "Does the live reading move when the machine is started?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.thresholds",
+              "expected": "At or above ON threshold, held for at least the ON confirm time.",
+              "id": "reading-reaches-on-threshold",
+              "look_for": "Diagnostics, Live readings, the band text and Above for against ON confirm.",
+              "question": "Does the reading reach the ON threshold and stay there?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "machine gets no power",
+            "nothing happens after choosing a machine",
+            "start does not work",
+            "washer will not start"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when a scan was accepted, the customer chose a machine on the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk, the kiosk answered with a start message naming that machine, and the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine still never runs. A few seconds later the kiosk returns to the ready",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "screen on its own.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If the customer could not choose the machine at all because the card said",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "In use",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", you are in a different situation: read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-unavailable",
+                      "text": "Machine shows unavailable while it is idle",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " instead.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "One thing you can tell the customer straight away: a use is only counted when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the backend sees the machine actually running. A selection that never turned",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "into a run does not consume a use, so the same code can be scanned again.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Relay control is switched off.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The backend only sends a power command when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "backend_relay_enabled"
+                    },
+                    {
+                      "text": " is on. When it is off, the kiosk still shows the normal",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "start message and reserves the machine, but nothing is sent to the hardware.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "This is the dry-run mode used on the bench, and it is the most common reason a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "selection looks accepted and nothing happens.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The power command did not get through.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With relay control on, the backend",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "asks the machine's Shelly device to switch its relay on, and retries once. If",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the device does not answer inside ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "shelly_http_timeout_sec"
+                    },
+                    {
+                      "text": ", the reservation is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "released immediately and the kiosk shows ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Machine start failed",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ". That points at",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the device or the network, not at the kiosk.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The machine has power but no program was started on it.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The kiosk message",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "asks the customer to select a program on the machine. Until they do, the machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "draws almost nothing and looks idle to the backend.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The run was never confirmed.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The kiosk only reaches the ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "started",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " screen",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "when telemetry sees the machine's reading at or above its ON threshold and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "holds it there for the ON confirm time. If the reading never gets that high, or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "drops back too soon, no confirmation arrives. The kiosk screen resets after",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "selection_notice_seconds"
+                    },
+                    {
+                      "text": ", and the machine stays reserved until",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "machine_reservation_minutes"
+                    },
+                    {
+                      "text": " runs out.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Telemetry polling is off.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " off nothing reads the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machines at all, so a real run can never be confirmed. See",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "all-machines-available-telemetry-stale",
+                      "text": "All machines show available while telemetry is stale",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Watch one full attempt yourself and write down the exact wording the kiosk",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "showed after the machine was chosen. ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Machine start failed",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": " and a normal",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "start message lead to completely different causes.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": " and read the Overview panel. Note ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend relay",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Telemetry",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". If backend relay is disabled, the backend is not sending power",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "commands at all — stop here and escalate rather than switching it on",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "yourself, because it makes the backend drive real hardware.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Go to Diagnostics, Live readings, and find the machine. Note ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Run state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Pending start",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", the value and the band text.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Repeat one start attempt while you watch that card. A machine that really",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "gets power shows the value climbing within a few seconds.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the value climbs but the band text never says ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "at or above ON threshold",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "or ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Above for",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " never reaches the ON confirm time, the run is happening but",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "cannot be confirmed. Do not change thresholds in the middle of an incident;",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "threshold tuning is its own procedure and it is easy to make availability",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "worse.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Diagnostics, Change history, and look for a recent change to a runtime",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "or hardware setting. A start problem that began today usually began with a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "change today.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Wait for the reservation to expire, or let it run out, before the next test.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "A machine that is still holding a pending start cannot be chosen again.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when relay control is off and switching it on is not your decision,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "when the reading never moves at all, or when the kiosk reports ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Machine start",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "failed",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " repeatedly.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it together with: which machine, the exact",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk wording, roughly how many seconds passed before the kiosk reset, and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "whether the reading moved at all during the attempt.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "The code was accepted and a machine was chosen, but the machine never runs.",
+          "title": "Machine does not start after selection",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "machine-unavailable"
+      ],
+      "related_settings": [
+        "backend_relay_enabled",
+        "machine_reservation_minutes",
+        "selection_notice_seconds",
+        "shelly_http_timeout_sec",
+        "telemetry_enabled"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "machine-unavailable": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": 1,
+      "diagnostics": [
+        "machine.identity",
+        "machine.telemetry",
+        "machine.thresholds",
+        "settings.telemetry"
+      ],
+      "id": "machine-unavailable",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "machine.identity",
+              "expected": "available for an idle machine. in_use or offline explains the kiosk badge.",
+              "id": "machine-run-state",
+              "look_for": "Diagnostics, Live readings, Run state on that machine's card.",
+              "question": "What run state does the backend hold for this machine?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.identity",
+              "expected": "No. Yes means the machine is reserved and the reservation has not expired yet.",
+              "id": "machine-pending-start",
+              "look_for": "Diagnostics, Live readings, Pending start.",
+              "problem_guide": "machine-does-not-start",
+              "question": "Is the machine still holding a pending start from an earlier selection?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "A number, refreshed about as often as the machine's poll interval.",
+              "id": "machine-last-reading",
+              "look_for": "Diagnostics, Live readings, the value and Last read.",
+              "question": "Is the machine still being read, and what is the value?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.thresholds",
+              "expected": "at or below OFF threshold for an idle machine.",
+              "id": "machine-band",
+              "look_for": "Diagnostics, Live readings, the band text under the value.",
+              "question": "Where does the reading sit against the thresholds?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "settings.telemetry",
+              "expected": "Enabled, with no telemetry-off banner.",
+              "id": "telemetry-polling-on",
+              "look_for": "The warning banner at the top of Diagnostics, and Telemetry on Overview.",
+              "problem_guide": "all-machines-available-telemetry-stale",
+              "question": "Is telemetry polling running?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "cannot choose machine",
+            "machine card greyed out",
+            "machine stuck in use",
+            "washer shows busy but is empty"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "one",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine keeps showing as ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "In use",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " on the kiosk and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "cannot be chosen, while the machine itself is standing idle. The other machines",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "behave normally.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If instead ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "every",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine looks free and customers are being sent to machines",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that are already running, this is the wrong guide — read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "all-machines-available-telemetry-stale",
+                      "text": "All machines show available while telemetry is stale",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "A machine that has been switched off in the panel does not appear like this at",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "all: it disappears from the kiosk screen completely rather than showing as busy.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "The kiosk marks a machine as choosable only when the backend holds it as",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "available",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "and",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " no start is pending on it. Three states produce the badge you",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "are looking at.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The machine is still reserved.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " When a customer selects a machine, the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "backend holds a pending start on it until telemetry confirms the run or the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reservation expires after ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "machine_reservation_minutes"
+                    },
+                    {
+                      "text": ". A selection that never",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "turned into a real run therefore blocks the machine for the rest of that window.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The backend believes the machine is running.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Telemetry marks a machine as",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "running when its reading sits at or above the ON threshold for the ON confirm",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "time, and only releases it when the reading sits at or below the OFF threshold",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "for the OFF confirm time. A machine that keeps drawing more than the OFF",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "threshold while idle — a standby light, a pump, a heater — never gets released.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "The same happens if the reading is stuck between the two thresholds, which is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "where nothing changes at all.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The device stopped answering.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " A failed read marks the machine offline, which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "also removes it from selection. On the card the value shows as a dash while",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Last read keeps counting. That is a network or device problem, not a threshold",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "problem.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", go to Diagnostics and stay on ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Live readings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Find the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "machine that is wrong.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Read the card top to bottom: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Run state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Available",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Pending start",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the value, the band text, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Pending start",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " is yes, someone selected the machine and the run was",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "never confirmed. Wait out the reservation window and watch it clear on its",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "own, then read",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "machine-does-not-start",
+                            "text": "Machine does not start after selection",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Run state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " is ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "in_use",
+                            "type": "code"
+                          },
+                          {
+                            "text": " while the machine is idle, look at the value and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the band text. A value that sits above the OFF threshold with the machine",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "doing nothing means the thresholds no longer match this machine. Note the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "idle value and stop here; changing thresholds is a separate procedure and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "doing it blind can take the machine out of service for real.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the value shows as a dash and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " keeps climbing, the device is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "not answering. Check whether other machines on the same device or the same",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "network are also affected before you touch anything.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Run state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " is ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "available",
+                            "type": "code"
+                          },
+                          {
+                            "text": " but the kiosk still shows the machine as",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "busy, the kiosk screen is out of date rather than the backend. Reload the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk page and compare again.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Note whether the telemetry-off banner is showing at the top of Diagnostics.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "With polling off, whatever state a machine was in when polling stopped is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "frozen in place.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when the machine has been stuck for longer than one reservation",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "window with no pending start, when the value never updates, or when an idle",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine genuinely reads above its OFF threshold.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine, its Run state and value as you saw them, and whether the machine had",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "been used shortly before it got stuck.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "One machine stays marked In use on the kiosk even though nobody is using it.",
+          "title": "Machine shows unavailable while it is idle",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "all-machines-available-telemetry-stale",
+        "machine-does-not-start"
+      ],
+      "related_settings": [
+        "machine_reservation_minutes",
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
+      ],
+      "risk": "medium",
+      "status": "published"
     }
   },
   "locales": [
@@ -328,6 +2782,709 @@
           "admin",
           "orientation",
           "panel"
+        ]
+      }
+    },
+    "all-machines-available-telemetry-stale": {
+      "en": {
+        "aliases": [
+          "availability",
+          "customer",
+          "every",
+          "everything",
+          "free",
+          "machine",
+          "readings",
+          "running",
+          "sent",
+          "shows",
+          "update",
+          "wrong"
+        ],
+        "body": [
+          "about",
+          "admin",
+          "affected",
+          "after",
+          "afternoon",
+          "again",
+          "against",
+          "almost",
+          "already",
+          "always",
+          "answering",
+          "answers",
+          "anyone",
+          "applying",
+          "audibly",
+          "availability",
+          "available",
+          "back",
+          "backend",
+          "band",
+          "banner",
+          "because",
+          "been",
+          "before",
+          "being",
+          "both",
+          "bottom",
+          "busy",
+          "cannot",
+          "card",
+          "cards",
+          "change",
+          "check",
+          "climbing",
+          "command",
+          "compare",
+          "complained",
+          "configuration",
+          "configured",
+          "confirm",
+          "confirmed",
+          "copy",
+          "counting",
+          "customer",
+          "customers",
+          "dash",
+          "dashes",
+          "device",
+          "devices",
+          "diagnostics",
+          "directly",
+          "disappear",
+          "drop",
+          "effect",
+          "either",
+          "enabled",
+          "escalate",
+          "ever",
+          "every",
+          "everything",
+          "exact",
+          "expensive",
+          "failure",
+          "fault",
+          "field",
+          "find",
+          "first",
+          "free",
+          "frozen",
+          "group",
+          "guide",
+          "halves",
+          "hear",
+          "holds",
+          "host",
+          "idle",
+          "immediately",
+          "incident",
+          "including",
+          "individually",
+          "instead",
+          "just",
+          "keeps",
+          "kiosk",
+          "know",
+          "last",
+          "live",
+          "look",
+          "loop",
+          "machine",
+          "machines",
+          "maintainer",
+          "many",
+          "marked",
+          "moment",
+          "more",
+          "moving",
+          "needed",
+          "never",
+          "note",
+          "nothing",
+          "notices",
+          "number",
+          "numbers",
+          "offline",
+          "once",
+          "only",
+          "open",
+          "operator",
+          "other",
+          "panel",
+          "paying",
+          "picking",
+          "polling",
+          "problems",
+          "process",
+          "question",
+          "rather",
+          "read",
+          "readings",
+          "reads",
+          "recorded",
+          "recovery",
+          "rely",
+          "report",
+          "reported",
+          "resets",
+          "restart",
+          "restarting",
+          "roughly",
+          "running",
+          "runtime",
+          "same",
+          "says",
+          "screen",
+          "seconds",
+          "selection",
+          "send",
+          "sent",
+          "setting",
+          "settings",
+          "shape",
+          "show",
+          "showing",
+          "shows",
+          "signal",
+          "small",
+          "spent",
+          "staff",
+          "stale",
+          "stand",
+          "start",
+          "started",
+          "state",
+          "stay",
+          "step",
+          "still",
+          "stop",
+          "stuck",
+          "support",
+          "switch",
+          "switched",
+          "takes",
+          "telemetry",
+          "tell",
+          "text",
+          "than",
+          "them",
+          "time",
+          "treat",
+          "trustworthy",
+          "turned",
+          "turning",
+          "unavailable",
+          "unknown",
+          "until",
+          "value",
+          "values",
+          "visible",
+          "visibly",
+          "watch",
+          "what",
+          "where",
+          "whether",
+          "which",
+          "while",
+          "whole",
+          "without",
+          "wrong"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "already",
+          "customers",
+          "every",
+          "free",
+          "kiosk",
+          "looks",
+          "machine",
+          "machines",
+          "running",
+          "sent"
+        ],
+        "title": [
+          "available",
+          "machines",
+          "show",
+          "stale",
+          "telemetry",
+          "while"
+        ]
+      }
+    },
+    "machine-does-not-start": {
+      "en": {
+        "aliases": [
+          "after",
+          "choosing",
+          "does",
+          "gets",
+          "happens",
+          "machine",
+          "nothing",
+          "power",
+          "start",
+          "washer",
+          "will",
+          "work"
+        ],
+        "body": [
+          "above",
+          "accepted",
+          "actually",
+          "admin",
+          "after",
+          "again",
+          "almost",
+          "answer",
+          "answered",
+          "arrives",
+          "asks",
+          "attempt",
+          "availability",
+          "available",
+          "away",
+          "back",
+          "backend",
+          "band",
+          "because",
+          "before",
+          "began",
+          "bench",
+          "bottom",
+          "cannot",
+          "card",
+          "causes",
+          "change",
+          "choose",
+          "chose",
+          "chosen",
+          "climbing",
+          "climbs",
+          "code",
+          "command",
+          "commands",
+          "common",
+          "completely",
+          "confirm",
+          "confirmation",
+          "confirmed",
+          "consume",
+          "control",
+          "copy",
+          "could",
+          "counted",
+          "customer",
+          "decision",
+          "device",
+          "diagnostics",
+          "different",
+          "disabled",
+          "does",
+          "down",
+          "draws",
+          "drive",
+          "drops",
+          "during",
+          "easy",
+          "enabled",
+          "escalate",
+          "exact",
+          "expire",
+          "failed",
+          "find",
+          "full",
+          "gets",
+          "guide",
+          "happening",
+          "happens",
+          "hardware",
+          "here",
+          "high",
+          "history",
+          "holding",
+          "holds",
+          "http",
+          "idle",
+          "immediately",
+          "incident",
+          "inside",
+          "instead",
+          "into",
+          "kiosk",
+          "last",
+          "later",
+          "lead",
+          "live",
+          "look",
+          "looks",
+          "machine",
+          "machines",
+          "make",
+          "makes",
+          "many",
+          "message",
+          "middle",
+          "minutes",
+          "mode",
+          "most",
+          "moved",
+          "moves",
+          "naming",
+          "network",
+          "never",
+          "next",
+          "normal",
+          "note",
+          "nothing",
+          "notice",
+          "once",
+          "only",
+          "open",
+          "overview",
+          "panel",
+          "passed",
+          "pending",
+          "points",
+          "polling",
+          "power",
+          "problem",
+          "procedure",
+          "program",
+          "rather",
+          "reaches",
+          "read",
+          "reading",
+          "readings",
+          "reads",
+          "ready",
+          "real",
+          "really",
+          "reason",
+          "recent",
+          "relay",
+          "released",
+          "repeat",
+          "repeatedly",
+          "report",
+          "reports",
+          "reservation",
+          "reserved",
+          "reserves",
+          "reset",
+          "resets",
+          "retries",
+          "returns",
+          "roughly",
+          "running",
+          "runs",
+          "runtime",
+          "said",
+          "same",
+          "says",
+          "scan",
+          "scanned",
+          "screen",
+          "seconds",
+          "sees",
+          "select",
+          "selection",
+          "send",
+          "sending",
+          "sends",
+          "sent",
+          "setting",
+          "shelly",
+          "show",
+          "showed",
+          "shows",
+          "situation",
+          "soon",
+          "stale",
+          "start",
+          "started",
+          "state",
+          "stays",
+          "still",
+          "stop",
+          "straight",
+          "support",
+          "switch",
+          "switched",
+          "switching",
+          "telemetry",
+          "tell",
+          "test",
+          "text",
+          "than",
+          "there",
+          "they",
+          "thing",
+          "threshold",
+          "thresholds",
+          "through",
+          "time",
+          "timeout",
+          "today",
+          "together",
+          "tuning",
+          "turned",
+          "unavailable",
+          "until",
+          "used",
+          "usually",
+          "value",
+          "wait",
+          "watch",
+          "whether",
+          "which",
+          "while",
+          "within",
+          "wording",
+          "worse",
+          "write",
+          "yourself"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "accepted",
+          "chosen",
+          "code",
+          "machine",
+          "never",
+          "runs"
+        ],
+        "title": [
+          "after",
+          "does",
+          "machine",
+          "selection",
+          "start"
+        ]
+      }
+    },
+    "machine-unavailable": {
+      "en": {
+        "aliases": [
+          "busy",
+          "cannot",
+          "card",
+          "choose",
+          "empty",
+          "greyed",
+          "machine",
+          "shows",
+          "stuck",
+          "washer"
+        ],
+        "body": [
+          "above",
+          "admin",
+          "affected",
+          "after",
+          "again",
+          "already",
+          "also",
+          "answering",
+          "anything",
+          "appear",
+          "available",
+          "backend",
+          "badge",
+          "band",
+          "banner",
+          "been",
+          "before",
+          "behave",
+          "being",
+          "believes",
+          "below",
+          "between",
+          "blind",
+          "blocks",
+          "bottom",
+          "busy",
+          "cannot",
+          "card",
+          "changes",
+          "changing",
+          "check",
+          "choosable",
+          "chosen",
+          "clear",
+          "climbing",
+          "compare",
+          "completely",
+          "confirm",
+          "confirmed",
+          "confirms",
+          "copy",
+          "counting",
+          "customer",
+          "customers",
+          "dash",
+          "date",
+          "device",
+          "diagnostics",
+          "disappears",
+          "does",
+          "doing",
+          "drawing",
+          "escalate",
+          "every",
+          "expires",
+          "failed",
+          "find",
+          "free",
+          "frozen",
+          "genuinely",
+          "gets",
+          "guide",
+          "happens",
+          "heater",
+          "here",
+          "holds",
+          "idle",
+          "instead",
+          "into",
+          "itself",
+          "keeps",
+          "kiosk",
+          "last",
+          "light",
+          "like",
+          "live",
+          "longer",
+          "look",
+          "looking",
+          "looks",
+          "machine",
+          "machines",
+          "marks",
+          "match",
+          "means",
+          "minutes",
+          "more",
+          "network",
+          "never",
+          "normally",
+          "note",
+          "nothing",
+          "offline",
+          "only",
+          "open",
+          "other",
+          "page",
+          "panel",
+          "pending",
+          "place",
+          "polling",
+          "problem",
+          "procedure",
+          "produce",
+          "pump",
+          "rather",
+          "read",
+          "reading",
+          "readings",
+          "reads",
+          "real",
+          "released",
+          "releases",
+          "reload",
+          "removes",
+          "report",
+          "reservation",
+          "reserved",
+          "rest",
+          "running",
+          "same",
+          "screen",
+          "selected",
+          "selection",
+          "selects",
+          "send",
+          "sent",
+          "separate",
+          "service",
+          "shortly",
+          "show",
+          "showing",
+          "shows",
+          "sits",
+          "someone",
+          "stale",
+          "standby",
+          "standing",
+          "start",
+          "state",
+          "states",
+          "stay",
+          "still",
+          "stop",
+          "stopped",
+          "stuck",
+          "support",
+          "switched",
+          "take",
+          "telemetry",
+          "text",
+          "than",
+          "them",
+          "then",
+          "therefore",
+          "three",
+          "threshold",
+          "thresholds",
+          "time",
+          "touch",
+          "turned",
+          "until",
+          "updates",
+          "used",
+          "value",
+          "wait",
+          "watch",
+          "whatever",
+          "where",
+          "whether",
+          "which",
+          "while",
+          "window",
+          "wrong"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "even",
+          "kiosk",
+          "machine",
+          "marked",
+          "nobody",
+          "stays",
+          "though",
+          "using"
+        ],
+        "title": [
+          "idle",
+          "machine",
+          "shows",
+          "unavailable",
+          "while"
         ]
       }
     }
