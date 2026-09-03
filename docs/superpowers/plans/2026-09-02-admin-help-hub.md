@@ -3938,6 +3938,12 @@ backend completely down — which is the only reason this tier exists.
 > (`admin-panel-orientation` etc.) and none of the forbidden strings above except those the
 > admin panel itself legitimately uses (`dev_admin_enabled`, `/dev/admin`, `python -m
 > backend.app`, `relay` in settings labels) — record the counts in the report.
+>
+> *Correction applied after review (fix round 1, commit 58c229f).* `PublicHelpPage` resolves the
+> hash guide id only when it is an **own property** of `manifest.guides`
+> (`Object.prototype.hasOwnProperty.call`), so `/help#toString`-style hashes fall back to the
+> landing list instead of crashing the boundary-less public page; the list view's locale lookup
+> uses optional chaining for the same reason.
 
 - [ ] **Step 4: Recompile and run the tests**
 
