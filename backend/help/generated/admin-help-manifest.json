@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 11,
+  "guide_count": 12,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -1753,6 +1753,7 @@
       },
       "related_guides": [
         "machine-does-not-start",
+        "reisa-configuration",
         "scanner-not-scanning"
       ],
       "related_settings": [
@@ -6908,6 +6909,1200 @@
       "risk": "medium",
       "status": "published"
     },
+    "reisa-configuration": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "codes_reisa",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "core",
+        "kiosk.state",
+        "provider.reisa",
+        "settings.provider"
+      ],
+      "id": "reisa-configuration",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "settings.provider",
+              "expected": "Reisa is only used when Provider reads reisa and Reisa enabled reads yes. Otherwise every scan goes to local codes.",
+              "id": "which-provider-is-active",
+              "look_for": "Overview, Provider and Reisa enabled.",
+              "question": "Which provider is the backend actually using?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "provider.reisa",
+              "expected": "A base URL, and Set / masked for the token. Either one missing makes every Reisa scan fail immediately.",
+              "id": "base-url-and-token-present",
+              "look_for": "Settings, the Provider / Mode group, Reisa base URL; and Sensitive Settings, Reisa Provider Integration, Current status.",
+              "question": "Are the Reisa base URL and token both configured?",
+              "route": "settings"
+            },
+            {
+              "diagnostics": "kiosk.state",
+              "expected": "An instant refusal points at configuration or authentication; a pause first points at reachability or timeouts.",
+              "id": "failure-shape",
+              "look_for": "The kiosk screen while a known-good code is scanned.",
+              "problem_guide": "code-rejected",
+              "question": "Do codes fail instantly or after a pause?",
+              "route": "overview"
+            },
+            {
+              "expected": "provider_lookup_failed or provider_unauthorized. The reason itself is shown on the kiosk screen, not in this column.",
+              "id": "scan-log-rows",
+              "look_for": "Diagnostics, Scan log, the newest rows, Result and Details.",
+              "question": "What does the scan log record for the failing scans?",
+              "route": "diagnostics"
+            },
+            {
+              "expected": "No provider change just before the failures started.",
+              "id": "recent-provider-change",
+              "look_for": "Diagnostics, Change history, rows for provider keys, marked high risk.",
+              "question": "Was any provider setting changed recently?",
+              "route": "diagnostics"
+            },
+            {
+              "expected": "All failing points at the connection or the configuration; some failing points at the codes themselves.",
+              "id": "all-codes-or-some",
+              "look_for": "Two or three codes you know are valid, scanned in a row.",
+              "question": "Does every code fail, or only some?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "every code is rejected",
+            "provider settings",
+            "reisa base url",
+            "reisa is not answering",
+            "reisa token not set",
+            "switch back to local codes"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when codes validated by Reisa stop working — every code refused,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "codes refused only sometimes, or starts that are accepted at the kiosk but never",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "recorded on the Reisa side. It is also the guide to read before anyone changes a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "provider setting.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If a single code is refused while others work, start with",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "code-rejected",
+                      "text": "Code is rejected or the scan does not advance",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ". That guide",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "covers the scan itself; this one covers the provider behind it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Everything on this page is high risk. Provider settings decide whether a paying",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "customer can wash at all, and a change made in the middle of an incident can turn",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a partial outage into a complete one.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Reisa is not actually selected.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The backend uses Reisa only when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "provider_default"
+                    },
+                    {
+                      "text": " is set to ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reisa",
+                      "type": "code"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "and",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "provider_reisa_enabled"
+                    },
+                    {
+                      "text": " is on. If",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "either is not true, every scan is validated against the local codes table",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "instead, and Reisa-issued codes are simply unknown. Overview shows both as",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Provider",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Reisa enabled",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The base URL or the token is missing.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_base_url"
+                    },
+                    {
+                      "text": " holds the address the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "backend calls; ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_bearer_token"
+                    },
+                    {
+                      "text": " holds the credential. If either is empty",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "every Reisa call fails before it reaches the network, with a message saying so.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Neither value is checked when it is saved, so a wrong base URL looks perfectly",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "healthy in the panel.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The token is present but not accepted.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " An authentication failure from Reisa",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is refused straight away and is never retried, because retrying a rejected",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "credential cannot succeed.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Reisa cannot be reached, or is slow.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_connect_timeout_ms"
+                    },
+                    {
+                      "text": " decides how",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "long the backend waits while opening the connection, ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_read_timeout_ms"
+                    },
+                    {
+                      "text": " how",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "long it waits for the answer once connected. Too low, and a healthy but slow",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "provider produces intermittent failures that look exactly like an outage. These",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "failures are treated as retryable.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The action identifiers do not match.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_action_start"
+                    },
+                    {
+                      "text": " and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_action_completion"
+                    },
+                    {
+                      "text": " are the identifiers sent to Reisa when a run starts and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "when it finishes. A wrong value makes Reisa refuse every start, or every",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "completion, while everything else about the connection is healthy. That is the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "shape to suspect when lookups work and only starts or only completions fail.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Completions are failing and queueing up.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " When a completion cannot be",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "delivered, the session is marked as failed to sync rather than lost. The optional",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "retry worker picks such jobs up again: ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_retry_worker_enabled"
+                    },
+                    {
+                      "text": " turns it on,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_retry_worker_interval_sec"
+                    },
+                    {
+                      "text": " decides how often it looks for work, and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "reisa_retry_worker_batch_size"
+                    },
+                    {
+                      "text": " how many jobs it takes per pass. It is off by",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "default, and toggling it applies without a restart.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Read Overview first. ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Provider",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Reisa enabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " together tell you",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "whether Reisa is being used at all. If the site should be on Reisa and this",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "says otherwise, you have found the fault — but do not change it yet; see the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "warning below.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Scan two or three codes you know are good and watch the kiosk wording and the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "timing. An instant refusal is configuration or authentication. A pause and then",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a refusal is reachability or a timeout.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Scan log",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Failing provider scans are recorded with",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "result ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "invalid",
+                            "type": "code"
+                          },
+                          {
+                            "text": " and details ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "provider_lookup_failed",
+                            "type": "code"
+                          },
+                          {
+                            "text": " or",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "provider_unauthorized",
+                            "type": "code"
+                          },
+                          {
+                            "text": ". The details column names the stage, not the reason —",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the reason is the message shown on the kiosk screen, so note that wording.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "In Settings, open the ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Provider / Mode",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " group and read the values without",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "changing them: base URL, both timeouts, both action identifiers, and the retry",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "worker fields. In ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Sensitive Settings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", under ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Reisa Provider Integration",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Current status",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " says only ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Set / masked",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": " or ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Not set",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": ". The token's value is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "never shown anywhere, and you never need it to diagnose this.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and look for provider rows. They are",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "marked high risk, and a provider problem that started today usually started",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "with one of them.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If starts are accepted at the kiosk but nothing appears on the Reisa side,",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "suspect the action identifiers or completion delivery rather than the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "connection. Collect the evidence and escalate; replaying queued Reisa work in",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "bulk is an operator-playbook action that needs the Reisa diagnostics inspected",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "first, and it is not something this panel offers.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Switching ",
+                          "type": "text"
+                        },
+                        {
+                          "type": "setting_ref",
+                          "value": "provider_default"
+                        },
+                        {
+                          "text": " back to ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "local",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", or turning ",
+                          "type": "text"
+                        },
+                        {
+                          "type": "setting_ref",
+                          "value": "provider_reisa_enabled"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "off, is not a neutral fallback. Every new scan is then validated against the",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "local codes table, so customers holding Reisa entitlements cannot start a",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "machine at all, and no start or completion reaches Reisa. Runs that were already",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "recorded keep the provider they were created with, so work already in flight",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "still goes to Reisa. Make this change only as a deliberate decision by whoever",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "owns the site's billing, and expect to have to tell customers.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate rather than experimenting whenever the base URL, the token or an action",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "identifier looks wrong. Rotating the token, editing the base URL and changing the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "action identifiers are all high-risk changes that require the current API key or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "an explicit acknowledgement, and getting one of them wrong takes every machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "out of service for every customer.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "exact wording the kiosk showed, whether the refusal was instant or delayed,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "whether it affects every code, the scan log rows, and anything from ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "history",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " around the time the failures began. The report records only whether the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "base URL and the token are configured, never their values — that is deliberate,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and it is all anyone needs.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "How the Reisa provider is selected and configured, what the panel can tell you about it, and how to fall back to local codes safely.",
+          "title": "Reisa connection and configuration",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "allir kóðar hafnað",
+            "reisa lykill ekki settur",
+            "reisa slóð",
+            "reisa svarar ekki",
+            "skipta aftur í staðbundna kóða",
+            "stillingar þjónustuveitu"
+          ],
+          "stub": true,
+          "summary": "Hvernig Reisa-þjónustan er valin og stillt, hvað stjórnborðið getur sagt þér um hana og hvernig má fara aftur í staðbundna kóða á öruggan hátt.",
+          "title": "Reisa-tenging og stillingar",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "code-rejected",
+        "scanner-not-scanning"
+      ],
+      "related_settings": [
+        "provider_default",
+        "provider_reisa_enabled",
+        "reisa_action_completion",
+        "reisa_action_start",
+        "reisa_base_url",
+        "reisa_bearer_token",
+        "reisa_connect_timeout_ms",
+        "reisa_read_timeout_ms",
+        "reisa_retry_worker_batch_size",
+        "reisa_retry_worker_enabled",
+        "reisa_retry_worker_interval_sec"
+      ],
+      "risk": "high",
+      "status": "published"
+    },
     "scanner-not-scanning": {
       "actions": [
         "restart_backend"
@@ -12004,6 +13199,395 @@
           "einni",
           "engin",
           "fjarmaeling"
+        ]
+      }
+    },
+    "reisa-configuration": {
+      "en": {
+        "aliases": [
+          "answering",
+          "back",
+          "base",
+          "code",
+          "codes",
+          "every",
+          "local",
+          "provider",
+          "reisa",
+          "rejected",
+          "settings",
+          "switch",
+          "token"
+        ],
+        "body": [
+          "about",
+          "accepted",
+          "acknowledgement",
+          "action",
+          "actually",
+          "address",
+          "advance",
+          "affects",
+          "again",
+          "against",
+          "already",
+          "also",
+          "answer",
+          "anyone",
+          "anything",
+          "anywhere",
+          "appears",
+          "applies",
+          "around",
+          "authentication",
+          "away",
+          "back",
+          "backend",
+          "base",
+          "batch",
+          "bearer",
+          "because",
+          "before",
+          "began",
+          "behind",
+          "being",
+          "below",
+          "billing",
+          "both",
+          "bottom",
+          "bulk",
+          "call",
+          "calls",
+          "cannot",
+          "change",
+          "changes",
+          "changing",
+          "checked",
+          "code",
+          "codes",
+          "collect",
+          "column",
+          "complete",
+          "completion",
+          "completions",
+          "configuration",
+          "configured",
+          "connect",
+          "connected",
+          "connection",
+          "copy",
+          "covers",
+          "created",
+          "credential",
+          "current",
+          "customer",
+          "customers",
+          "decide",
+          "decides",
+          "decision",
+          "default",
+          "delayed",
+          "deliberate",
+          "delivered",
+          "delivery",
+          "details",
+          "diagnose",
+          "diagnostics",
+          "does",
+          "editing",
+          "either",
+          "else",
+          "empty",
+          "enabled",
+          "entitlements",
+          "escalate",
+          "every",
+          "everything",
+          "evidence",
+          "exact",
+          "exactly",
+          "expect",
+          "experimenting",
+          "explicit",
+          "fail",
+          "failed",
+          "failing",
+          "fails",
+          "failure",
+          "failures",
+          "fallback",
+          "fault",
+          "fields",
+          "finishes",
+          "first",
+          "flight",
+          "found",
+          "getting",
+          "goes",
+          "good",
+          "group",
+          "guide",
+          "have",
+          "healthy",
+          "high",
+          "history",
+          "holding",
+          "holds",
+          "identifier",
+          "identifiers",
+          "incident",
+          "inspected",
+          "instant",
+          "instead",
+          "integration",
+          "intermittent",
+          "interval",
+          "into",
+          "invalid",
+          "issued",
+          "itself",
+          "jobs",
+          "keep",
+          "kiosk",
+          "know",
+          "like",
+          "local",
+          "long",
+          "look",
+          "looks",
+          "lookup",
+          "lookups",
+          "lost",
+          "machine",
+          "made",
+          "make",
+          "makes",
+          "many",
+          "marked",
+          "masked",
+          "match",
+          "message",
+          "middle",
+          "missing",
+          "mode",
+          "names",
+          "need",
+          "needs",
+          "neither",
+          "network",
+          "neutral",
+          "never",
+          "note",
+          "nothing",
+          "offers",
+          "often",
+          "once",
+          "only",
+          "open",
+          "opening",
+          "operator",
+          "optional",
+          "others",
+          "otherwise",
+          "outage",
+          "overview",
+          "owns",
+          "page",
+          "panel",
+          "partial",
+          "pass",
+          "pause",
+          "paying",
+          "perfectly",
+          "picks",
+          "playbook",
+          "present",
+          "problem",
+          "produces",
+          "provider",
+          "queued",
+          "queueing",
+          "rather",
+          "reachability",
+          "reached",
+          "reaches",
+          "read",
+          "reason",
+          "recorded",
+          "records",
+          "refusal",
+          "refuse",
+          "refused",
+          "reisa",
+          "rejected",
+          "replaying",
+          "report",
+          "require",
+          "restart",
+          "result",
+          "retried",
+          "retry",
+          "retryable",
+          "retrying",
+          "risk",
+          "rotating",
+          "rows",
+          "runs",
+          "saved",
+          "saying",
+          "says",
+          "scan",
+          "scans",
+          "screen",
+          "selected",
+          "send",
+          "sensitive",
+          "sent",
+          "service",
+          "session",
+          "setting",
+          "settings",
+          "shape",
+          "showed",
+          "shown",
+          "shows",
+          "side",
+          "simply",
+          "single",
+          "site",
+          "size",
+          "slow",
+          "something",
+          "sometimes",
+          "stage",
+          "start",
+          "started",
+          "starts",
+          "status",
+          "still",
+          "stop",
+          "straight",
+          "succeed",
+          "such",
+          "support",
+          "suspect",
+          "switching",
+          "sync",
+          "table",
+          "takes",
+          "tell",
+          "than",
+          "them",
+          "then",
+          "these",
+          "they",
+          "three",
+          "time",
+          "timeout",
+          "timeouts",
+          "timing",
+          "today",
+          "together",
+          "toggling",
+          "token",
+          "treated",
+          "true",
+          "turn",
+          "turning",
+          "turns",
+          "unauthorized",
+          "under",
+          "unknown",
+          "used",
+          "uses",
+          "usually",
+          "validated",
+          "value",
+          "values",
+          "waits",
+          "warning",
+          "wash",
+          "watch",
+          "were",
+          "whenever",
+          "whether",
+          "while",
+          "whoever",
+          "without",
+          "wording",
+          "work",
+          "worker",
+          "working",
+          "wrong"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "about",
+          "back",
+          "codes",
+          "configured",
+          "fall",
+          "local",
+          "panel",
+          "provider",
+          "reisa",
+          "safely",
+          "selected",
+          "tell",
+          "what"
+        ],
+        "title": [
+          "configuration",
+          "connection",
+          "reisa"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "aftur",
+          "allir",
+          "hafnad",
+          "koda",
+          "kodar",
+          "lykill",
+          "reisa",
+          "settur",
+          "skipta",
+          "slod",
+          "stadbundna",
+          "stillingar",
+          "svarar",
+          "thjonustuveitu"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "aftur",
+          "fara",
+          "getur",
+          "hana",
+          "hatt",
+          "hvad",
+          "hvernig",
+          "koda",
+          "oruggan",
+          "reisa",
+          "sagt",
+          "stadbundna",
+          "stillt",
+          "stjornbordid",
+          "ther",
+          "thjonustan",
+          "valin"
+        ],
+        "title": [
+          "reisa",
+          "stillingar",
+          "tenging"
         ]
       }
     },

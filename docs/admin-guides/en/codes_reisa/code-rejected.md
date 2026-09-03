@@ -13,6 +13,7 @@ common_problem_rank: 4
 related_guides:
   - scanner-not-scanning
   - machine-does-not-start
+  - reisa-configuration
 related_settings:
   - provider_default
   - provider_reisa_enabled
