@@ -8,6 +8,11 @@
       "translation_status": "review"
     },
     {
+      "guide_id": "code-rejected",
+      "locale": "is",
+      "translation_status": "review"
+    },
+    {
       "guide_id": "machine-does-not-start",
       "locale": "is",
       "translation_status": "review"
@@ -16,9 +21,14 @@
       "guide_id": "machine-unavailable",
       "locale": "is",
       "translation_status": "review"
+    },
+    {
+      "guide_id": "scanner-not-scanning",
+      "locale": "is",
+      "translation_status": "review"
     }
   ],
-  "guide_count": 4,
+  "guide_count": 6,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -944,6 +954,797 @@
       "related_settings": [
         "telemetry_enabled",
         "telemetry_http_timeout_sec"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "code-rejected": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "codes_reisa",
+      "common_problem_rank": 4,
+      "diagnostics": [
+        "core",
+        "kiosk.state",
+        "provider.reisa",
+        "settings.provider"
+      ],
+      "id": "code-rejected",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "expected": "An error message. Complete silence is a scanner problem, not a code problem.",
+              "id": "error-message-shown",
+              "look_for": "The kiosk screen during the scan.",
+              "problem_guide": "scanner-not-scanning",
+              "question": "Did the kiosk show an error, or did nothing happen at all?"
+            },
+            {
+              "expected": "A row with result invalid and a details value naming the reason.",
+              "id": "scan-log-row",
+              "look_for": "Diagnostics, Scan log, the newest row, Result and Details.",
+              "question": "What does the scan log say about that scan?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "kiosk.state",
+              "expected": "waiting_for_code. Scans sent in any other state are refused as busy.",
+              "id": "kiosk-was-ready",
+              "look_for": "Overview, Current UI state, and the wording on the kiosk screen.",
+              "question": "Was the kiosk on its ready screen when the code was scanned?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "settings.provider",
+              "expected": "The provider you expect for this site.",
+              "id": "active-provider",
+              "look_for": "Overview, Provider and Reisa enabled.",
+              "question": "Which provider is validating codes right now?",
+              "route": "overview"
+            },
+            {
+              "expected": "It advances to machine selection, which narrows the fault to the first code.",
+              "id": "another-code-works",
+              "look_for": "The kiosk screen after scanning a second, known-good code.",
+              "question": "Does a different code work at the same kiosk?"
+            }
+          ],
+          "search_aliases": [
+            "code does not work",
+            "code expired or invalid",
+            "no remaining uses",
+            "qr code refused",
+            "system busy message"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when the kiosk clearly reacts to a scan — a short error message",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "appears and the screen returns to the ready state a few seconds later — but the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "customer never gets to choose a machine.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If nothing at all happens when the code is scanned, this is the wrong guide:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "read ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "scanner-not-scanning",
+                      "text": "Scanner is not scanning",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The wording on the screen is the single most useful thing you can write down.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Code expired or invalid",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "No remaining uses",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Missing code",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "System busy",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "come from four different places in the flow.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The code is used up or expired.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With local codes, a code is refused once its",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "uses are spent or its expiry has passed. The last use also sets an expiry a day",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "out, so a fully used code stays refused afterwards. ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "code_expiration_days"
+                    },
+                    {
+                      "text": " only",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "affects codes created after it was changed, so it never explains an old code",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that stopped working today.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The entitlement has no uses left.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " When Reisa is the active provider, the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk refuses a scan whose remaining uses have reached zero, with a message",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "saying so. This is the normal outcome of a code that has already been used the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "paid number of times.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The kiosk was not ready.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Scans are only accepted on the ready screen. A scan",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "sent while the previous customer is still choosing a machine, or while an error",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is being shown, is refused as busy and recorded with a busy reason. Two people",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "scanning within a few seconds of each other produce this reliably.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The provider could not be reached or refused the lookup.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " In Reisa mode the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk asks the provider about every scan. A network problem, a timeout or a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "rejected request all surface as an error on the kiosk and a failed lookup in the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "scan log.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The wrong provider is active.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Codes are validated locally unless",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "provider_default"
+                    },
+                    {
+                      "text": " is Reisa ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "and",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "provider_reisa_enabled"
+                    },
+                    {
+                      "text": " is on. If the site",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "sells Reisa entitlements but the kiosk is validating locally, every real code is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "unknown to it and every scan is refused.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Write down the exact message the kiosk showed, and roughly when.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", go to Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Scan log",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and find that scan. The",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Details",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " column carries the reason the backend recorded — a busy state, an",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "invalid or expired code, or a failed provider lookup.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Read Overview: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Provider",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Reisa enabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Compare with what this site",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "is supposed to sell. A mismatch here explains every code failing at once.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the details say the kiosk was busy, watch the kiosk for a moment. The",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "fix is timing, not the code: let the screen return to ready before scanning.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "A kiosk that never returns to ready is a different problem — see",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "machine-does-not-start",
+                            "text": "Machine does not start after selection",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Scan a second code you know is good. One code failing while others work is a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "customer entitlement question, not a kiosk fault.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If every code fails and the provider is Reisa, treat it as a provider or",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "network incident rather than a code incident and escalate. Reisa settings are",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "high risk and the base URL and token are not something to experiment with",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "during service.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The panel and the support report only ever record ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "whether",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " the Reisa URL and",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "token are configured, never their values. Do not read out or forward a token",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "when reporting this problem.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "note",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when every code is refused, when the scan log shows failed provider",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "lookups, or when a customer insists a code has unused washes left.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "exact kiosk message, the Details value from the scan log, whether one code or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "all codes are affected, and which provider Overview reported.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "The kiosk reacts to the scan with an error and goes back to the ready screen.",
+          "title": "Code is rejected or the scan does not advance",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "machine-does-not-start",
+        "scanner-not-scanning"
+      ],
+      "related_settings": [
+        "code_expiration_days",
+        "provider_default",
+        "provider_reisa_enabled",
+        "reisa_base_url",
+        "reisa_bearer_token",
+        "reisa_connect_timeout_ms",
+        "reisa_read_timeout_ms"
       ],
       "risk": "medium",
       "status": "published"
@@ -2657,6 +3458,749 @@
       ],
       "risk": "medium",
       "status": "published"
+    },
+    "scanner-not-scanning": {
+      "actions": [
+        "restart_backend"
+      ],
+      "canonical_locale": "en",
+      "category": "scanner",
+      "common_problem_rank": 5,
+      "diagnostics": [
+        "kiosk.state",
+        "scanner.status",
+        "settings.scanner"
+      ],
+      "id": "scanner-not-scanning",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "expected": "It lights up and beeps for each code.",
+              "id": "scanner-reacts",
+              "look_for": "The scanner's own light and beep, not the kiosk screen.",
+              "question": "Does the scanner itself react when a code is held under it?"
+            },
+            {
+              "diagnostics": "scanner.status",
+              "expected": "yes. no means the serial port could not be opened when the backend started.",
+              "id": "scanner-available",
+              "look_for": "Overview, Scanner available.",
+              "question": "Does the backend have the scanner open?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "scanner.status",
+              "expected": "The port the scanner presents on this host, normally /dev/ttyACM0.",
+              "id": "scanner-port",
+              "look_for": "Overview, Scanner port.",
+              "question": "Is the configured scanner port the one the scanner is plugged into?",
+              "route": "overview"
+            },
+            {
+              "expected": "No new row at all means the scan never reached the kiosk flow.",
+              "id": "scan-log-row",
+              "look_for": "Diagnostics, Scan log, the newest row and its Details column.",
+              "problem_guide": "code-rejected",
+              "question": "Does a new row appear in the scan log when you scan?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "settings.scanner",
+              "expected": "No pending scanner change. Saved scanner settings only apply after a restart.",
+              "id": "recent-scanner-setting-change",
+              "look_for": "Diagnostics, Change history, and the restart banner at the top of the panel.",
+              "question": "Were the scanner settings changed without a restart afterwards?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "no reaction when scanning",
+            "qr code not read",
+            "scanner does nothing",
+            "scanner light is off"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when a customer holds a code under the scanner and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "nothing",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "happens",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ": no machine selection screen, no error, no message.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If the kiosk does react but shows a red error and returns to the ready screen,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the scan reached the system and was refused — read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "code-rejected",
+                      "text": "Code is rejected or the scan does not advance",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " instead.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "That difference is the fastest split in this whole area: silence points at the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "scanner, an error points at the code.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The backend never opened the scanner.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The serial port is opened once when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the backend starts. If the scanner was unplugged at that moment, or the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "configured port was wrong, the reading thread never starts and no scan can",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "arrive until the backend is restarted. Overview reports this directly as",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scanner available: no",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scanner settings were changed but not applied.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "serial_port"
+                    },
+                    {
+                      "text": ",",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "serial_baudrate"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "scan_timeout"
+                    },
+                    {
+                      "text": " are read only when the scanner is opened.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Saving them changes the stored value but not the running scanner, which is why",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the panel marks them as needing a restart.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The code is not a shape the system accepts.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The backend only forwards",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "strings that look like an entitlement: an eight-character code, a UUID, a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "32-character hex string, or a PIN of four to twelve digits. Anything else — a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "product barcode, a loyalty card, a torn or misprinted label — is dropped without",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a message and without a scan-log row.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The scanner itself is not reading.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " If the scanner does not light up or beep",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "at all, the problem is in front of the software: power, cable, or the scanner's",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "own configuration.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Hold a code under the scanner yourself and watch the scanner, not the screen.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "A scanner that does not light up or beep is not reading anything, and no",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "setting in the panel will change that.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": " and read Overview: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Scanner available",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Scanner port",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". If Scanner available is ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "no",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": ", the backend has no scanner",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "open and every scan will be silent until that is fixed.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Go to Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Scan log",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and scan again with the kiosk on its ready",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "screen. Watch for a new row.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      },
+                      {
+                        "items": [
+                          [
+                            {
+                              "inlines": [
+                                {
+                                  "text": "A new row means the scanner works and the problem is the code itself.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          [
+                            {
+                              "inlines": [
+                                {
+                                  "text": "No row at all means nothing reached the kiosk flow.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ]
+                        ],
+                        "type": "unordered_list"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Try a code you know is good, for example one you have just scanned",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "successfully at another moment. If that one is read and the customer's is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "not, the label is the problem, not the kiosk.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Check Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", for a recent change to a scanner",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "setting, and look for the restart banner at the top of the panel. Saved",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "scanner settings only take effect once the backend has been restarted on the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk host; the banner shows whoever does that the exact command.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Do not change ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "serial_port"
+                          },
+                          {
+                            "text": " or ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "serial_baudrate"
+                          },
+                          {
+                            "text": " to see what happens. A wrong",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "port leaves the kiosk with no scanner at all after the next restart, which is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a worse failure than the one you started with.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when Scanner available is ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "no",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", when the scanner does not react",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "physically, or when the scan log stays empty while the scanner beeps normally.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: what",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the scanner did physically, what Overview showed for Scanner available and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Scanner port, whether any row appeared in the scan log, and whether one specific",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "code or every code is affected.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "A code is held under the scanner and nothing at all happens on the kiosk screen.",
+          "title": "Scanner is not scanning",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "code-rejected"
+      ],
+      "related_settings": [
+        "scan_timeout",
+        "serial_baudrate",
+        "serial_port"
+      ],
+      "risk": "medium",
+      "status": "published"
     }
   },
   "locales": [
@@ -3016,6 +4560,249 @@
           "stale",
           "telemetry",
           "while"
+        ]
+      }
+    },
+    "code-rejected": {
+      "en": {
+        "aliases": [
+          "busy",
+          "code",
+          "does",
+          "expired",
+          "invalid",
+          "message",
+          "refused",
+          "remaining",
+          "system",
+          "uses",
+          "work"
+        ],
+        "body": [
+          "about",
+          "accepted",
+          "active",
+          "admin",
+          "affected",
+          "affects",
+          "after",
+          "afterwards",
+          "already",
+          "also",
+          "appears",
+          "asks",
+          "backend",
+          "base",
+          "been",
+          "before",
+          "being",
+          "bottom",
+          "busy",
+          "carries",
+          "changed",
+          "choose",
+          "choosing",
+          "clearly",
+          "code",
+          "codes",
+          "column",
+          "come",
+          "compare",
+          "configured",
+          "copy",
+          "could",
+          "created",
+          "customer",
+          "days",
+          "default",
+          "details",
+          "diagnostics",
+          "different",
+          "does",
+          "down",
+          "during",
+          "each",
+          "enabled",
+          "entitlement",
+          "entitlements",
+          "error",
+          "escalate",
+          "ever",
+          "every",
+          "exact",
+          "experiment",
+          "expiration",
+          "expired",
+          "expiry",
+          "explains",
+          "failed",
+          "failing",
+          "fails",
+          "fault",
+          "find",
+          "flow",
+          "forward",
+          "four",
+          "fully",
+          "gets",
+          "good",
+          "guide",
+          "happens",
+          "have",
+          "here",
+          "high",
+          "incident",
+          "insists",
+          "invalid",
+          "kiosk",
+          "know",
+          "last",
+          "later",
+          "left",
+          "local",
+          "locally",
+          "lookup",
+          "lookups",
+          "machine",
+          "message",
+          "mismatch",
+          "missing",
+          "mode",
+          "moment",
+          "most",
+          "network",
+          "never",
+          "normal",
+          "nothing",
+          "number",
+          "once",
+          "only",
+          "open",
+          "other",
+          "others",
+          "outcome",
+          "overview",
+          "paid",
+          "panel",
+          "passed",
+          "people",
+          "places",
+          "previous",
+          "problem",
+          "produce",
+          "provider",
+          "question",
+          "rather",
+          "reached",
+          "reacts",
+          "read",
+          "ready",
+          "real",
+          "reason",
+          "record",
+          "recorded",
+          "refused",
+          "refuses",
+          "reisa",
+          "rejected",
+          "reliably",
+          "remaining",
+          "report",
+          "reported",
+          "reporting",
+          "request",
+          "return",
+          "returns",
+          "risk",
+          "roughly",
+          "saying",
+          "scan",
+          "scanned",
+          "scanner",
+          "scanning",
+          "scans",
+          "screen",
+          "second",
+          "seconds",
+          "selection",
+          "sell",
+          "sells",
+          "send",
+          "sent",
+          "service",
+          "sets",
+          "settings",
+          "short",
+          "showed",
+          "shown",
+          "shows",
+          "single",
+          "site",
+          "something",
+          "spent",
+          "start",
+          "state",
+          "stays",
+          "still",
+          "stopped",
+          "support",
+          "supposed",
+          "surface",
+          "system",
+          "than",
+          "thing",
+          "timeout",
+          "times",
+          "timing",
+          "today",
+          "token",
+          "treat",
+          "unknown",
+          "unless",
+          "unused",
+          "used",
+          "useful",
+          "uses",
+          "validated",
+          "validating",
+          "value",
+          "values",
+          "washes",
+          "watch",
+          "what",
+          "whether",
+          "which",
+          "while",
+          "whose",
+          "within",
+          "wording",
+          "work",
+          "working",
+          "write",
+          "wrong",
+          "zero"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "back",
+          "error",
+          "goes",
+          "kiosk",
+          "reacts",
+          "ready",
+          "scan",
+          "screen"
+        ],
+        "title": [
+          "advance",
+          "code",
+          "does",
+          "rejected",
+          "scan"
         ]
       }
     },
@@ -3485,6 +5272,208 @@
           "shows",
           "unavailable",
           "while"
+        ]
+      }
+    },
+    "scanner-not-scanning": {
+      "en": {
+        "aliases": [
+          "code",
+          "does",
+          "light",
+          "nothing",
+          "reaction",
+          "read",
+          "scanner",
+          "scanning"
+        ],
+        "body": [
+          "accepts",
+          "admin",
+          "advance",
+          "affected",
+          "after",
+          "again",
+          "another",
+          "anything",
+          "appeared",
+          "applied",
+          "area",
+          "arrive",
+          "available",
+          "backend",
+          "banner",
+          "barcode",
+          "baudrate",
+          "been",
+          "beep",
+          "beeps",
+          "bottom",
+          "cable",
+          "card",
+          "change",
+          "changed",
+          "changes",
+          "character",
+          "check",
+          "code",
+          "command",
+          "configuration",
+          "configured",
+          "copy",
+          "customer",
+          "diagnostics",
+          "difference",
+          "digits",
+          "directly",
+          "does",
+          "dropped",
+          "effect",
+          "eight",
+          "else",
+          "empty",
+          "entitlement",
+          "error",
+          "escalate",
+          "every",
+          "exact",
+          "example",
+          "failure",
+          "fastest",
+          "fixed",
+          "flow",
+          "forwards",
+          "four",
+          "front",
+          "good",
+          "guide",
+          "happens",
+          "have",
+          "history",
+          "hold",
+          "holds",
+          "host",
+          "instead",
+          "itself",
+          "just",
+          "kiosk",
+          "know",
+          "label",
+          "leaves",
+          "light",
+          "like",
+          "look",
+          "loyalty",
+          "machine",
+          "marks",
+          "means",
+          "message",
+          "misprinted",
+          "moment",
+          "needing",
+          "never",
+          "next",
+          "normally",
+          "nothing",
+          "once",
+          "only",
+          "open",
+          "opened",
+          "overview",
+          "panel",
+          "physically",
+          "points",
+          "port",
+          "power",
+          "problem",
+          "product",
+          "reached",
+          "react",
+          "read",
+          "reading",
+          "ready",
+          "recent",
+          "refused",
+          "rejected",
+          "report",
+          "reports",
+          "restart",
+          "restarted",
+          "returns",
+          "running",
+          "saved",
+          "saving",
+          "scan",
+          "scanned",
+          "scanner",
+          "screen",
+          "selection",
+          "send",
+          "serial",
+          "setting",
+          "settings",
+          "shape",
+          "showed",
+          "shows",
+          "silence",
+          "silent",
+          "software",
+          "specific",
+          "split",
+          "started",
+          "starts",
+          "stays",
+          "stored",
+          "string",
+          "strings",
+          "successfully",
+          "support",
+          "system",
+          "take",
+          "than",
+          "them",
+          "thread",
+          "timeout",
+          "torn",
+          "twelve",
+          "under",
+          "unplugged",
+          "until",
+          "uuid",
+          "value",
+          "watch",
+          "were",
+          "what",
+          "whether",
+          "which",
+          "while",
+          "whoever",
+          "whole",
+          "will",
+          "without",
+          "works",
+          "worse",
+          "wrong",
+          "yourself"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "code",
+          "happens",
+          "held",
+          "kiosk",
+          "nothing",
+          "scanner",
+          "screen",
+          "under"
+        ],
+        "title": [
+          "scanner",
+          "scanning"
         ]
       }
     }
