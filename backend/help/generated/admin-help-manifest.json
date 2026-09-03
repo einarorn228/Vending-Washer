@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 12,
+  "guide_count": 13,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -8846,6 +8846,938 @@
       "risk": "medium",
       "status": "published"
     },
+    "settings-requiring-restart": {
+      "actions": [
+        "restart_backend"
+      ],
+      "canonical_locale": "en",
+      "category": "daily_operation",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "core",
+        "scanner.status",
+        "settings.scanner"
+      ],
+      "id": "settings-requiring-restart",
+      "kind": "concept",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "search_aliases": [
+            "how to restart the backend",
+            "restart required banner",
+            "restart the kiosk backend",
+            "scanner setting not applied",
+            "setting saved but nothing changed"
+          ],
+          "sections": [
+            {
+              "anchor": "restart-list",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Five settings are read once while the backend starts and are not looked at again",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "while it runs. Saving one of them writes the new value to the database, but the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "running process keeps using the old one until it is restarted.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "header": [
+                    [
+                      {
+                        "text": "Setting",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "Settings group",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "Label in the panel",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "What it controls",
+                        "type": "text"
+                      }
+                    ]
+                  ],
+                  "rows": [
+                    [
+                      [
+                        {
+                          "type": "setting_ref",
+                          "value": "cors_allowed_origins"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "API / Security",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "CORS allowed origins",
+                          "type": "text"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Which browser origins the backend will answer at all.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "type": "setting_ref",
+                          "value": "serial_port"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scanner",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Serial port",
+                          "type": "text"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The device path the QR scanner is opened on.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "type": "setting_ref",
+                          "value": "serial_baudrate"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scanner",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Serial baud rate",
+                          "type": "text"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The speed the scanner's serial connection is opened at.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "type": "setting_ref",
+                          "value": "scan_timeout"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scanner",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Scan timeout",
+                          "type": "text"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The read timeout used when the scanner connection is opened.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "type": "setting_ref",
+                          "value": "log_level"
+                        }
+                      ],
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Logging / Diagnostics",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Log level",
+                          "type": "text"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How much detail the backend writes to its logs.",
+                          "type": "text"
+                        }
+                      ]
+                    ]
+                  ],
+                  "type": "table"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The panel tells you this in three places, and none of them is a status check:",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "In the review dialog, before you save, each affected change carries a ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "restart",
+                                "type": "text"
+                              },
+                              {
+                                "text": " ",
+                                "type": "text"
+                              },
+                              {
+                                "text": "required",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " badge and a line saying how many of the changes only take effect",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "after a restart.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "After saving, a banner appears at the top of the panel naming the settings by",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "their labels and showing the command to run.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "In Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", each of those rows carries a ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "restart",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "badge, so a change made days ago and never followed by a restart is still",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "visible.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "unordered_list"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The banner is a reminder held in your browser session. It does not ask the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "backend whether a restart has happened, and it stays until ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Dismiss",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "pressed. A dismissed banner is not evidence that anything was restarted.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Which settings need a restart"
+            },
+            {
+              "anchor": "why",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "The three scanner settings are used at the moment the serial connection to the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "scanner is opened, which happens once during startup. Nothing re-opens that",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "connection while the backend runs, so a new port or baud rate simply never",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reaches the hardware until the next start. ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "cors_allowed_origins"
+                    },
+                    {
+                      "text": " is applied when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the web layer is configured at startup, and ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "log_level"
+                    },
+                    {
+                      "text": " when the logger is set",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "up, both for the same reason.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Everything else in the panel is read at the moment it is needed. Screen dwell",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "times, poll intervals, the relay and telemetry toggles, the reservation window,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the provider settings and every per-machine threshold are looked up on each use,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "so a saved change is visible on the very next scan, start or poll. That is what",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "makes iterative tuning possible, and it is why a setting that seems to do nothing",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is worth checking against the list above before anything else is suspected.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Why these and not the others"
+            },
+            {
+              "anchor": "restart",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "There is no restart button in the panel, deliberately: the repository ships no",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "service definition, so there is no specific process the panel could safely be",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "allowed to restart, and a general one would mean arbitrary process control from a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "web page.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The restart is done on the kiosk host, from the repository root: stop the running",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "backend, then start it again with the command the banner shows.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "language": "bash",
+                  "text": "source .venv/bin/activate && python -m backend.app",
+                  "type": "code_block"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Restarting takes the kiosk out of service for as long as it takes to come back",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "up. Do it when nobody is mid-wash if you can, and tell staff before you do it —",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a scan during the restart is simply not answered.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "How to restart"
+            },
+            {
+              "anchor": "verify",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Do not use the banner, and do not use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Status read at",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " on Overview: that",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "timestamp is generated fresh on every status request and says nothing about when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the process started.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The reliable check is in Diagnostics, ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Metrics",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". Look for",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "uptime_seconds_total",
+                      "type": "code"
+                    },
+                    {
+                      "text": ". After a real restart it is a small number counting up",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "from zero again; if it is still large, the process you are looking at is the old",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "one.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "For the scanner settings there is a second, more meaningful check. On Overview,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scanner port",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " shows the configured value — that is the saved setting, not proof",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "of anything — but ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scanner available",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " reflects the running process: ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "yes",
+                      "type": "code"
+                    },
+                    {
+                      "text": " means",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the backend actually managed to open the port it is now configured with. Then",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "scan one code and confirm a new row appears in Diagnostics, ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scan log",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". If",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scanner available",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " reads ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "no",
+                      "type": "code"
+                    },
+                    {
+                      "text": " after the restart, the new port or baud rate is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "wrong for this hardware, and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "scanner-not-scanning",
+                      "text": "Scanner is not scanning",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " picks up from there.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "For ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "log_level"
+                    },
+                    {
+                      "text": ", the evidence is in the backend's own log output on the host: a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "lower level starts producing more lines immediately after the restart.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "For ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "cors_allowed_origins"
+                    },
+                    {
+                      "text": ", the evidence is that the panel and the kiosk screen",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "still load and still reach the backend from the browsers that need them. Check",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that from each device that matters straight after the restart, not later — a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "wrong value here is much easier to repair while you still know what changed.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "How to tell the restart took effect"
+            }
+          ],
+          "stub": false,
+          "summary": "Which saved settings the running backend keeps ignoring until it is restarted, how to restart it, and how to tell that it worked.",
+          "title": "Settings that need a restart",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "borði um endurræsingu",
+            "endurræsa bakendann",
+            "hvernig endurræsi ég bakendann",
+            "skannarastilling tók ekki gildi",
+            "stilling vistuð en ekkert breyttist"
+          ],
+          "stub": true,
+          "summary": "Hvaða vistuðu stillingar bakendinn heldur áfram að hunsa þar til hann er endurræstur, hvernig þú endurræsir hann og hvernig þú sérð að það tókst.",
+          "title": "Stillingar sem krefjast endurræsingar",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "scanner-not-scanning"
+      ],
+      "related_settings": [
+        "cors_allowed_origins",
+        "log_level",
+        "scan_timeout",
+        "serial_baudrate",
+        "serial_port"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
     "tune-thresholds": {
       "actions": [],
       "canonical_locale": "en",
@@ -13790,6 +14722,336 @@
         "title": [
           "scanner",
           "scanning"
+        ]
+      }
+    },
+    "settings-requiring-restart": {
+      "en": {
+        "aliases": [
+          "applied",
+          "backend",
+          "banner",
+          "changed",
+          "kiosk",
+          "nothing",
+          "required",
+          "restart",
+          "saved",
+          "scanner",
+          "setting"
+        ],
+        "body": [
+          "about",
+          "above",
+          "actually",
+          "affected",
+          "after",
+          "again",
+          "against",
+          "allowed",
+          "answer",
+          "answered",
+          "anything",
+          "appears",
+          "applied",
+          "arbitrary",
+          "available",
+          "back",
+          "backend",
+          "badge",
+          "banner",
+          "baud",
+          "baudrate",
+          "before",
+          "both",
+          "browser",
+          "browsers",
+          "button",
+          "carries",
+          "change",
+          "changed",
+          "changes",
+          "check",
+          "checking",
+          "code",
+          "come",
+          "command",
+          "configured",
+          "confirm",
+          "connection",
+          "control",
+          "controls",
+          "cors",
+          "could",
+          "counting",
+          "database",
+          "days",
+          "definition",
+          "deliberately",
+          "detail",
+          "device",
+          "diagnostics",
+          "dialog",
+          "dismiss",
+          "dismissed",
+          "does",
+          "done",
+          "during",
+          "dwell",
+          "each",
+          "easier",
+          "effect",
+          "else",
+          "every",
+          "everything",
+          "evidence",
+          "five",
+          "followed",
+          "fresh",
+          "general",
+          "generated",
+          "group",
+          "happened",
+          "happens",
+          "hardware",
+          "held",
+          "here",
+          "history",
+          "host",
+          "immediately",
+          "intervals",
+          "iterative",
+          "keeps",
+          "kiosk",
+          "know",
+          "label",
+          "labels",
+          "large",
+          "later",
+          "layer",
+          "level",
+          "line",
+          "lines",
+          "list",
+          "load",
+          "logger",
+          "logging",
+          "logs",
+          "long",
+          "look",
+          "looked",
+          "looking",
+          "lower",
+          "machine",
+          "made",
+          "makes",
+          "managed",
+          "many",
+          "matters",
+          "mean",
+          "meaningful",
+          "means",
+          "metrics",
+          "moment",
+          "more",
+          "much",
+          "naming",
+          "need",
+          "needed",
+          "never",
+          "next",
+          "nobody",
+          "none",
+          "nothing",
+          "number",
+          "once",
+          "only",
+          "open",
+          "opened",
+          "opens",
+          "origins",
+          "output",
+          "overview",
+          "page",
+          "panel",
+          "path",
+          "picks",
+          "places",
+          "poll",
+          "port",
+          "possible",
+          "pressed",
+          "process",
+          "producing",
+          "proof",
+          "provider",
+          "rate",
+          "reach",
+          "reaches",
+          "read",
+          "reads",
+          "real",
+          "reason",
+          "reflects",
+          "relay",
+          "reliable",
+          "reminder",
+          "repair",
+          "repository",
+          "request",
+          "required",
+          "reservation",
+          "restart",
+          "restarted",
+          "restarting",
+          "review",
+          "root",
+          "rows",
+          "running",
+          "runs",
+          "safely",
+          "same",
+          "save",
+          "saved",
+          "saving",
+          "saying",
+          "says",
+          "scan",
+          "scanner",
+          "scanning",
+          "screen",
+          "second",
+          "seconds",
+          "security",
+          "seems",
+          "serial",
+          "service",
+          "session",
+          "setting",
+          "settings",
+          "ships",
+          "showing",
+          "shows",
+          "simply",
+          "small",
+          "specific",
+          "speed",
+          "staff",
+          "start",
+          "started",
+          "starts",
+          "startup",
+          "status",
+          "stays",
+          "still",
+          "stop",
+          "straight",
+          "suspected",
+          "take",
+          "takes",
+          "telemetry",
+          "tell",
+          "tells",
+          "them",
+          "then",
+          "there",
+          "those",
+          "three",
+          "threshold",
+          "timeout",
+          "times",
+          "timestamp",
+          "toggles",
+          "total",
+          "tuning",
+          "until",
+          "uptime",
+          "used",
+          "using",
+          "value",
+          "very",
+          "visible",
+          "wash",
+          "what",
+          "whether",
+          "which",
+          "while",
+          "will",
+          "window",
+          "worth",
+          "would",
+          "writes",
+          "wrong",
+          "zero"
+        ],
+        "headings": [
+          "effect",
+          "need",
+          "others",
+          "restart",
+          "settings",
+          "tell",
+          "these",
+          "took",
+          "which"
+        ],
+        "summary": [
+          "backend",
+          "ignoring",
+          "keeps",
+          "restart",
+          "restarted",
+          "running",
+          "saved",
+          "settings",
+          "tell",
+          "until",
+          "which",
+          "worked"
+        ],
+        "title": [
+          "need",
+          "restart",
+          "settings"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "bakendann",
+          "bordi",
+          "breyttist",
+          "ekkert",
+          "endurraesa",
+          "endurraesi",
+          "endurraesingu",
+          "gildi",
+          "hvernig",
+          "skannarastilling",
+          "stilling",
+          "vistud"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "afram",
+          "bakendinn",
+          "endurraesir",
+          "endurraestur",
+          "hann",
+          "heldur",
+          "hunsa",
+          "hvada",
+          "hvernig",
+          "serd",
+          "stillingar",
+          "thar",
+          "tokst",
+          "vistudu"
+        ],
+        "title": [
+          "endurraesingar",
+          "krefjast",
+          "stillingar"
         ]
       }
     },
