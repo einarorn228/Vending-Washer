@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 7,
+  "guide_count": 9,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -3426,7 +3426,9 @@
       },
       "related_guides": [
         "admin-panel-orientation",
-        "machine-unavailable"
+        "machine-technical-mapping",
+        "machine-unavailable",
+        "wrong-machine-starts"
       ],
       "related_settings": [
         "backend_relay_enabled",
@@ -3436,6 +3438,1417 @@
         "telemetry_enabled"
       ],
       "risk": "medium",
+      "status": "published"
+    },
+    "machine-technical-mapping": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "hardware_network",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "machine.identity",
+        "machine.mapping",
+        "machine.telemetry",
+        "machine.thresholds",
+        "settings.relay"
+      ],
+      "id": "machine-technical-mapping",
+      "kind": "procedure",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "An exported file and a written note of the fields you are about to change.",
+              "id": "current-mapping-recorded",
+              "look_for": "Overview, Export current config, plus the values in the Advanced / Technical Mapping drawer.",
+              "question": "Have you recorded the mapping as it is right now, before changing anything?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "The address of the device fitted to that physical machine.",
+              "id": "device-address-matches",
+              "look_for": "Diagnostics, Live readings, Device on that machine's card.",
+              "question": "Does the device address on the machine's card match the device you believe it is?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "Exactly one card responds. Two cards moving together means they share a device.",
+              "id": "telemetry-follows-the-right-machine",
+              "look_for": "Diagnostics, Live readings, the value and chart on every card while one machine runs.",
+              "question": "When you run one machine by hand, does the reading rise on that machine's card and no other?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "No two active machines share an index. The panel refuses a duplicate.",
+              "id": "button-index-unique",
+              "look_for": "Machine Cards, each machine's Advanced / Technical Mapping, I4 button index.",
+              "question": "Does each active machine have its own I4 button index?",
+              "route": "machines"
+            },
+            {
+              "diagnostics": "settings.relay",
+              "expected": "Disabled for the dry run, so a wrong mapping cannot power a machine.",
+              "id": "relay-dry-run",
+              "look_for": "Overview, Backend relay, before the test start.",
+              "question": "Was the first start after the change made with backend relay control off?",
+              "route": "overview"
+            },
+            {
+              "expected": "Rows for one machine only.",
+              "id": "one-machine-changed",
+              "look_for": "Diagnostics, Change history, the rows since you started.",
+              "question": "Was only one machine's mapping changed in this session?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "advanced technical mapping",
+            "i4 button does the wrong thing",
+            "relay channel setting",
+            "shelly ip address for a machine",
+            "which device belongs to which machine"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this procedure when a machine card has to be pointed at a different device,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "or when you need to check that the card in the panel really describes the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine standing on the floor. That happens after a device is replaced, after a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "device's address changes, and whenever the wrong machine has started.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If a wrong machine has already started for a customer, deal with that first:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "wrong-machine-starts",
+                      "text": "The wrong physical machine starts",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "This is the highest-consequence screen in the panel. A wrong value here does not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "show up as an error message; it shows up as power going to a machine somebody is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "standing in front of.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Record the current mapping before you change anything. Press ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Export current",
+                              "type": "text"
+                            },
+                            {
+                              "text": " ",
+                              "type": "text"
+                            },
+                            {
+                              "text": "config",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " on the Overview tab: it downloads a JSON file containing the settings,",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "machines, devices, machine configs and the kiosk card layout, with no raw",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "secrets in it — only whether each secret is set. Then write down, or photograph,",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "the values shown in the ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Advanced / Technical Mapping",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " drawer for the machine",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "you are about to edit. The panel has ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "no config import",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", so that export is a",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "record to retype from, not a restore button. A full rollback means restoring the",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "database file on the kiosk host, which also rolls back codes, sessions and the",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "audit trail — that is a maintainer step, not an operator one.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "What a machine card is made of.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " A machine card is a name and a layout entry",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "pointing at a UNI device row. The device carries the address the backend talks",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "to, which relay output it switches, and how a reading is taken from it. The",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine carries which i4 button selects it, whether it is shown on the kiosk, and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "its own thresholds.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The fields in the drawer.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Open the ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Machine Cards",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " tab, find the machine's",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "row, and press ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Advanced / Technical Mapping",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ":",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "header": [
+                    [
+                      {
+                        "text": "Field",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "What it controls",
+                        "type": "text"
+                      }
+                    ]
+                  ],
+                  "rows": [
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Shelly IP",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The address of the UNI device this machine is read from and powered through. An IPv4 address or a hostname.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Relay channel",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Which output on that device is switched when the machine is started, 0 to 3.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "I4 button index",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Which physical button on the i4 input device selects this machine, 0 to 15, or blank for none.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Metric source",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How a reading is taken from the device: ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "voltage",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "power",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "digital",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", or ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "none",
+                          "type": "code"
+                        },
+                        {
+                          "text": " to stop polling this machine.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "On threshold",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Off threshold",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "On confirm ms",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Off confirm ms",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Poll interval ms",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How a reading is turned into ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "running",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "em"
+                        },
+                        {
+                          "text": " or ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "idle",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "em"
+                        },
+                        {
+                          "text": ". Choosing these is a procedure of its own; do not change them in the same sitting as an address or a channel.",
+                          "type": "text"
+                        }
+                      ]
+                    ]
+                  ],
+                  "type": "table"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Above the editable fields the drawer shows ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Internal key",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Database ID",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ",",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "UNI device",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "I4 device",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", which are read-only and are how you confirm you",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "have the machine you think you have.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Two things that surprise people.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The address and the relay channel are stored",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "on the ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "device",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", not on the card. If two machine cards point at the same device,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "changing either of those on one card moves both. And the I4 button index has to",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "be unique among machines that are active in the kiosk — the panel refuses a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "duplicate, including two cards moved onto the same index in a single save.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Nothing here autosaves.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The save button stays locked until the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "acknowledgement box is ticked, and every change is written to Diagnostics,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change history",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", marked high risk.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The two switches that decide what a test does.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "backend_relay_enabled"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "off the backend sends no power command at all, so a start attempt exercises the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "whole flow without moving any hardware — that is the safe way to make a first",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "test after an edit. With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " on you can verify the reading side",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "without any relay command at all, simply by running a machine by hand and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "watching which card responds. ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "shelly_http_timeout_sec"
+                    },
+                    {
+                      "text": " and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_http_timeout_sec"
+                    },
+                    {
+                      "text": " decide how long the backend waits for that device",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "before treating the command or the read as failed; a device at the wrong address",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "usually shows up as those failures.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Before you start"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Export the config from Overview and write down the current values in the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "drawer for the machine you are about to change. Do this even for a change you",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "are sure about.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Verify the reading side first, because it costs nothing: with",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "telemetry_enabled"
+                          },
+                          {
+                            "text": " on, run one machine by hand and watch Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Live",
+                                "type": "text"
+                              },
+                              {
+                                "text": " ",
+                                "type": "text"
+                              },
+                              {
+                                "text": "readings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Exactly one card's value should rise. Note the ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Device",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " address",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "shown on that card.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Repeat for each machine, one at a time. Two cards that move together share a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "device; a machine that never responds is either at the wrong address or has",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the wrong ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Metric source",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Write the real, observed mapping down before you",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "edit anything.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Change ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "one",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " field on ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "one",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " machine. Open ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Advanced / Technical Mapping",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "edit it, tick the acknowledgement box, and save.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Verify the reading side again exactly as in step 2. If the card you edited now",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "follows the right machine, the address and metric source are right.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Only then test the power side, and only when you can see the machines. Check",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend relay",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " on Overview. With it disabled, run a start attempt: the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk should reach its start message and no machine should move. That proves",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the card and the flow without any risk. The machine stays reserved until the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "reservation window runs out, so leave it alone until it clears rather than",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "testing the same machine twice in a row.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "When a live test is genuinely needed, do it with staff watching every machine",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "in the room and nobody in front of them, and stop at the first start. If the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "wrong machine moves, go straight to",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "wrong-machine-starts",
+                            "text": "The wrong physical machine starts",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Re-check the I4 button index if the site uses the physical buttons: press each",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "button and confirm the kiosk selects the machine printed next to it.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Leave the thresholds alone in this session. Tuning them needs a full cycle of",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "observation and mixing it with a mapping change makes both impossible to",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "judge.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate before making a second mapping change if the first one did not behave as",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "expected. Escalate immediately if a machine's address is answering but the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "readings clearly belong to a different machine, if two cards cannot be separated",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "because they share one device, or if a device has to be replaced or re-addressed.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Those are wiring and network changes, not panel changes.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine you were editing, the exported config file, the values before and after,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "which cards responded when you ran each machine by hand, and whether ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Backend",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "relay",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " was enabled during any test.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "How a machine card is tied to a physical device, and how to change or verify that mapping without starting the wrong machine.",
+          "title": "Machine technical mapping: Shelly IP, relay channel, I4 button",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "advanced technical mapping",
+            "hvaða tæki tilheyrir hvaða vél",
+            "i4 hnappur velur ranga vél",
+            "liðarás",
+            "shelly ip fyrir vél",
+            "tæknileg vörpun véla"
+          ],
+          "stub": true,
+          "summary": "Hvernig vélarspjald tengist raunverulegu tæki og hvernig þú breytir eða staðfestir þá tengingu án þess að ræsa ranga vél.",
+          "title": "Tæknileg tenging vélar: Shelly IP, liðarás og I4-hnappur",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "machine-does-not-start",
+        "machine-unavailable",
+        "wrong-machine-starts"
+      ],
+      "related_settings": [
+        "backend_relay_enabled",
+        "shelly_http_timeout_sec",
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
+      ],
+      "risk": "high",
       "status": "published"
     },
     "machine-unavailable": {
@@ -5092,6 +6505,938 @@
       ],
       "risk": "medium",
       "status": "published"
+    },
+    "wrong-machine-starts": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "hardware_network",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "kiosk.state",
+        "machine.identity",
+        "machine.mapping",
+        "machine.telemetry",
+        "settings.relay"
+      ],
+      "id": "wrong-machine-starts",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "kiosk.state",
+              "expected": "The same machine. Write both names down before anything else changes.",
+              "id": "which-machine-was-chosen",
+              "look_for": "The kiosk message at the moment of the start, and the machines in the room.",
+              "question": "Which machine did the customer choose, and which one actually moved?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "settings.relay",
+              "expected": "Disabled once a wrong start is confirmed, so no further start can power a machine.",
+              "id": "relay-control-state",
+              "look_for": "Overview, Backend relay.",
+              "question": "Is backend relay control still enabled?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "Only the matching card responds.",
+              "id": "reading-follows-the-name",
+              "look_for": "Diagnostics, Live readings, the value on every card while one machine runs.",
+              "problem_guide": "machine-technical-mapping",
+              "question": "When one machine is run by hand, does the reading rise on the card with that machine's name?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "One address per machine, unless the site really does share a device.",
+              "id": "shared-device-address",
+              "look_for": "Diagnostics, Live readings, Device on each card.",
+              "question": "Do two machine cards show the same device address?",
+              "route": "diagnostics"
+            },
+            {
+              "expected": "No mapping change just before the first wrong start.",
+              "id": "recent-mapping-change",
+              "look_for": "Diagnostics, Change history, rows marked high risk.",
+              "question": "Was a mapping or a machine setting changed recently?",
+              "route": "diagnostics"
+            },
+            {
+              "expected": "The name on the screen matches the label on the button.",
+              "id": "physical-button-mapping",
+              "look_for": "Press each button and read the kiosk screen.",
+              "question": "If the site uses the physical buttons, does each button select the machine printed next to it?"
+            }
+          ],
+          "search_aliases": [
+            "another machine turned on",
+            "button starts the wrong machine",
+            "customer got the wrong dryer",
+            "machine names are swapped",
+            "wrong washer started"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide the moment a customer chooses one machine on the kiosk and a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "different machine in the room powers up, or a physical button selects a machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "other than the one it is labelled with.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Treat this as a safety issue rather than a configuration annoyance. A machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that starts unexpectedly can start with its door open, with somebody's laundry",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "in it, or with nobody expecting it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If instead the chosen machine simply never runs, this is the wrong guide:",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-does-not-start",
+                      "text": "Machine does not start after selection",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The two cards are pointed at each other's devices.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The card carries a name;",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the device it points at carries the address the power command goes to. If two",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "cards are swapped, everything else works perfectly and the wrong machine gets",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "power every single time. This is the most common shape and the easiest to",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "confirm.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The relay channel is wrong.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " One device can switch more than one output. A",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "card pointing at the right device but the wrong channel powers whatever is wired",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "to that channel, which may be the machine next to it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "A device address has been reused or has moved.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " If a device is replaced, or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the network hands out a different address than the one recorded, the panel's",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "stored address may now belong to a different device. Nothing warns you: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "command simply succeeds against the wrong hardware.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The physical button index is wrong.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The i4 button index decides which machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a physical button selects. A wrong index sends the customer's choice to a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "different machine before the relay is ever involved — the kiosk itself will name",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the machine it is starting, which is how you tell the two apart.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Only the label is wrong.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " If the card's display name or short label was",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "edited, the customer is told the wrong name while the mapping underneath is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "correct. Less dangerous, but it produces exactly the same complaint, and it is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "worth ruling out early because it is the one cause with a harmless fix.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Write down which machine was chosen on the screen and which one actually",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "started, with the time. You will not be able to reconstruct this later.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Stop further starts. In Settings, under ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Shelly / Runtime Toggles",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", turn",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend relay control enabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " off. The backend then sends no power command",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "to any machine. Confirm it on Overview: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend relay",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " should read",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "disabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Tell staff what that means for customers. The kiosk keeps accepting scans and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "keeps reserving machines, but nothing powers on, and a reserved machine cannot",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "be chosen again until its reservation runs out. Serve customers manually until",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the mapping is fixed.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Check whether this is only a naming problem. In Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Live readings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ",",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "run each machine by hand for a few seconds and watch which card's value rises.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "If the reading follows the right name every time, the mapping is sound and only",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the label or the button index is wrong.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Compare the ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Device",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " address shown on each card. Two cards showing one",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "address explains a pair of machines behaving as one.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and look for high-risk rows from just",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "before the first wrong start. A mapping that used to be right and is now wrong",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "almost always has a row here.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the site uses the physical buttons, press each one and read the name the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk shows. A mismatch there is an I4 button index problem and does not",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "involve the relays at all.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Correct the mapping only when you know what the right values are, one machine",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "at a time, following",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "machine-technical-mapping",
+                            "text": "Machine technical mapping",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ". Re-verify with",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the reading test before turning relay control back on.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Turn ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend relay control enabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " back on only when the mapping has been",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "verified and somebody can watch the machines during the first live start.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Before you change any mapping, press ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Export current config",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " on the Overview",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "tab and write down the values you are about to edit. The export is a JSON file",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "of settings, machines, devices, machine configs and the card layout, with no raw",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "secrets in it. There is no import in the panel, so it is a record to retype from",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "rather than an undo button, and it is the only cheap way back to a mapping that",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "at least worked for the other machines.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate, and leave relay control off, when the correct mapping is not known,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "when a device answers at an address that is supposed to belong to another",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine, when two machines cannot be separated because they share a device, or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "when the mapping is right and the wrong machine still moves. The last one means",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the wiring does not match the configuration, and only somebody who can inspect",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the installation can settle it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine chosen, the machine that started, the time, whether relay control has",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "been turned off, the device address on each card, and which card responded when",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "you ran each machine by hand.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "A customer chooses one machine on the kiosk and a different machine in the room powers up.",
+          "title": "The wrong physical machine starts",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "hnappurinn ræsir ranga vél",
+            "nöfn véla víxluð",
+            "röng þvottavél ræstist",
+            "viðskiptavinur fékk rangan þurrkara",
+            "önnur vél fór í gang"
+          ],
+          "stub": true,
+          "summary": "Viðskiptavinur velur eina vél á skjánum en önnur vél í rýminu fer í gang.",
+          "title": "Röng vél fer í gang",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "machine-does-not-start",
+        "machine-technical-mapping",
+        "machine-unavailable"
+      ],
+      "related_settings": [
+        "backend_relay_enabled",
+        "shelly_http_timeout_sec",
+        "telemetry_enabled"
+      ],
+      "risk": "high",
+      "status": "published"
     }
   },
   "locales": [
@@ -6202,6 +8547,401 @@
         ]
       }
     },
+    "machine-technical-mapping": {
+      "en": {
+        "aliases": [
+          "address",
+          "advanced",
+          "belongs",
+          "button",
+          "channel",
+          "device",
+          "does",
+          "machine",
+          "mapping",
+          "relay",
+          "setting",
+          "shelly",
+          "technical",
+          "thing",
+          "which",
+          "wrong"
+        ],
+        "body": [
+          "about",
+          "above",
+          "acknowledgement",
+          "active",
+          "address",
+          "addressed",
+          "advanced",
+          "after",
+          "again",
+          "alone",
+          "already",
+          "also",
+          "among",
+          "answering",
+          "anything",
+          "attempt",
+          "audit",
+          "autosaves",
+          "back",
+          "backend",
+          "because",
+          "before",
+          "behave",
+          "belong",
+          "blank",
+          "both",
+          "bottom",
+          "button",
+          "buttons",
+          "cannot",
+          "card",
+          "cards",
+          "carries",
+          "change",
+          "changes",
+          "changing",
+          "channel",
+          "check",
+          "choosing",
+          "clearly",
+          "clears",
+          "codes",
+          "command",
+          "config",
+          "configs",
+          "confirm",
+          "consequence",
+          "containing",
+          "controls",
+          "copy",
+          "costs",
+          "current",
+          "customer",
+          "cycle",
+          "database",
+          "deal",
+          "decide",
+          "describes",
+          "device",
+          "devices",
+          "diagnostics",
+          "different",
+          "digital",
+          "disabled",
+          "does",
+          "down",
+          "downloads",
+          "drawer",
+          "duplicate",
+          "during",
+          "each",
+          "edit",
+          "editable",
+          "edited",
+          "editing",
+          "either",
+          "enabled",
+          "entry",
+          "error",
+          "escalate",
+          "even",
+          "every",
+          "exactly",
+          "exercises",
+          "expected",
+          "export",
+          "exported",
+          "failed",
+          "failures",
+          "field",
+          "fields",
+          "file",
+          "find",
+          "first",
+          "floor",
+          "flow",
+          "follows",
+          "front",
+          "full",
+          "genuinely",
+          "going",
+          "guide",
+          "hand",
+          "happens",
+          "hardware",
+          "have",
+          "here",
+          "high",
+          "highest",
+          "history",
+          "host",
+          "hostname",
+          "http",
+          "idle",
+          "immediately",
+          "import",
+          "impossible",
+          "including",
+          "index",
+          "input",
+          "internal",
+          "interval",
+          "into",
+          "ipv4",
+          "json",
+          "judge",
+          "kiosk",
+          "layout",
+          "leave",
+          "live",
+          "locked",
+          "long",
+          "machine",
+          "machines",
+          "made",
+          "maintainer",
+          "make",
+          "makes",
+          "making",
+          "mapping",
+          "marked",
+          "means",
+          "message",
+          "metric",
+          "mixing",
+          "move",
+          "moved",
+          "moves",
+          "moving",
+          "name",
+          "need",
+          "needed",
+          "needs",
+          "network",
+          "never",
+          "next",
+          "nobody",
+          "none",
+          "note",
+          "nothing",
+          "observation",
+          "observed",
+          "only",
+          "onto",
+          "open",
+          "operator",
+          "output",
+          "overview",
+          "panel",
+          "people",
+          "photograph",
+          "physical",
+          "point",
+          "pointed",
+          "pointing",
+          "poll",
+          "polling",
+          "power",
+          "powered",
+          "press",
+          "printed",
+          "procedure",
+          "proves",
+          "rather",
+          "reach",
+          "read",
+          "reading",
+          "readings",
+          "real",
+          "really",
+          "record",
+          "refuses",
+          "relay",
+          "repeat",
+          "replaced",
+          "report",
+          "reservation",
+          "reserved",
+          "responded",
+          "responds",
+          "restore",
+          "restoring",
+          "retype",
+          "right",
+          "rise",
+          "risk",
+          "rollback",
+          "rolls",
+          "room",
+          "running",
+          "runs",
+          "safe",
+          "same",
+          "save",
+          "screen",
+          "second",
+          "secret",
+          "secrets",
+          "selects",
+          "send",
+          "sends",
+          "separated",
+          "session",
+          "sessions",
+          "settings",
+          "share",
+          "shelly",
+          "show",
+          "shown",
+          "shows",
+          "side",
+          "simply",
+          "single",
+          "site",
+          "sitting",
+          "somebody",
+          "source",
+          "staff",
+          "standing",
+          "start",
+          "started",
+          "starts",
+          "stays",
+          "step",
+          "stop",
+          "stored",
+          "straight",
+          "support",
+          "sure",
+          "surprise",
+          "switched",
+          "switches",
+          "taken",
+          "talks",
+          "technical",
+          "telemetry",
+          "test",
+          "testing",
+          "than",
+          "them",
+          "then",
+          "these",
+          "they",
+          "things",
+          "think",
+          "those",
+          "threshold",
+          "thresholds",
+          "through",
+          "tick",
+          "ticked",
+          "time",
+          "timeout",
+          "together",
+          "trail",
+          "treating",
+          "tuning",
+          "turned",
+          "twice",
+          "unique",
+          "until",
+          "uses",
+          "usually",
+          "value",
+          "values",
+          "verify",
+          "voltage",
+          "waits",
+          "watch",
+          "watching",
+          "were",
+          "what",
+          "whenever",
+          "whether",
+          "which",
+          "whole",
+          "window",
+          "wiring",
+          "without",
+          "write",
+          "written",
+          "wrong"
+        ],
+        "headings": [
+          "before",
+          "start",
+          "steps"
+        ],
+        "summary": [
+          "card",
+          "change",
+          "device",
+          "machine",
+          "mapping",
+          "physical",
+          "starting",
+          "tied",
+          "verify",
+          "without",
+          "wrong"
+        ],
+        "title": [
+          "button",
+          "channel",
+          "machine",
+          "mapping",
+          "relay",
+          "shelly",
+          "technical"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "advanced",
+          "fyrir",
+          "hnappur",
+          "hvada",
+          "lidaras",
+          "mapping",
+          "ranga",
+          "shelly",
+          "taeki",
+          "taeknileg",
+          "technical",
+          "tilheyrir",
+          "vela",
+          "velur",
+          "vorpun"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "breytir",
+          "hvernig",
+          "raesa",
+          "ranga",
+          "raunverulegu",
+          "stadfestir",
+          "taeki",
+          "tengingu",
+          "tengist",
+          "thess",
+          "velarspjald"
+        ],
+        "title": [
+          "hnappur",
+          "lidaras",
+          "shelly",
+          "taeknileg",
+          "tenging",
+          "velar"
+        ]
+      }
+    },
     "machine-unavailable": {
       "en": {
         "aliases": [
@@ -6635,6 +9375,339 @@
         "title": [
           "scanner",
           "scanning"
+        ]
+      }
+    },
+    "wrong-machine-starts": {
+      "en": {
+        "aliases": [
+          "another",
+          "button",
+          "customer",
+          "dryer",
+          "machine",
+          "names",
+          "started",
+          "starts",
+          "swapped",
+          "turned",
+          "washer",
+          "wrong"
+        ],
+        "body": [
+          "able",
+          "about",
+          "accepting",
+          "actually",
+          "address",
+          "after",
+          "again",
+          "against",
+          "almost",
+          "always",
+          "annoyance",
+          "another",
+          "answers",
+          "apart",
+          "back",
+          "backend",
+          "because",
+          "been",
+          "before",
+          "behaving",
+          "belong",
+          "bottom",
+          "button",
+          "buttons",
+          "cannot",
+          "card",
+          "cards",
+          "carries",
+          "cause",
+          "change",
+          "channel",
+          "cheap",
+          "check",
+          "choice",
+          "chooses",
+          "chosen",
+          "command",
+          "common",
+          "compare",
+          "complaint",
+          "config",
+          "configs",
+          "configuration",
+          "confirm",
+          "control",
+          "copy",
+          "correct",
+          "current",
+          "customer",
+          "customers",
+          "dangerous",
+          "decides",
+          "device",
+          "devices",
+          "diagnostics",
+          "different",
+          "disabled",
+          "display",
+          "does",
+          "door",
+          "down",
+          "during",
+          "each",
+          "early",
+          "easiest",
+          "edit",
+          "edited",
+          "else",
+          "enabled",
+          "escalate",
+          "ever",
+          "every",
+          "everything",
+          "exactly",
+          "expecting",
+          "explains",
+          "export",
+          "file",
+          "first",
+          "fixed",
+          "following",
+          "follows",
+          "further",
+          "gets",
+          "goes",
+          "guide",
+          "hand",
+          "hands",
+          "hardware",
+          "harmless",
+          "here",
+          "high",
+          "history",
+          "import",
+          "index",
+          "inspect",
+          "installation",
+          "instead",
+          "involve",
+          "involved",
+          "issue",
+          "itself",
+          "json",
+          "just",
+          "keeps",
+          "kiosk",
+          "know",
+          "known",
+          "label",
+          "labelled",
+          "last",
+          "later",
+          "laundry",
+          "layout",
+          "least",
+          "leave",
+          "less",
+          "live",
+          "look",
+          "machine",
+          "machines",
+          "manually",
+          "mapping",
+          "match",
+          "means",
+          "mismatch",
+          "moment",
+          "more",
+          "most",
+          "moved",
+          "moves",
+          "name",
+          "naming",
+          "network",
+          "never",
+          "next",
+          "nobody",
+          "nothing",
+          "only",
+          "open",
+          "other",
+          "output",
+          "overview",
+          "pair",
+          "panel",
+          "perfectly",
+          "physical",
+          "pointed",
+          "pointing",
+          "points",
+          "power",
+          "powers",
+          "press",
+          "problem",
+          "produces",
+          "rather",
+          "read",
+          "reading",
+          "readings",
+          "reconstruct",
+          "record",
+          "recorded",
+          "relay",
+          "relays",
+          "replaced",
+          "report",
+          "reservation",
+          "reserved",
+          "reserving",
+          "responded",
+          "retype",
+          "reused",
+          "right",
+          "rises",
+          "risk",
+          "room",
+          "rows",
+          "ruling",
+          "runs",
+          "runtime",
+          "safety",
+          "same",
+          "scans",
+          "screen",
+          "seconds",
+          "secrets",
+          "selection",
+          "selects",
+          "send",
+          "sends",
+          "separated",
+          "serve",
+          "settings",
+          "settle",
+          "shape",
+          "share",
+          "shelly",
+          "short",
+          "showing",
+          "shown",
+          "shows",
+          "simply",
+          "single",
+          "site",
+          "somebody",
+          "sound",
+          "staff",
+          "start",
+          "started",
+          "starting",
+          "starts",
+          "still",
+          "stop",
+          "stored",
+          "succeeds",
+          "support",
+          "supposed",
+          "swapped",
+          "switch",
+          "technical",
+          "tell",
+          "test",
+          "than",
+          "then",
+          "there",
+          "they",
+          "time",
+          "toggles",
+          "told",
+          "treat",
+          "turn",
+          "turned",
+          "turning",
+          "under",
+          "underneath",
+          "undo",
+          "unexpectedly",
+          "until",
+          "used",
+          "uses",
+          "value",
+          "values",
+          "verified",
+          "verify",
+          "warns",
+          "watch",
+          "what",
+          "whatever",
+          "whether",
+          "which",
+          "while",
+          "will",
+          "wired",
+          "wiring",
+          "worked",
+          "works",
+          "worth",
+          "write",
+          "wrong"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "chooses",
+          "customer",
+          "different",
+          "kiosk",
+          "machine",
+          "powers",
+          "room"
+        ],
+        "title": [
+          "machine",
+          "physical",
+          "starts",
+          "wrong"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "fekk",
+          "gang",
+          "hnappurinn",
+          "nofn",
+          "onnur",
+          "raesir",
+          "raestist",
+          "ranga",
+          "rangan",
+          "rong",
+          "thurrkara",
+          "thvottavel",
+          "vela",
+          "vidskiptavinur",
+          "vixlud"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "eina",
+          "gang",
+          "onnur",
+          "ryminu",
+          "skjanum",
+          "velur",
+          "vidskiptavinur"
+        ],
+        "title": [
+          "gang",
+          "rong"
         ]
       }
     }

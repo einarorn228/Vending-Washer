@@ -13,6 +13,8 @@ common_problem_rank: 2
 related_guides:
   - machine-unavailable
   - admin-panel-orientation
+  - machine-technical-mapping
+  - wrong-machine-starts
 related_settings:
   - backend_relay_enabled
   - telemetry_enabled
