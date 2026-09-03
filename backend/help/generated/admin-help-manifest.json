@@ -13,6 +13,11 @@
       "translation_status": "review"
     },
     {
+      "guide_id": "kiosk-cannot-reach-backend",
+      "locale": "is",
+      "translation_status": "review"
+    },
+    {
       "guide_id": "machine-does-not-start",
       "locale": "is",
       "translation_status": "review"
@@ -28,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 6,
+  "guide_count": 7,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -1745,6 +1750,793 @@
         "reisa_bearer_token",
         "reisa_connect_timeout_ms",
         "reisa_read_timeout_ms"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "kiosk-cannot-reach-backend": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "kiosk_display",
+      "common_problem_rank": 6,
+      "diagnostics": [
+        "core",
+        "kiosk.state"
+      ],
+      "id": "kiosk-cannot-reach-backend",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "expected": "No banner. A connection banner and a missing-API-key banner mean different things.",
+              "id": "kiosk-banner-text",
+              "look_for": "The top of the kiosk screen.",
+              "question": "Is there a banner on the kiosk screen, and what does it say?"
+            },
+            {
+              "diagnostics": "core",
+              "expected": "It loads and asks for the login.",
+              "id": "admin-panel-loads",
+              "look_for": "Open /dev/admin in a browser.",
+              "question": "Does the admin panel load at all from this host?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "core",
+              "expected": "yes.",
+              "id": "backend-reachable",
+              "look_for": "Overview, Backend reachable.",
+              "question": "Does Overview report the backend as reachable?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "kiosk.state",
+              "expected": "The same state. A difference means the screen is stale, not the backend.",
+              "id": "state-matches-screen",
+              "look_for": "Remote Control, the kiosk state readout, next to the kiosk screen itself.",
+              "question": "Does the backend's kiosk state match what the kiosk screen is showing?",
+              "route": "remote_control"
+            },
+            {
+              "expected": "It tracks scans and machine changes again.",
+              "id": "screen-follows-after-reload",
+              "look_for": "The kiosk screen for about a minute after a reload.",
+              "question": "Does the kiosk screen start following again after the page is reloaded?"
+            }
+          ],
+          "search_aliases": [
+            "backend connection lost",
+            "kiosk does not update",
+            "screen frozen",
+            "screen shows old information"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when the kiosk screen is not keeping up with reality: it stays on",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "one screen, shows information you know is out of date, or carries a banner about",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the connection to the backend.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "There is a short version of this for anyone on site without a login, at the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "public help page. This guide is the diagnostic version: it assumes you can open",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": " and compare the screen with what the backend actually holds.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Be careful about what you conclude from a stale screen. The machines shown on it",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "can be wrong for two very different reasons: the screen is not receiving updates,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "or the backend's own picture of the machines is stale. The second one is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "all-machines-available-telemetry-stale",
+                      "text": "All machines show available while telemetry is stale",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The kiosk page cannot reach the backend.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The screen asks the backend for the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "current state a few times a minute — every ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "kiosk_poll_interval_ms"
+                    },
+                    {
+                      "text": ", one second",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "by default. When a request fails, the screen keeps the last state it received",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and shows a ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Backend connection lost",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " banner. The picture on screen is then",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "simply old, not wrong on purpose.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The browser has no API key.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Every request the kiosk makes carries the API",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "key. If the browser has none — the usual case being a kiosk page reloaded before",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the frontend was restarted with its key in place — the screen shows a banner",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "saying so instead of the connection banner. Nothing on the kiosk itself can fix",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "that; it is a maintainer step on the kiosk host.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The key is present but not accepted.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " A key the backend rejects makes the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "page reload itself shortly after each attempt, so the screen appears to restart",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "over and over without ever settling.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The browser is serving a cached answer.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " This is the recorded incident behind",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "this guide: Chromium held on to a cached response for the state request and the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk sat on an old screen with no banner at all, while the backend was healthy",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the whole time. Requests are now made with caching switched off, so this should",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "not recur — but a screen that is stale with ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "no",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " banner is still the shape to",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "suspect, and a reload settles it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The backend is not running.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Then the panel will not load either, and the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "kiosk cannot recover on its own.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Look at the kiosk screen and note whether there is a banner and what it says.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "The connection banner and the missing-key banner point at different causes,",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "and no banner at all points at the browser rather than the network.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": " from the kiosk host or another device on the same network.",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "If the panel does not load either, this is not a kiosk-screen problem —",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "escalate; the backend or the host needs attention.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "In the panel, read Overview: ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Backend reachable",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Current UI state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Remote Control and compare the kiosk state it reports with what the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "kiosk screen is showing.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      },
+                      {
+                        "items": [
+                          [
+                            {
+                              "inlines": [
+                                {
+                                  "text": "They agree: the screen is fine and the backend is genuinely sitting in that",
+                                  "type": "text"
+                                },
+                                {
+                                  "text": " ",
+                                  "type": "text"
+                                },
+                                {
+                                  "text": "state.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          [
+                            {
+                              "inlines": [
+                                {
+                                  "text": "They differ: the screen is stale.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ]
+                        ],
+                        "type": "unordered_list"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Reload the kiosk page and watch it for a minute. A stale page that starts",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "following again after a reload was a browser problem, and that is worth",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "recording even though it is now fixed.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If the screen updates but feels sluggish, check ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "kiosk_poll_interval_ms"
+                          },
+                          {
+                            "text": " in",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "Settings before assuming a fault. A long interval is a configured choice, not",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a connection failure.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Do not type or paste keys into the kiosk browser to get past a missing-key",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "banner. Report it instead.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "A stale kiosk screen can show a machine as free when it is not. Until the",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "screen is following the backend again, do not let staff or customers decide",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "which machine is free from that screen.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when the panel does not load, when Overview reports the backend as not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reachable, when the missing-key banner is showing, or when the page reloads",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "itself repeatedly.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "exact banner text, whether ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": " loaded, what Overview said for Backend",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reachable and Current UI state, and whether a reload changed anything.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "The kiosk screen is frozen on one view, or shows a connection banner, while the system itself may be fine.",
+          "title": "Kiosk screen is stale or cannot reach the backend",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "all-machines-available-telemetry-stale"
+      ],
+      "related_settings": [
+        "api_key",
+        "cors_allowed_origins",
+        "kiosk_poll_interval_ms"
       ],
       "risk": "medium",
       "status": "published"
@@ -4828,6 +5620,254 @@
           "does",
           "rejected",
           "scan"
+        ]
+      }
+    },
+    "kiosk-cannot-reach-backend": {
+      "en": {
+        "aliases": [
+          "backend",
+          "connection",
+          "does",
+          "frozen",
+          "information",
+          "kiosk",
+          "lost",
+          "screen",
+          "shows",
+          "update"
+        ],
+        "body": [
+          "about",
+          "accepted",
+          "actually",
+          "admin",
+          "after",
+          "again",
+          "agree",
+          "another",
+          "answer",
+          "anyone",
+          "anything",
+          "appears",
+          "asks",
+          "assumes",
+          "assuming",
+          "attempt",
+          "attention",
+          "available",
+          "backend",
+          "banner",
+          "before",
+          "behind",
+          "being",
+          "bottom",
+          "browser",
+          "cached",
+          "caching",
+          "cannot",
+          "careful",
+          "carries",
+          "case",
+          "causes",
+          "changed",
+          "check",
+          "choice",
+          "chromium",
+          "compare",
+          "conclude",
+          "configured",
+          "connection",
+          "control",
+          "copy",
+          "current",
+          "customers",
+          "date",
+          "decide",
+          "default",
+          "device",
+          "diagnostic",
+          "differ",
+          "different",
+          "does",
+          "each",
+          "either",
+          "escalate",
+          "even",
+          "ever",
+          "every",
+          "exact",
+          "fails",
+          "failure",
+          "fault",
+          "feels",
+          "fine",
+          "fixed",
+          "following",
+          "free",
+          "frontend",
+          "genuinely",
+          "guide",
+          "healthy",
+          "held",
+          "help",
+          "holds",
+          "host",
+          "incident",
+          "information",
+          "instead",
+          "interval",
+          "into",
+          "itself",
+          "keeping",
+          "keeps",
+          "keys",
+          "kiosk",
+          "know",
+          "last",
+          "load",
+          "loaded",
+          "login",
+          "long",
+          "look",
+          "lost",
+          "machine",
+          "machines",
+          "made",
+          "maintainer",
+          "makes",
+          "minute",
+          "missing",
+          "needs",
+          "network",
+          "none",
+          "note",
+          "nothing",
+          "open",
+          "over",
+          "overview",
+          "page",
+          "panel",
+          "past",
+          "paste",
+          "picture",
+          "place",
+          "point",
+          "points",
+          "poll",
+          "present",
+          "problem",
+          "public",
+          "purpose",
+          "rather",
+          "reach",
+          "reachable",
+          "read",
+          "reality",
+          "reasons",
+          "received",
+          "receiving",
+          "recorded",
+          "recording",
+          "recover",
+          "recur",
+          "rejects",
+          "reload",
+          "reloaded",
+          "reloads",
+          "remote",
+          "repeatedly",
+          "report",
+          "reports",
+          "request",
+          "requests",
+          "response",
+          "restart",
+          "restarted",
+          "running",
+          "said",
+          "same",
+          "saying",
+          "says",
+          "screen",
+          "second",
+          "send",
+          "serving",
+          "settings",
+          "settles",
+          "settling",
+          "shape",
+          "short",
+          "shortly",
+          "show",
+          "showing",
+          "shown",
+          "shows",
+          "simply",
+          "site",
+          "sitting",
+          "sluggish",
+          "staff",
+          "stale",
+          "starts",
+          "state",
+          "stays",
+          "step",
+          "still",
+          "support",
+          "suspect",
+          "switched",
+          "telemetry",
+          "text",
+          "than",
+          "then",
+          "there",
+          "they",
+          "though",
+          "time",
+          "times",
+          "type",
+          "until",
+          "updates",
+          "usual",
+          "version",
+          "very",
+          "watch",
+          "what",
+          "whether",
+          "which",
+          "while",
+          "whole",
+          "will",
+          "without",
+          "worth",
+          "wrong"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "banner",
+          "connection",
+          "fine",
+          "frozen",
+          "itself",
+          "kiosk",
+          "screen",
+          "shows",
+          "system",
+          "view",
+          "while"
+        ],
+        "title": [
+          "backend",
+          "cannot",
+          "kiosk",
+          "reach",
+          "screen",
+          "stale"
         ]
       }
     },
