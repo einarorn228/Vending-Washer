@@ -79,6 +79,22 @@ def _validate_checks(meta, path):
             raise CompileError(f"{path}: checks[{index}] must be a mapping")
         if not isinstance(check.get("id"), str) or not check["id"]:
             raise CompileError(f"{path}: checks[{index}] needs a non-empty string id")
+        # Spec 5.2 applies to every declared diagnostics group, not only the
+        # guide-level list: a mistyped group on a check must fail the build too.
+        groups = check.get("diagnostics")
+        if groups is None:
+            continue
+        if isinstance(groups, str):
+            groups = [groups]
+        if not isinstance(groups, list):
+            raise CompileError(
+                f"{path}: check {check['id']!r} diagnostics must be a group name or a list of them"
+            )
+        for group in groups:
+            if group not in DIAGNOSTIC_GROUPS:
+                raise CompileError(
+                    f"{path}: check {check['id']!r} names unknown diagnostic group {group!r}"
+                )
 
 
 def compile_help(root, trust_class, known_settings, build_id=None):

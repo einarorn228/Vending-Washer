@@ -186,6 +186,22 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             self.compile()
 
+    def test_check_diagnostics_group_is_validated(self):
+        checks = ("checks:\n  - id: telemetry-enabled\n"
+                  "    question: Is it on?\n    diagnostics: {group}\n")
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("---\n\n## Check telemetry",
+                          checks.format(group="machine.telemetry") + "---\n\n## Check telemetry"))
+        self.assertEqual(
+            self.compile()["guides"]["machine-unavailable"]["locales"]["en"]["checks"][0]["diagnostics"],
+            "machine.telemetry",
+        )
+        _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
+               EN.replace("---\n\n## Check telemetry",
+                          checks.format(group="nonsense.group") + "---\n\n## Check telemetry"))
+        with self.assertRaises(CompileError):
+            self.compile()
+
     def test_scalar_in_list_field_is_a_compile_error(self):
         _write(self.tmp, "en/machines_telemetry/machine-unavailable.md",
                EN.replace("related_settings:\n  - telemetry_enabled",
