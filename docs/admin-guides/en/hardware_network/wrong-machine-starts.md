@@ -16,7 +16,6 @@ related_guides:
 related_settings:
   - backend_relay_enabled
   - telemetry_enabled
-  - shelly_http_timeout_sec
 diagnostics:
   - kiosk.state
   - machine.identity
@@ -112,14 +111,16 @@ worth ruling out early because it is the one cause with a harmless fix.
 1. Write down which machine was chosen on the screen and which one actually
    started, with the time. You will not be able to reconstruct this later.
 2. Stop further starts. In Settings, under **Shelly / Runtime Toggles**, turn
-   **Backend relay control enabled** off. The backend then sends no power command
-   to any machine. Confirm it on Overview: **Backend relay** should read
+   **Backend relay control enabled** off — the setting key is
+   `backend_relay_enabled`. The backend then sends no power command to any
+   machine. Confirm it on Overview: **Backend relay** should read
    *disabled*.
 3. Tell staff what that means for customers. The kiosk keeps accepting scans and
    keeps reserving machines, but nothing powers on, and a reserved machine cannot
    be chosen again until its reservation runs out. Serve customers manually until
    the mapping is fixed.
-4. Check whether this is only a naming problem. In Diagnostics, **Live readings**,
+4. Check whether this is only a naming problem. This step needs `telemetry_enabled`
+   to be on, and it is safe with the relays off. In Diagnostics, **Live readings**,
    run each machine by hand for a few seconds and watch which card's value rises.
    If the reading follows the right name every time, the mapping is sound and only
    the label or the button index is wrong.

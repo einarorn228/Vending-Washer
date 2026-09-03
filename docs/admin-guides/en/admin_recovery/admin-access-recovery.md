@@ -66,9 +66,10 @@ Use this guide when the `/dev/admin` panel cannot be reached any more: the page
 says the panel is disabled, the login is refused, or the API key that clients use
 has been lost.
 
-Every recovery here happens on the kiosk host, in a terminal, from the
-repository root. None of it can be done from a browser — that is deliberate,
-because the thing you are recovering is the lock on the browser.
+Getting back in happens on the kiosk host, in a terminal, from the repository
+root. None of that can be done from a browser — that is deliberate, because the
+thing you are recovering is the lock on the browser. Only the last section below,
+replacing an API key you already recovered, is done in the panel afterwards.
 
 If the page does not load at all on any device, this is the wrong guide: nothing
 here helps when the backend is unreachable. Read
@@ -170,26 +171,28 @@ store, not in a message or a ticket.
 
 ### If the admin password is lost
 
-First check whether the seeded default is still in place. This prints only yes or
-no, and never the stored value:
+Before replacing it, test any candidate you found in the site's credential store.
+This prompts for the password, prints only yes or no, and never shows the stored
+value:
 
 ```bash
 source .venv/bin/activate
 python - <<'CHECK'
-import hashlib
+import getpass, hashlib
 from backend.models import Session
 from backend.models.setting_model import get_setting_value
 
+pw = getpass.getpass("Password to test: ")
 s = Session()
 try:
-    print("still the seeded default:",
-          get_setting_value(s, "admin_password_hash") == hashlib.sha256(b"admin").hexdigest())
+    print("matches the stored admin password:",
+          get_setting_value(s, "admin_password_hash") == hashlib.sha256(pw.encode("utf-8")).hexdigest())
 finally:
     s.close()
 CHECK
 ```
 
-Then set a new password. This prompts for it twice rather than taking it as an
+If none of them match, set a new password. This prompts for it twice rather than taking it as an
 argument, so the password never reaches the shell history:
 
 ```bash

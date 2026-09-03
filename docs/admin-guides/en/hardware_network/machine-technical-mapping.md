@@ -112,7 +112,7 @@ row, and press **Advanced / Technical Mapping**:
 | **Shelly IP** | The address of the UNI device this machine is read from and powered through. An IPv4 address or a hostname. |
 | **Relay channel** | Which output on that device is switched when the machine is started, 0 to 3. |
 | **I4 button index** | Which physical button on the i4 input device selects this machine, 0 to 15, or blank for none. |
-| **Metric source** | How a reading is taken from the device: `voltage`, `power`, `digital`, or `none` to stop polling this machine. |
+| **Metric source** | How a reading is taken from the device: `voltage`, `power` or `digital`, or `none` to stop polling this machine. The list also offers `pulse`, which the backend has no reader for — a machine set to it never produces a reading. |
 | **On threshold**, **Off threshold**, **On confirm ms**, **Off confirm ms**, **Poll interval ms** | How a reading is turned into *running* or *idle*. Choosing these is a procedure of its own; do not change them in the same sitting as an address or a channel. |
 
 Above the editable fields the drawer shows **Internal key**, **Database ID**,

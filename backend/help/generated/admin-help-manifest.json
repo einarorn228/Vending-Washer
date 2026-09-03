@@ -139,7 +139,7 @@
                 {
                   "inlines": [
                     {
-                      "text": "Every recovery here happens on the kiosk host, in a terminal, from the",
+                      "text": "Getting back in happens on the kiosk host, in a terminal, from the repository",
                       "type": "text"
                     },
                     {
@@ -147,7 +147,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "repository root. None of it can be done from a browser — that is deliberate,",
+                      "text": "root. None of that can be done from a browser — that is deliberate, because the",
                       "type": "text"
                     },
                     {
@@ -155,7 +155,15 @@
                       "type": "text"
                     },
                     {
-                      "text": "because the thing you are recovering is the lock on the browser.",
+                      "text": "thing you are recovering is the lock on the browser. Only the last section below,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "replacing an API key you already recovered, is done in the panel afterwards.",
                       "type": "text"
                     }
                   ],
@@ -846,7 +854,7 @@
                 {
                   "inlines": [
                     {
-                      "text": "First check whether the seeded default is still in place. This prints only yes or",
+                      "text": "Before replacing it, test any candidate you found in the site's credential store.",
                       "type": "text"
                     },
                     {
@@ -854,7 +862,15 @@
                       "type": "text"
                     },
                     {
-                      "text": "no, and never the stored value:",
+                      "text": "This prompts for the password, prints only yes or no, and never shows the stored",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "value:",
                       "type": "text"
                     }
                   ],
@@ -862,13 +878,13 @@
                 },
                 {
                   "language": "bash",
-                  "text": "source .venv/bin/activate\npython - <<'CHECK'\nimport hashlib\nfrom backend.models import Session\nfrom backend.models.setting_model import get_setting_value\n\ns = Session()\ntry:\n    print(\"still the seeded default:\",\n          get_setting_value(s, \"admin_password_hash\") == hashlib.sha256(b\"admin\").hexdigest())\nfinally:\n    s.close()\nCHECK",
+                  "text": "source .venv/bin/activate\npython - <<'CHECK'\nimport getpass, hashlib\nfrom backend.models import Session\nfrom backend.models.setting_model import get_setting_value\n\npw = getpass.getpass(\"Password to test: \")\ns = Session()\ntry:\n    print(\"matches the stored admin password:\",\n          get_setting_value(s, \"admin_password_hash\") == hashlib.sha256(pw.encode(\"utf-8\")).hexdigest())\nfinally:\n    s.close()\nCHECK",
                   "type": "code_block"
                 },
                 {
                   "inlines": [
                     {
-                      "text": "Then set a new password. This prompts for it twice rather than taking it as an",
+                      "text": "If none of them match, set a new password. This prompts for it twice rather than taking it as an",
                       "type": "text"
                     },
                     {
@@ -1619,7 +1635,7 @@
                             "type": "strong"
                           },
                           {
-                            "text": " Display names, short labels, machine type, description",
+                            "text": " Display names, short labels, machine type and the order",
                             "type": "text"
                           },
                           {
@@ -1627,7 +1643,7 @@
                             "type": "text"
                           },
                           {
-                            "text": "and the order machines appear in on the kiosk. These change what the customer",
+                            "text": "machines appear in on the kiosk. These change what the customer reads, never",
                             "type": "text"
                           },
                           {
@@ -1635,7 +1651,36 @@
                             "type": "text"
                           },
                           {
-                            "text": "reads, never what the hardware does.",
+                            "text": "what the hardware does. Taking a machine out of ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Active in kiosk",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " on the same",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "screen is a different matter — that removes it from the kiosk entirely, and it",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "is recorded as a high-risk change.",
                             "type": "text"
                           }
                         ],
@@ -1808,7 +1853,7 @@
                 {
                   "inlines": [
                     {
-                      "text": "These are not forbidden; they are the ones to stop and think about, and each of",
+                      "text": "These are not forbidden; they are the ones to stop and think about. Most of them",
                       "type": "text"
                     },
                     {
@@ -1816,7 +1861,23 @@
                       "type": "text"
                     },
                     {
-                      "text": "them asks for a separate confirmation before it is applied.",
+                      "text": "demand a confirmation of their own before they are applied — a tick box in the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "review dialog, the current API key, an acknowledgement in the mapping drawer, or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a typed phrase — but not all of them do, so the judgement is still yours.",
                       "type": "text"
                     }
                   ],
@@ -1849,7 +1910,15 @@
                             "type": "text"
                           },
                           {
-                            "text": "power to real hardware. Turning it off is the fastest way to make a mapping",
+                            "text": "power to real hardware, and the review dialog makes you acknowledge that",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "separately. Turning it off is the fastest way to make a mapping",
                             "type": "text"
                           },
                           {
@@ -6264,7 +6333,7 @@
                           "type": "code"
                         },
                         {
-                          "text": ", ",
+                          "text": " or ",
                           "type": "text"
                         },
                         {
@@ -6280,7 +6349,15 @@
                           "type": "code"
                         },
                         {
-                          "text": " to stop polling this machine.",
+                          "text": " to stop polling this machine. The list also offers ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "pulse",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", which the backend has no reader for — a machine set to it never produces a reading.",
                           "type": "text"
                         }
                       ]
@@ -13886,7 +13963,15 @@
                       "type": "text"
                     },
                     {
-                      "text": "once a second. If telemetry polling is off, a red banner at the top says so and",
+                      "text": "once a second. If ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " is off, a red banner at the top says so and",
                       "type": "text"
                     },
                     {
@@ -14117,7 +14202,15 @@
                           "type": "em"
                         },
                         {
-                          "text": " to read it. It resets even when the read failed.",
+                          "text": " to read it. It resets even when the read failed — a read that runs past ",
+                          "type": "text"
+                        },
+                        {
+                          "type": "setting_ref",
+                          "value": "telemetry_http_timeout_sec"
+                        },
+                        {
+                          "text": " counts as a failure.",
                           "type": "text"
                         }
                       ]
@@ -14853,7 +14946,6 @@
         "tune-thresholds"
       ],
       "related_settings": [
-        "log_level",
         "telemetry_enabled",
         "telemetry_http_timeout_sec"
       ],
@@ -15285,7 +15377,7 @@
                             "type": "strong"
                           },
                           {
-                            "text": " off. The backend then sends no power command",
+                            "text": " off — the setting key is",
                             "type": "text"
                           },
                           {
@@ -15293,7 +15385,19 @@
                             "type": "text"
                           },
                           {
-                            "text": "to any machine. Confirm it on Overview: ",
+                            "type": "setting_ref",
+                            "value": "backend_relay_enabled"
+                          },
+                          {
+                            "text": ". The backend then sends no power command to any",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "machine. Confirm it on Overview: ",
                             "type": "text"
                           },
                           {
@@ -15369,7 +15473,19 @@
                       {
                         "inlines": [
                           {
-                            "text": "Check whether this is only a naming problem. In Diagnostics, ",
+                            "text": "Check whether this is only a naming problem. This step needs ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "telemetry_enabled"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "to be on, and it is safe with the relays off. In Diagnostics, ",
                             "type": "text"
                           },
                           {
@@ -15786,7 +15902,6 @@
       ],
       "related_settings": [
         "backend_relay_enabled",
-        "shelly_http_timeout_sec",
         "telemetry_enabled"
       ],
       "risk": "high",
@@ -15851,13 +15966,13 @@
           "bottom",
           "broke",
           "browser",
+          "candidate",
           "cannot",
           "carefully",
           "change",
           "changes",
           "changing",
           "chat",
-          "check",
           "clear",
           "clients",
           "closing",
@@ -15876,7 +15991,6 @@
           "database",
           "dated",
           "decides",
-          "default",
           "deliberate",
           "device",
           "different",
@@ -15908,8 +16022,10 @@
           "first",
           "fixes",
           "forgotten",
+          "found",
           "generate",
           "generated",
+          "getting",
           "guard",
           "guessing",
           "guide",
@@ -15932,6 +16048,7 @@
           "keep",
           "kill",
           "kiosk",
+          "last",
           "left",
           "live",
           "load",
@@ -15998,6 +16115,7 @@
           "record",
           "records",
           "recoverable",
+          "recovered",
           "recovering",
           "recovery",
           "refused",
@@ -16025,7 +16143,6 @@
           "secret",
           "section",
           "sections",
-          "seeded",
           "send",
           "sensitive",
           "session",
@@ -16060,9 +16177,9 @@
           "talk",
           "tell",
           "terminal",
+          "test",
           "than",
           "them",
-          "then",
           "there",
           "they",
           "thing",
@@ -16189,7 +16306,10 @@
           "accepts",
           "access",
           "account",
+          "acknowledge",
+          "acknowledgement",
           "action",
+          "active",
           "actually",
           "address",
           "addresses",
@@ -16254,15 +16374,19 @@
           "database",
           "decide",
           "decides",
+          "demand",
           "description",
           "devices",
           "diagnostics",
+          "dialog",
+          "different",
           "difficult",
           "disabled",
           "display",
           "does",
           "down",
           "downloads",
+          "drawer",
           "each",
           "easy",
           "edited",
@@ -16271,6 +16395,7 @@
           "either",
           "enabled",
           "enough",
+          "entirely",
           "error",
           "every",
           "exactly",
@@ -16310,6 +16435,7 @@
           "instrument",
           "interval",
           "json",
+          "judgement",
           "keep",
           "kiosk",
           "know",
@@ -16335,7 +16461,9 @@
           "made",
           "maintainer",
           "make",
+          "makes",
           "mapping",
+          "matter",
           "matters",
           "means",
           "metric",
@@ -16397,6 +16525,7 @@
           "real",
           "reconstruct",
           "record",
+          "recorded",
           "records",
           "recovery",
           "refused",
@@ -16404,6 +16533,7 @@
           "reisa",
           "relay",
           "remote",
+          "removes",
           "report",
           "reports",
           "reproducing",
@@ -16430,6 +16560,7 @@
           "runtime",
           "safe",
           "safer",
+          "same",
           "saving",
           "says",
           "scan",
@@ -16446,7 +16577,7 @@
           "sends",
           "sensitive",
           "sent",
-          "separate",
+          "separately",
           "session",
           "sessions",
           "setting",
@@ -16482,6 +16613,7 @@
           "system",
           "take",
           "takes",
+          "taking",
           "technical",
           "telemetry",
           "tell",
@@ -16497,6 +16629,7 @@
           "think",
           "thresholds",
           "through",
+          "tick",
           "time",
           "timing",
           "today",
@@ -16507,6 +16640,7 @@
           "turned",
           "turning",
           "type",
+          "typed",
           "typing",
           "undo",
           "unhappy",
@@ -16536,6 +16670,7 @@
           "write",
           "written",
           "wrong",
+          "yours",
           "zone"
         ],
         "headings": [
@@ -17752,6 +17887,7 @@
           "kiosk",
           "layout",
           "leave",
+          "list",
           "live",
           "locked",
           "long",
@@ -17785,6 +17921,7 @@
           "nothing",
           "observation",
           "observed",
+          "offers",
           "only",
           "onto",
           "open",
@@ -17805,10 +17942,13 @@
           "press",
           "printed",
           "procedure",
+          "produces",
           "proves",
+          "pulse",
           "rather",
           "reach",
           "read",
+          "reader",
           "reading",
           "readings",
           "real",
@@ -19939,6 +20079,7 @@
           "export",
           "failed",
           "failing",
+          "failure",
           "field",
           "fields",
           "file",
@@ -19962,6 +20103,7 @@
           "high",
           "history",
           "hold",
+          "http",
           "idle",
           "inactive",
           "include",
@@ -20026,6 +20168,7 @@
           "overview",
           "page",
           "panel",
+          "past",
           "pending",
           "person",
           "physical",
@@ -20071,6 +20214,7 @@
           "risky",
           "roughly",
           "running",
+          "runs",
           "runtime",
           "safe",
           "same",
@@ -20124,6 +20268,7 @@
           "thresholds",
           "through",
           "time",
+          "timeout",
           "today",
           "together",
           "token",
@@ -20382,6 +20527,7 @@
           "moves",
           "name",
           "naming",
+          "needs",
           "network",
           "never",
           "next",
@@ -20429,6 +20575,7 @@
           "ruling",
           "runs",
           "runtime",
+          "safe",
           "safety",
           "same",
           "scans",
@@ -20441,6 +20588,7 @@
           "sends",
           "separated",
           "serve",
+          "setting",
           "settings",
           "settle",
           "shape",
@@ -20460,6 +20608,7 @@
           "started",
           "starting",
           "starts",
+          "step",
           "still",
           "stop",
           "stored",
@@ -20469,6 +20618,7 @@
           "swapped",
           "switch",
           "technical",
+          "telemetry",
           "tell",
           "test",
           "than",

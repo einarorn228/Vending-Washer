@@ -19,7 +19,6 @@ related_guides:
 related_settings:
   - telemetry_enabled
   - telemetry_http_timeout_sec
-  - log_level
 diagnostics:
   - core
   - kiosk.state
@@ -66,7 +65,7 @@ before risky changes.
 ## Live readings {#live-readings}
 
 Diagnostics opens on **Live readings**: one card per machine, refreshed about
-once a second. If telemetry polling is off, a red banner at the top says so and
+once a second. If `telemetry_enabled` is off, a red banner at the top says so and
 everything below it is frozen.
 
 The large number is the machine's latest reading, and the text beside it says
@@ -79,7 +78,7 @@ plots roughly the last two minutes with both thresholds drawn as lines.
 | **Run state** | What the backend believes the machine is doing: `available`, `in_use` or `offline`. |
 | **Available** | Whether the kiosk may offer it. A machine is only available when its run state is `available` and no start is pending. |
 | **Pending start** | Whether a customer has selected it and the run has not been confirmed yet. |
-| **Last read** | How long ago the backend last *tried* to read it. It resets even when the read failed. |
+| **Last read** | How long ago the backend last *tried* to read it. It resets even when the read failed — a read that runs past `telemetry_http_timeout_sec` counts as a failure. |
 | **Above for** | How long the reading has been continuously at or above the ON threshold. |
 | **Below for** | How long it has been continuously at or below the OFF threshold. |
 | **ON threshold**, **OFF threshold** | This machine's two thresholds. |

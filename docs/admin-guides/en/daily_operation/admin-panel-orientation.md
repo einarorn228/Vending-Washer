@@ -72,9 +72,11 @@ Overview and Diagnostics are covered field by field in
 Most of what an operator needs day to day is safe, reversible and applies
 immediately.
 
-- **Card presentation.** Display names, short labels, machine type, description
-  and the order machines appear in on the kiosk. These change what the customer
-  reads, never what the hardware does.
+- **Card presentation.** Display names, short labels, machine type and the order
+  machines appear in on the kiosk. These change what the customer reads, never
+  what the hardware does. Taking a machine out of **Active in kiosk** on the same
+  screen is a different matter — that removes it from the kiosk entirely, and it
+  is recorded as a high-risk change.
 - **Screen timing.** `selection_notice_seconds`, `started_notice_seconds` and
   `error_notice_seconds` decide how long the kiosk holds each notice before
   returning to the ready screen. `kiosk_poll_interval_ms` decides how often the
@@ -90,11 +92,14 @@ new with its risk before anything is written.
 
 ## What is high risk {#high-risk}
 
-These are not forbidden; they are the ones to stop and think about, and each of
-them asks for a separate confirmation before it is applied.
+These are not forbidden; they are the ones to stop and think about. Most of them
+demand a confirmation of their own before they are applied — a tick box in the
+review dialog, the current API key, an acknowledgement in the mapping drawer, or
+a typed phrase — but not all of them do, so the judgement is still yours.
 
 - **`backend_relay_enabled`.** Turning it on means a machine selection sends real
-  power to real hardware. Turning it off is the fastest way to make a mapping
+  power to real hardware, and the review dialog makes you acknowledge that
+  separately. Turning it off is the fastest way to make a mapping
   problem safe. Either way, tell staff, because with it off the kiosk still
   accepts scans and reserves machines while nothing switches on.
 - **Advanced / Technical Mapping.** Shelly addresses, relay channels, I4 button
