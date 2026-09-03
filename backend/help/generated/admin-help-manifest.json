@@ -3000,7 +3000,16 @@
                       "type": "text"
                     },
                     {
-                      "text": "Last read keeps counting. That is a network or device problem, not a threshold",
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " keeps resetting to a small number: the backend is still reading on",
                       "type": "text"
                     },
                     {
@@ -3008,7 +3017,15 @@
                       "type": "text"
                     },
                     {
-                      "text": "problem.",
+                      "text": "schedule and every attempt is failing. That is a network or device problem, not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a threshold problem.",
                       "type": "text"
                     }
                   ],
@@ -3254,7 +3271,7 @@
                       {
                         "inlines": [
                           {
-                            "text": "If the value shows as a dash and ",
+                            "text": "If the value shows as a dash, the device is not answering. ",
                             "type": "text"
                           },
                           {
@@ -3267,7 +3284,7 @@
                             "type": "strong"
                           },
                           {
-                            "text": " keeps climbing, the device is",
+                            "text": " will",
                             "type": "text"
                           },
                           {
@@ -3275,7 +3292,7 @@
                             "type": "text"
                           },
                           {
-                            "text": "not answering. Check whether other machines on the same device or the same",
+                            "text": "still be small, because the backend keeps trying and each attempt fails.",
                             "type": "text"
                           },
                           {
@@ -3283,7 +3300,15 @@
                             "type": "text"
                           },
                           {
-                            "text": "network are also affected before you touch anything.",
+                            "text": "Check whether other machines on the same device or the same network are also",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "affected before you touch anything.",
                             "type": "text"
                           }
                         ],
@@ -5086,11 +5111,13 @@
           "answering",
           "anything",
           "appear",
+          "attempt",
           "available",
           "backend",
           "badge",
           "band",
           "banner",
+          "because",
           "been",
           "before",
           "behave",
@@ -5110,14 +5137,12 @@
           "choosable",
           "chosen",
           "clear",
-          "climbing",
           "compare",
           "completely",
           "confirm",
           "confirmed",
           "confirms",
           "copy",
-          "counting",
           "customer",
           "customers",
           "dash",
@@ -5128,10 +5153,13 @@
           "does",
           "doing",
           "drawing",
+          "each",
           "escalate",
           "every",
           "expires",
           "failed",
+          "failing",
+          "fails",
           "find",
           "free",
           "frozen",
@@ -5168,6 +5196,7 @@
           "normally",
           "note",
           "nothing",
+          "number",
           "offline",
           "only",
           "open",
@@ -5194,9 +5223,11 @@
           "report",
           "reservation",
           "reserved",
+          "resetting",
           "rest",
           "running",
           "same",
+          "schedule",
           "screen",
           "selected",
           "selection",
@@ -5210,6 +5241,7 @@
           "showing",
           "shows",
           "sits",
+          "small",
           "someone",
           "stale",
           "standby",
@@ -5236,6 +5268,7 @@
           "thresholds",
           "time",
           "touch",
+          "trying",
           "turned",
           "until",
           "updates",
@@ -5248,6 +5281,7 @@
           "whether",
           "which",
           "while",
+          "will",
           "window",
           "wrong"
         ],

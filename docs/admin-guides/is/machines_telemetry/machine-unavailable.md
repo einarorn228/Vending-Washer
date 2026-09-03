@@ -76,8 +76,9 @@ losnar aldrei. Sama gerist ef gildið situr fast á milli þröskuldanna tveggja
 því þar breytist ekkert.
 
 **Tækið hætti að svara.** Misheppnaður lestur merkir vélina offline og þá dettur
-hún líka út úr vali. Á spjaldinu birtist strik í stað gildis á meðan Last read
-heldur áfram að telja. Það er net- eða tækjavandi, ekki þröskuldavandi.
+hún líka út úr vali. Á spjaldinu birtist strik í stað gildis á meðan
+**Last read** núllstillist áfram í lága tölu: bakendinn les enn á áætlun og
+hver tilraun mistekst. Það er net- eða tækjavandi, ekki þröskuldavandi.
 
 ## Skref {#steps}
 
@@ -94,9 +95,10 @@ heldur áfram að telja. Það er net- eða tækjavandi, ekki þröskuldavandi.
    þýðir að þröskuldarnir passa ekki lengur við þessa vél. Skrifaðu niður gildið
    í hvíld og stoppaðu þar. Þröskuldabreytingar eru sérstakt verkferli og blind
    breyting getur tekið vélina úr notkun fyrir alvöru.
-5. Ef gildið er strik og **Last read** telur stöðugt upp, þá svarar tækið ekki.
-   Athugaðu hvort aðrar vélar á sama tæki eða sama neti eru líka í vandræðum
-   áður en þú snertir nokkuð.
+5. Ef gildið er strik, þá svarar tækið ekki. **Last read** verður samt lág tala,
+   því bakendinn heldur áfram að reyna og hver tilraun mistekst. Athugaðu hvort
+   aðrar vélar á sama tæki eða sama neti eru líka í vandræðum áður en þú snertir
+   nokkuð.
 6. Ef **Run state** er `available` en skjárinn sýnir vélina samt sem upptekna,
    þá er skjámyndin úrelt frekar en bakendinn. Endurhlaðið skjásíðuna og berðu
    saman aftur.

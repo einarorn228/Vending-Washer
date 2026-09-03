@@ -96,8 +96,9 @@ where nothing changes at all.
 
 **The device stopped answering.** A failed read marks the machine offline, which
 also removes it from selection. On the card the value shows as a dash while
-Last read keeps counting. That is a network or device problem, not a threshold
-problem.
+**Last read** keeps resetting to a small number: the backend is still reading on
+schedule and every attempt is failing. That is a network or device problem, not
+a threshold problem.
 
 ## Steps {#steps}
 
@@ -114,9 +115,10 @@ problem.
    doing nothing means the thresholds no longer match this machine. Note the
    idle value and stop here; changing thresholds is a separate procedure and
    doing it blind can take the machine out of service for real.
-5. If the value shows as a dash and **Last read** keeps climbing, the device is
-   not answering. Check whether other machines on the same device or the same
-   network are also affected before you touch anything.
+5. If the value shows as a dash, the device is not answering. **Last read** will
+   still be small, because the backend keeps trying and each attempt fails.
+   Check whether other machines on the same device or the same network are also
+   affected before you touch anything.
 6. If **Run state** is `available` but the kiosk still shows the machine as
    busy, the kiosk screen is out of date rather than the backend. Reload the
    kiosk page and compare again.
