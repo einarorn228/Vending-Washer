@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 14,
+  "guide_count": 15,
   "guides": {
     "admin-access-recovery": {
       "actions": [],
@@ -12267,6 +12267,1386 @@
       "risk": "medium",
       "status": "published"
     },
+    "using-diagnostics": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "core",
+        "kiosk.state",
+        "machine.identity",
+        "machine.mapping",
+        "machine.telemetry",
+        "machine.thresholds",
+        "settings.telemetry"
+      ],
+      "id": "using-diagnostics",
+      "kind": "concept",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "search_aliases": [
+            "change history",
+            "live readings explained",
+            "reading the overview page",
+            "support report contents",
+            "what does this field mean",
+            "where to look first"
+          ],
+          "sections": [
+            {
+              "anchor": "overview",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Overview is the whole system in one screen, refreshed every few seconds. It is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the right first look for almost every problem, because it separates \"the backend",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is unhealthy\" from \"one machine is unhealthy\" in a few lines.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "header": [
+                    [
+                      {
+                        "text": "Field",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "What it means",
+                        "type": "text"
+                      }
+                    ]
+                  ],
+                  "rows": [
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Backend reachable",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether this page is getting answers from the backend at all.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Dev/admin enabled",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the kill switch for this panel is on.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Provider",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Which provider validates codes: ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "local",
+                          "type": "code"
+                        },
+                        {
+                          "text": " or ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "reisa",
+                          "type": "code"
+                        },
+                        {
+                          "text": ".",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Reisa enabled",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the Reisa provider is allowed to be used.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scanner port",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The serial port the scanner is configured for. This is the saved setting, not proof the running backend opened it.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Scanner available",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the running backend actually opened that port.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Current UI state",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "What the kiosk state machine is doing right now.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Button box",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the physical button box input is enabled.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Backend relay",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the backend may send real power commands. Disabled means selections are accepted and nothing is switched on.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Telemetry",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the machines are being read at all.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Configured machines",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How many machines exist in the configuration.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Active in kiosk",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How many of them are offered on the kiosk screen.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Status read at",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "When this status was generated. It is produced fresh on every refresh, so it is not a start time and not a health signal.",
+                          "type": "text"
+                        }
+                      ]
+                    ]
+                  ],
+                  "type": "table"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Overview also carries ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Export current config",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", which downloads the current",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "settings and machine mapping as a JSON file with no raw secrets in it. Use it",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "before risky changes.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "What Overview tells you"
+            },
+            {
+              "anchor": "live-readings",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Diagnostics opens on ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Live readings",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ": one card per machine, refreshed about",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "once a second. If telemetry polling is off, a red banner at the top says so and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "everything below it is frozen.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The large number is the machine's latest reading, and the text beside it says",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "where that reading sits: ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "at or above ON threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "between thresholds",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "at or",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "below OFF threshold",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", or ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "no reading",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " when the last read failed. The small chart",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "plots roughly the last two minutes with both thresholds drawn as lines.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "header": [
+                    [
+                      {
+                        "text": "Field",
+                        "type": "text"
+                      }
+                    ],
+                    [
+                      {
+                        "text": "What it means",
+                        "type": "text"
+                      }
+                    ]
+                  ],
+                  "rows": [
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Run state",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "What the backend believes the machine is doing: ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "available",
+                          "type": "code"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "in_use",
+                          "type": "code"
+                        },
+                        {
+                          "text": " or ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "offline",
+                          "type": "code"
+                        },
+                        {
+                          "text": ".",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Available",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether the kiosk may offer it. A machine is only available when its run state is ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "available",
+                          "type": "code"
+                        },
+                        {
+                          "text": " and no start is pending.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Pending start",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Whether a customer has selected it and the run has not been confirmed yet.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Last read",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How long ago the backend last ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "tried",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "em"
+                        },
+                        {
+                          "text": " to read it. It resets even when the read failed.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Above for",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How long the reading has been continuously at or above the ON threshold.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Below for",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How long it has been continuously at or below the OFF threshold.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "ON threshold",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "OFF threshold",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "This machine's two thresholds.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "ON confirm",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "OFF confirm",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How long a reading has to hold before the backend acts on it.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Poll interval",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "How often this machine is read.",
+                          "type": "text"
+                        }
+                      ]
+                    ],
+                    [
+                      [
+                        {
+                          "inlines": [
+                            {
+                              "text": "Device",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "The address of the device this machine is read from.",
+                          "type": "text"
+                        }
+                      ]
+                    ]
+                  ],
+                  "type": "table"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Two badges sit at the top of each card: whether the machine is ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "active",
+                      "type": "code"
+                    },
+                    {
+                      "text": " or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "inactive",
+                      "type": "code"
+                    },
+                    {
+                      "text": " in the kiosk, and which metric source it is read with.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Reading those fields together is what tells the guides apart. A dash with a small",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and resetting ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " is a failing read; a frozen value with a climbing",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " is polling that has stopped; ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Above for",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " never reaching ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "ON",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "confirm",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " is a threshold that sits too high.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Live readings"
+            },
+            {
+              "anchor": "other-views",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Scan log",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " lists recent scans with their result and a details value. It answers",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "one question precisely: did the scan reach the backend at all? No new row means",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the scan never arrived, which is a scanner problem rather than a code problem.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change history",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " is the configuration audit trail: every settings and machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "change made through this panel, with the old and the new value, and badges for",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "high risk and restart required. Secrets appear by presence only, never by value.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "This is the first place to look whenever something worked yesterday and does not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "work today. It records what changed, not who changed it.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Metrics",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " shows the backend's runtime counters and gauges. The one worth",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "knowing by name is ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "uptime_seconds_total",
+                      "type": "code"
+                    },
+                    {
+                      "text": ": after a real restart it counts up from",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "zero again, which is the only dependable way to confirm a restart actually",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "happened. See ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "settings-requiring-restart",
+                      "text": "Settings that need a restart",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Scan log, Change history and Metrics"
+            },
+            {
+              "anchor": "checklists-and-report",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Most troubleshooting guides carry a short checklist under the text. Each item is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "a question with a place to look and what to expect, and you mark it ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "OK",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ",",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Problem found",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Not sure",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " or ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Not checked",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". Nothing is calculated from",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "your answers — the checklist is there so that an interrupted investigation can be",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "picked up again, and so that the evidence travels with the escalation. ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Not sure",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "is a genuinely useful answer; do not force it to yes or no.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "When an item is marked ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Problem found",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " and the guide names a follow-up guide for",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it, a link to that guide appears under the item.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of a guide builds a text report and copies",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it to the clipboard. If the browser will not allow the copy, the report appears",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "in a text box instead so you can select it by hand. The report contains the guide",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "you were reading and which language you were shown, the kiosk state, the scanner",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "status, whether the provider's base URL and token are configured, the settings",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "relevant to that guide, the machine fields the guide declares, and your checklist",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "answers. It never contains a secret value — only whether each secret is set —",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "and the fields it may include are fixed by the backend, not chosen by the page.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "The checklist and the support report"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Send the support report, and add the things only you can know: what the customer",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "or the staff member actually saw, at what time, on which machine, whether it has",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "happened before, and exactly what you changed while investigating. A report",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "without that context says what the system looked like afterwards, which is rarely",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the same as what went wrong.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If a machine is involved, open the guide from that machine's context where you",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "can, so the report is scoped to it. And if you turned something off to make the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "situation safe — relay control especially — say so explicitly, because otherwise",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the next person reads a healthy-looking system and cannot see why it is idle.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "What to send when you escalate"
+            }
+          ],
+          "stub": false,
+          "summary": "What every field on Overview and in the Diagnostics tab means, and what to collect before escalating.",
+          "title": "Reading Overview and Diagnostics",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "breytingasaga",
+            "hvar á að byrja að leita",
+            "hvað er í stuðningsskýrslunni",
+            "hvað þýðir þetta svæði",
+            "lesa yfirlitssíðuna",
+            "lifandi mælingar útskýrðar"
+          ],
+          "stub": true,
+          "summary": "Hvað hvert svæði á yfirlitssíðunni og í greiningarflipanum þýðir og hverju þarf að safna áður en máli er vísað áfram.",
+          "title": "Að lesa Overview og Diagnostics",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "all-machines-available-telemetry-stale",
+        "machine-unavailable",
+        "no-telemetry-reading",
+        "settings-requiring-restart",
+        "tune-thresholds"
+      ],
+      "related_settings": [
+        "log_level",
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
+      ],
+      "risk": "low",
+      "status": "published"
+    },
     "wrong-machine-starts": {
       "actions": [],
       "canonical_locale": "en",
@@ -16888,6 +18268,420 @@
           "oruggan",
           "stilla",
           "velar"
+        ]
+      }
+    },
+    "using-diagnostics": {
+      "en": {
+        "aliases": [
+          "change",
+          "contents",
+          "does",
+          "explained",
+          "field",
+          "first",
+          "history",
+          "live",
+          "look",
+          "mean",
+          "overview",
+          "page",
+          "reading",
+          "readings",
+          "report",
+          "support",
+          "what",
+          "where"
+        ],
+        "body": [
+          "about",
+          "above",
+          "accepted",
+          "active",
+          "acts",
+          "actually",
+          "address",
+          "admin",
+          "after",
+          "afterwards",
+          "again",
+          "allow",
+          "allowed",
+          "almost",
+          "also",
+          "answer",
+          "answers",
+          "apart",
+          "appear",
+          "appears",
+          "arrived",
+          "audit",
+          "available",
+          "backend",
+          "badges",
+          "banner",
+          "base",
+          "because",
+          "been",
+          "before",
+          "being",
+          "believes",
+          "below",
+          "beside",
+          "between",
+          "both",
+          "bottom",
+          "browser",
+          "builds",
+          "button",
+          "calculated",
+          "cannot",
+          "card",
+          "carries",
+          "carry",
+          "change",
+          "changed",
+          "changes",
+          "chart",
+          "checked",
+          "checklist",
+          "chosen",
+          "climbing",
+          "clipboard",
+          "code",
+          "codes",
+          "commands",
+          "config",
+          "configuration",
+          "configured",
+          "confirm",
+          "confirmed",
+          "contains",
+          "context",
+          "continuously",
+          "control",
+          "copies",
+          "copy",
+          "counters",
+          "counts",
+          "current",
+          "customer",
+          "dash",
+          "declares",
+          "dependable",
+          "details",
+          "device",
+          "diagnostics",
+          "disabled",
+          "does",
+          "doing",
+          "downloads",
+          "drawn",
+          "each",
+          "enabled",
+          "escalation",
+          "especially",
+          "even",
+          "every",
+          "everything",
+          "evidence",
+          "exactly",
+          "exist",
+          "expect",
+          "explicitly",
+          "export",
+          "failed",
+          "failing",
+          "field",
+          "fields",
+          "file",
+          "first",
+          "fixed",
+          "follow",
+          "force",
+          "found",
+          "fresh",
+          "frozen",
+          "gauges",
+          "generated",
+          "genuinely",
+          "getting",
+          "guide",
+          "guides",
+          "hand",
+          "happened",
+          "health",
+          "healthy",
+          "high",
+          "history",
+          "hold",
+          "idle",
+          "inactive",
+          "include",
+          "input",
+          "instead",
+          "interrupted",
+          "interval",
+          "investigating",
+          "investigation",
+          "involved",
+          "item",
+          "json",
+          "kill",
+          "kiosk",
+          "know",
+          "knowing",
+          "language",
+          "large",
+          "last",
+          "latest",
+          "like",
+          "lines",
+          "link",
+          "lists",
+          "live",
+          "local",
+          "long",
+          "look",
+          "looked",
+          "looking",
+          "machine",
+          "machines",
+          "made",
+          "make",
+          "many",
+          "mapping",
+          "mark",
+          "marked",
+          "means",
+          "member",
+          "metric",
+          "metrics",
+          "minutes",
+          "most",
+          "name",
+          "names",
+          "need",
+          "never",
+          "next",
+          "nothing",
+          "number",
+          "offer",
+          "offered",
+          "offline",
+          "often",
+          "once",
+          "only",
+          "open",
+          "opened",
+          "opens",
+          "otherwise",
+          "overview",
+          "page",
+          "panel",
+          "pending",
+          "person",
+          "physical",
+          "picked",
+          "place",
+          "plots",
+          "poll",
+          "polling",
+          "port",
+          "power",
+          "precisely",
+          "presence",
+          "problem",
+          "produced",
+          "proof",
+          "provider",
+          "question",
+          "rarely",
+          "rather",
+          "reach",
+          "reachable",
+          "reaching",
+          "read",
+          "reading",
+          "readings",
+          "reads",
+          "real",
+          "recent",
+          "records",
+          "refresh",
+          "refreshed",
+          "reisa",
+          "relay",
+          "relevant",
+          "report",
+          "required",
+          "resets",
+          "resetting",
+          "restart",
+          "result",
+          "right",
+          "risk",
+          "risky",
+          "roughly",
+          "running",
+          "runtime",
+          "safe",
+          "same",
+          "saved",
+          "says",
+          "scan",
+          "scanner",
+          "scans",
+          "scoped",
+          "screen",
+          "second",
+          "seconds",
+          "secret",
+          "secrets",
+          "select",
+          "selected",
+          "selections",
+          "send",
+          "separates",
+          "serial",
+          "setting",
+          "settings",
+          "short",
+          "shown",
+          "shows",
+          "signal",
+          "sits",
+          "situation",
+          "small",
+          "something",
+          "source",
+          "staff",
+          "start",
+          "state",
+          "status",
+          "stopped",
+          "support",
+          "sure",
+          "switch",
+          "switched",
+          "system",
+          "telemetry",
+          "tells",
+          "text",
+          "than",
+          "them",
+          "there",
+          "things",
+          "those",
+          "threshold",
+          "thresholds",
+          "through",
+          "time",
+          "today",
+          "together",
+          "token",
+          "total",
+          "trail",
+          "travels",
+          "tried",
+          "troubleshooting",
+          "turned",
+          "under",
+          "unhealthy",
+          "uptime",
+          "used",
+          "useful",
+          "validates",
+          "value",
+          "went",
+          "were",
+          "what",
+          "whenever",
+          "where",
+          "whether",
+          "which",
+          "while",
+          "whole",
+          "will",
+          "without",
+          "work",
+          "worked",
+          "worth",
+          "wrong",
+          "yesterday",
+          "zero"
+        ],
+        "headings": [
+          "change",
+          "checklist",
+          "escalate",
+          "history",
+          "live",
+          "metrics",
+          "overview",
+          "readings",
+          "report",
+          "scan",
+          "send",
+          "support",
+          "tells",
+          "what"
+        ],
+        "summary": [
+          "before",
+          "collect",
+          "diagnostics",
+          "escalating",
+          "every",
+          "field",
+          "means",
+          "overview",
+          "what"
+        ],
+        "title": [
+          "diagnostics",
+          "overview",
+          "reading"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "breytingasaga",
+          "byrja",
+          "hvad",
+          "hvar",
+          "leita",
+          "lesa",
+          "lifandi",
+          "maelingar",
+          "studningsskyrslunni",
+          "svaedi",
+          "thetta",
+          "thydir",
+          "utskyrdar",
+          "yfirlitssiduna"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "adur",
+          "afram",
+          "greiningarflipanum",
+          "hvad",
+          "hverju",
+          "hvert",
+          "mali",
+          "safna",
+          "svaedi",
+          "tharf",
+          "thydir",
+          "visad",
+          "yfirlitssidunni"
+        ],
+        "title": [
+          "diagnostics",
+          "lesa",
+          "overview"
         ]
       }
     },
