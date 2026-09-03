@@ -31,7 +31,7 @@ function GuideList({ guides, onOpenGuide }) {
   return (
     <ul className="dev-admin-helphub-guide-list public-help-guide-list">
       {guides.map((guide) => {
-        const payload = guide.locales[resolveLocale(guide, LOCALE).locale];
+        const payload = guide.locales?.[resolveLocale(guide, LOCALE).locale];
         return (
           <li key={guide.id}>
             <button
@@ -89,7 +89,10 @@ export default function PublicHelpPage() {
   };
 
   const guides = Object.values(manifest.guides);
-  const activeGuide = guideId ? manifest.guides[guideId] : null;
+  const activeGuide =
+    guideId && Object.prototype.hasOwnProperty.call(manifest.guides, guideId)
+      ? manifest.guides[guideId]
+      : null;
 
   return (
     <div className="dev-admin-page public-help">
