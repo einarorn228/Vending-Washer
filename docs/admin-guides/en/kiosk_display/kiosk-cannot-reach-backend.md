@@ -13,6 +13,7 @@ common_problem_rank: 6
 related_guides:
   - all-machines-available-telemetry-stale
   - admin-panel-orientation
+  - admin-access-recovery
 related_settings:
   - kiosk_poll_interval_ms
   - api_key

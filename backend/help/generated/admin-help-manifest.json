@@ -33,8 +33,1129 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 13,
+  "guide_count": 14,
   "guides": {
+    "admin-access-recovery": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "admin_recovery",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "core"
+      ],
+      "id": "admin-access-recovery",
+      "kind": "recovery",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "core",
+              "expected": "A login form. A panel-disabled message and a page that does not load are different problems.",
+              "id": "which-lockout",
+              "look_for": "The /dev/admin page: the login form, a panel-disabled message, or nothing loading at all.",
+              "question": "What exactly does the page show?",
+              "route": "overview"
+            },
+            {
+              "diagnostics": "core",
+              "expected": "It loads on both. If it loads on neither, this is not a credentials problem.",
+              "id": "page-loads-at-all",
+              "look_for": "Open /dev/admin in a browser on the kiosk host and on one other device.",
+              "problem_guide": "kiosk-cannot-reach-backend",
+              "question": "Does the page load from this device at all?",
+              "route": "overview"
+            },
+            {
+              "expected": "A record exists. Check it before changing anything on the host.",
+              "id": "credentials-recorded",
+              "look_for": "Wherever the site keeps its credentials.",
+              "question": "Is there a written record of the admin username and password anywhere?"
+            },
+            {
+              "expected": "Yes. Every recovery below happens there, not in a browser.",
+              "id": "host-access-available",
+              "look_for": "Physical or remote access to the machine the backend runs on.",
+              "question": "Can somebody reach a terminal on the kiosk host?"
+            },
+            {
+              "expected": "A copy made before the first change.",
+              "id": "database-backed-up",
+              "look_for": "A dated copy of the database file on the kiosk host.",
+              "question": "Has the database file been copied before any credential change?"
+            },
+            {
+              "expected": "Yes. Two changes at once cannot be told apart when neither works.",
+              "id": "one-change-verified",
+              "look_for": "A successful login, or a successful request, after each single change.",
+              "question": "Was each credential change verified before the next one was made?"
+            }
+          ],
+          "search_aliases": [
+            "cannot log in to dev admin",
+            "forgot the admin password",
+            "locked out of the admin panel",
+            "lost api key",
+            "panel disabled",
+            "turn the admin panel back on"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when the ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": " panel cannot be reached any more: the page",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "says the panel is disabled, the login is refused, or the API key that clients use",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "has been lost.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Every recovery here happens on the kiosk host, in a terminal, from the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "repository root. None of it can be done from a browser — that is deliberate,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "because the thing you are recovering is the lock on the browser.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If the page does not load at all on any device, this is the wrong guide: nothing",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "here helps when the backend is unreachable. Read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "kiosk-cannot-reach-backend",
+                      "text": "Kiosk screen is stale or cannot reach the backend",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "first, and confirm the backend is running before assuming a credentials problem.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "one",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " credential at a time and verify it works before touching the",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "next. Changing the admin password and the API key in one sitting is the single",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "most reliable way to turn a recoverable lockout into an unrecoverable one,",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "because when nothing works afterwards there is no way to tell which change broke",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "it. Never paste a password or a key into a chat message, a ticket, or a settings",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "field in the panel.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "danger",
+                  "type": "callout"
+                },
+                {
+                  "blocks": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Before the first change, copy the database file on the kiosk host to a dated",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "filename. Settings, credentials, machine mapping, codes and the audit trail all",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "live in that one file, and a copy taken beforehand is the only way back from a",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "mistyped value. If the panel is still reachable at this point, also press",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "inlines": [
+                            {
+                              "text": "Export current config",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "strong"
+                        },
+                        {
+                          "text": " on the Overview tab and keep the downloaded file; it",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "contains the settings and machine mapping, and records only whether each secret",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "is set, never its value.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "level": "warning",
+                  "type": "callout"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The panel was switched off.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "dev_admin_enabled"
+                    },
+                    {
+                      "text": " is the backend kill switch.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "When it is off, every request the panel makes is refused and the page shows a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "panel-disabled message. Turning it off is a one-way door from the browser: the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Danger Zone requires the phrase ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "DISABLE DEV ADMIN",
+                      "type": "code"
+                    },
+                    {
+                      "text": " to be typed exactly, and once",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it is off there is no page left to turn it back on from.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The admin credentials do not match.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The panel is protected by HTTP Basic",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "authentication against ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "admin_username"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "admin_password_hash"
+                    },
+                    {
+                      "text": ". The password",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "itself is never stored — only a hash of it — so a forgotten password cannot be",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "looked up, only replaced. The same credentials also guard the site's other admin",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "routes.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The API key is lost.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "api_key"
+                    },
+                    {
+                      "text": " is what kiosk clients send on every request.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "It does not unlock the panel, but without it the kiosk screen cannot talk to the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "backend, and the panel's Sensitive Settings section asks for it before it will",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "rotate a secret.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The browser is being blocked rather than the credentials refused.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "cors_allowed_origins"
+                    },
+                    {
+                      "text": " decides which browser origins the backend answers. A wrong",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "value there stops the panel and the kiosk reaching the backend from a browser",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "even though the credentials are perfect. It is one of the settings that only",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "takes effect after a restart, so a bad value saved earlier can appear at the next",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "restart rather than at the moment it was saved. See",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "settings-requiring-restart",
+                      "text": "Settings that need a restart",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Repeated wrong passwords do not lock the account or start a waiting period; they",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "are only counted in the backend's failure metric. If a login is refused, the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "credentials really are wrong.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Read the page carefully first. A ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "panel disabled",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "em"
+                          },
+                          {
+                            "text": " message, a refused login and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a page that does not load are three different problems with three different",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "fixes. Try one other device before concluding anything.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Look for a written record of the credentials before changing them. A password",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "that already exists somewhere is always better than a new one.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "On the kiosk host, from the repository root, take a dated copy of the database",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "file. Do not skip this because the change looks small.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Work through only the section below that matches your situation, and verify it",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "before starting another one.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "level": 3,
+                  "text": "If the panel is switched off",
+                  "type": "heading"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Run this on the kiosk host, from the repository root. It sets the kill switch",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "back on and nothing else:",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "language": "bash",
+                  "text": "source .venv/bin/activate\npython - <<'ENABLE'\nfrom backend.models import Session\nfrom backend.models.setting_model import update_setting_value\n\nsession = Session()\ntry:\n    update_setting_value(session, \"dev_admin_enabled\", \"true\")\nfinally:\n    session.close()\nENABLE",
+                  "type": "code_block"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "No restart is needed. Reload ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": " and stop here if you can now log in.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Switch the panel off again the same way, with ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "\"false\"",
+                      "type": "code"
+                    },
+                    {
+                      "text": " in place of ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "\"true\"",
+                      "type": "code"
+                    },
+                    {
+                      "text": ",",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "once the work is finished.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "level": 3,
+                  "text": "If the API key is what is missing",
+                  "type": "heading"
+                },
+                {
+                  "language": "bash",
+                  "text": "python backend/scripts/get_api_key.py",
+                  "type": "code_block"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Run this only on the kiosk host, in a session nobody else can see, and clear the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "terminal afterwards. The key is a secret: it belongs in the site's credential",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "store, not in a message or a ticket.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "level": 3,
+                  "text": "If the admin password is lost",
+                  "type": "heading"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "First check whether the seeded default is still in place. This prints only yes or",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "no, and never the stored value:",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "language": "bash",
+                  "text": "source .venv/bin/activate\npython - <<'CHECK'\nimport hashlib\nfrom backend.models import Session\nfrom backend.models.setting_model import get_setting_value\n\ns = Session()\ntry:\n    print(\"still the seeded default:\",\n          get_setting_value(s, \"admin_password_hash\") == hashlib.sha256(b\"admin\").hexdigest())\nfinally:\n    s.close()\nCHECK",
+                  "type": "code_block"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Then set a new password. This prompts for it twice rather than taking it as an",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "argument, so the password never reaches the shell history:",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "language": "bash",
+                  "text": "source .venv/bin/activate\npython - <<'ROTATE'\nimport getpass, hashlib\nfrom backend.models import Session\nfrom backend.models.setting_model import update_setting_value\n\npw = getpass.getpass(\"New admin password: \")\nif pw != getpass.getpass(\"Confirm: \"):\n    raise SystemExit(\"passwords did not match; nothing changed\")\nif len(pw) < 12:\n    raise SystemExit(\"use at least 12 characters; nothing changed\")\n\ns = Session()\ntry:\n    update_setting_value(s, \"admin_password_hash\", hashlib.sha256(pw.encode(\"utf-8\")).hexdigest())\n    print(\"admin_password_hash updated\")\nfinally:\n    s.close()\nROTATE",
+                  "type": "code_block"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Verify immediately, before changing anything else: open ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "/dev/admin",
+                      "type": "code"
+                    },
+                    {
+                      "text": " and log in",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "with the existing username and the new password. Credential changes take effect",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "straight away and no restart is involved. Record the new password in the site's",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "credential store the moment it works.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "level": 3,
+                  "text": "If the API key needs replacing rather than recovering",
+                  "type": "heading"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Do that from inside the panel once you are back in: Settings, ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Sensitive",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "Settings",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Generate New API Key",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". It asks for the current API key first, shows",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the new value once in a window, and never shows it again — write it down before",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "closing that window. Every kiosk still using the old key loses access the instant",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it is generated, so plan to update them in the same session.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when there is no terminal access to the kiosk host, when the backend",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "itself is not running, when the panel still refuses a password that was just set,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "or when the page cannot be reached from any device even after the panel is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "enabled again. Escalate rather than guessing if ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "cors_allowed_origins"
+                    },
+                    {
+                      "text": " looks",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "wrong: repairing it needs a restart, and a second wrong value makes the situation",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "harder to read.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Once you are back in, use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "send it with: what the page showed before the recovery, which of the sections",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "above were used and in what order, whether a copy of the database file was taken",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "first, and whether the panel was left enabled or switched off again afterwards.",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "Never include a password, a key or a hash.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "What to do when nobody can get into /dev/admin any more: the panel switched off, a lost admin password, or a lost API key.",
+          "title": "Admin access and dev/admin panel recovery",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "api lykill týndur",
+            "gleymdi lykilorði stjórnanda",
+            "kemst ekki inn á dev admin",
+            "kveikja aftur á stjórnborðinu",
+            "lokaður úti úr stjórnborðinu",
+            "stjórnborðið er óvirkt"
+          ],
+          "stub": true,
+          "summary": "Hvað skal gera þegar enginn kemst lengur inn á /dev/admin: stjórnborðið slökkt, glatað lykilorð stjórnanda eða glataður API-lykill.",
+          "title": "Endurheimt aðgangs að stjórnborðinu",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "admin-panel-orientation",
+        "kiosk-cannot-reach-backend",
+        "settings-requiring-restart"
+      ],
+      "related_settings": [
+        "admin_password_hash",
+        "admin_username",
+        "api_key",
+        "cors_allowed_origins",
+        "dev_admin_enabled"
+      ],
+      "risk": "high",
+      "status": "published"
+    },
     "admin-panel-orientation": {
       "actions": [],
       "canonical_locale": "en",
@@ -2557,6 +3678,7 @@
         }
       },
       "related_guides": [
+        "admin-access-recovery",
         "admin-panel-orientation",
         "all-machines-available-telemetry-stale"
       ],
@@ -12084,6 +13206,373 @@
   ],
   "schema_version": 1,
   "search": {
+    "admin-access-recovery": {
+      "en": {
+        "aliases": [
+          "admin",
+          "back",
+          "cannot",
+          "disabled",
+          "forgot",
+          "locked",
+          "lost",
+          "panel",
+          "password",
+          "turn"
+        ],
+        "body": [
+          "above",
+          "access",
+          "account",
+          "admin",
+          "after",
+          "afterwards",
+          "again",
+          "against",
+          "allowed",
+          "already",
+          "also",
+          "always",
+          "another",
+          "answers",
+          "anything",
+          "appear",
+          "argument",
+          "asks",
+          "assuming",
+          "audit",
+          "authentication",
+          "away",
+          "back",
+          "backend",
+          "basic",
+          "because",
+          "been",
+          "before",
+          "beforehand",
+          "being",
+          "belongs",
+          "below",
+          "better",
+          "blocked",
+          "bottom",
+          "broke",
+          "browser",
+          "cannot",
+          "carefully",
+          "change",
+          "changes",
+          "changing",
+          "chat",
+          "check",
+          "clear",
+          "clients",
+          "closing",
+          "codes",
+          "concluding",
+          "config",
+          "confirm",
+          "contains",
+          "copy",
+          "cors",
+          "counted",
+          "credential",
+          "credentials",
+          "current",
+          "danger",
+          "database",
+          "dated",
+          "decides",
+          "default",
+          "deliberate",
+          "device",
+          "different",
+          "disable",
+          "disabled",
+          "does",
+          "done",
+          "door",
+          "down",
+          "downloaded",
+          "each",
+          "earlier",
+          "effect",
+          "else",
+          "enabled",
+          "escalate",
+          "even",
+          "every",
+          "exactly",
+          "existing",
+          "exists",
+          "export",
+          "failure",
+          "false",
+          "field",
+          "file",
+          "filename",
+          "finished",
+          "first",
+          "fixes",
+          "forgotten",
+          "generate",
+          "generated",
+          "guard",
+          "guessing",
+          "guide",
+          "happens",
+          "harder",
+          "hash",
+          "helps",
+          "here",
+          "history",
+          "host",
+          "http",
+          "immediately",
+          "include",
+          "inside",
+          "instant",
+          "into",
+          "involved",
+          "itself",
+          "just",
+          "keep",
+          "kill",
+          "kiosk",
+          "left",
+          "live",
+          "load",
+          "lock",
+          "lockout",
+          "login",
+          "look",
+          "looked",
+          "looks",
+          "loses",
+          "lost",
+          "machine",
+          "makes",
+          "mapping",
+          "match",
+          "matches",
+          "message",
+          "metric",
+          "missing",
+          "mistyped",
+          "moment",
+          "more",
+          "most",
+          "need",
+          "needed",
+          "needs",
+          "never",
+          "next",
+          "nobody",
+          "none",
+          "nothing",
+          "once",
+          "only",
+          "open",
+          "order",
+          "origins",
+          "other",
+          "overview",
+          "page",
+          "panel",
+          "password",
+          "passwords",
+          "paste",
+          "perfect",
+          "period",
+          "phrase",
+          "place",
+          "plan",
+          "point",
+          "press",
+          "prints",
+          "problem",
+          "problems",
+          "prompts",
+          "protected",
+          "rather",
+          "reach",
+          "reachable",
+          "reached",
+          "reaches",
+          "reaching",
+          "read",
+          "really",
+          "record",
+          "records",
+          "recoverable",
+          "recovering",
+          "recovery",
+          "refused",
+          "refuses",
+          "reliable",
+          "reload",
+          "repairing",
+          "repeated",
+          "replaced",
+          "replacing",
+          "report",
+          "repository",
+          "request",
+          "requires",
+          "restart",
+          "root",
+          "rotate",
+          "routes",
+          "running",
+          "same",
+          "saved",
+          "says",
+          "screen",
+          "second",
+          "secret",
+          "section",
+          "sections",
+          "seeded",
+          "send",
+          "sensitive",
+          "session",
+          "sets",
+          "settings",
+          "shell",
+          "showed",
+          "shows",
+          "single",
+          "site",
+          "sitting",
+          "situation",
+          "skip",
+          "small",
+          "somewhere",
+          "stale",
+          "start",
+          "starting",
+          "still",
+          "stop",
+          "stops",
+          "store",
+          "stored",
+          "straight",
+          "support",
+          "switch",
+          "switched",
+          "take",
+          "taken",
+          "takes",
+          "taking",
+          "talk",
+          "tell",
+          "terminal",
+          "than",
+          "them",
+          "then",
+          "there",
+          "they",
+          "thing",
+          "though",
+          "three",
+          "through",
+          "ticket",
+          "time",
+          "touching",
+          "trail",
+          "true",
+          "turn",
+          "turning",
+          "twice",
+          "typed",
+          "unlock",
+          "unreachable",
+          "unrecoverable",
+          "update",
+          "used",
+          "username",
+          "using",
+          "value",
+          "verify",
+          "waiting",
+          "were",
+          "what",
+          "whether",
+          "which",
+          "will",
+          "window",
+          "without",
+          "work",
+          "works",
+          "write",
+          "written",
+          "wrong",
+          "zone"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "admin",
+          "into",
+          "lost",
+          "more",
+          "nobody",
+          "panel",
+          "password",
+          "switched",
+          "what"
+        ],
+        "title": [
+          "access",
+          "admin",
+          "panel",
+          "recovery"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "admin",
+          "aftur",
+          "gleymdi",
+          "kemst",
+          "kveikja",
+          "lokadur",
+          "lykill",
+          "lykilordi",
+          "ovirkt",
+          "stjornanda",
+          "stjornbordid",
+          "stjornbordinu",
+          "tyndur"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "admin",
+          "enginn",
+          "gera",
+          "glatad",
+          "glatadur",
+          "hvad",
+          "kemst",
+          "lengur",
+          "lykill",
+          "lykilord",
+          "skal",
+          "slokkt",
+          "stjornanda",
+          "stjornbordid"
+        ],
+        "title": [
+          "adgangs",
+          "endurheimt",
+          "stjornbordinu"
+        ]
+      }
+    },
     "admin-panel-orientation": {
       "en": {
         "aliases": [],
