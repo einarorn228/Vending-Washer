@@ -13,6 +13,7 @@ related_guides:
   - wrong-machine-starts
   - machine-does-not-start
   - machine-unavailable
+  - no-telemetry-reading
   - admin-panel-orientation
 related_settings:
   - backend_relay_enabled

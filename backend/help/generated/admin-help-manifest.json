@@ -33,7 +33,7 @@
       "translation_status": "review"
     }
   ],
-  "guide_count": 9,
+  "guide_count": 10,
   "guides": {
     "admin-panel-orientation": {
       "actions": [],
@@ -967,7 +967,8 @@
       },
       "related_guides": [
         "machine-does-not-start",
-        "machine-unavailable"
+        "machine-unavailable",
+        "no-telemetry-reading"
       ],
       "related_settings": [
         "telemetry_enabled"
@@ -4840,6 +4841,7 @@
         "admin-panel-orientation",
         "machine-does-not-start",
         "machine-unavailable",
+        "no-telemetry-reading",
         "wrong-machine-starts"
       ],
       "related_settings": [
@@ -5753,10 +5755,1149 @@
       },
       "related_guides": [
         "all-machines-available-telemetry-stale",
-        "machine-does-not-start"
+        "machine-does-not-start",
+        "no-telemetry-reading"
       ],
       "related_settings": [
         "machine_reservation_minutes",
+        "telemetry_enabled",
+        "telemetry_http_timeout_sec"
+      ],
+      "risk": "medium",
+      "status": "published"
+    },
+    "no-telemetry-reading": {
+      "actions": [],
+      "canonical_locale": "en",
+      "category": "machines_telemetry",
+      "common_problem_rank": null,
+      "diagnostics": [
+        "machine.identity",
+        "machine.mapping",
+        "machine.telemetry",
+        "settings.telemetry"
+      ],
+      "id": "no-telemetry-reading",
+      "kind": "troubleshooting",
+      "last_reviewed": "2026-09-03",
+      "locales": {
+        "en": {
+          "checks": [
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "The others have live values. If every machine is affected this is the wrong guide.",
+              "id": "only-one-machine",
+              "look_for": "Diagnostics, Live readings, the value on every card.",
+              "problem_guide": "all-machines-available-telemetry-stale",
+              "question": "Is it only this machine, or are all of them affected?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.identity",
+              "expected": "A failed read shows a dash for the value, no reading under it, and run state offline.",
+              "id": "run-state-offline",
+              "look_for": "Diagnostics, Live readings, Run state and the value on that card.",
+              "question": "What run state and value does the machine show?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "Small and resetting means the backend is still trying and each attempt fails. Climbing means it is not being read at all.",
+              "id": "last-read-behaviour",
+              "look_for": "Diagnostics, Live readings, Last read on that card.",
+              "question": "Is Last read still resetting to a small number?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "voltage, power or digital, matching what this device actually provides. none means the machine is never polled.",
+              "id": "metric-source-set",
+              "look_for": "Machine Cards, the machine's Advanced / Technical Mapping, Metric source.",
+              "problem_guide": "machine-technical-mapping",
+              "question": "What metric source is this machine configured with?",
+              "route": "machines"
+            },
+            {
+              "diagnostics": "machine.mapping",
+              "expected": "The address of the device fitted to this machine.",
+              "id": "device-address",
+              "look_for": "Diagnostics, Live readings, Device on that card.",
+              "question": "Is the device address on the card the address this device really has?",
+              "route": "diagnostics"
+            },
+            {
+              "diagnostics": "machine.telemetry",
+              "expected": "Only this device affected. Several at once points at the network rather than the device.",
+              "id": "shared-device-or-network",
+              "look_for": "Diagnostics, Live readings, the values on every card, and whether any share the same address.",
+              "question": "Are other devices on the same network segment also failing?",
+              "route": "diagnostics"
+            }
+          ],
+          "search_aliases": [
+            "device offline",
+            "machine stopped reporting",
+            "no reading for a machine",
+            "telemetry read fails",
+            "value shows a dash"
+          ],
+          "sections": [
+            {
+              "anchor": "when-to-use",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Use this guide when ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "one",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine has no live reading: its value shows as a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "dash with ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "no reading",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": " under it, or its run state has gone to ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "offline",
+                      "type": "code"
+                    },
+                    {
+                      "text": ", while",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the other machines are read normally.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "If ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "every",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " machine has stopped updating, this is the wrong guide — read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "all-machines-available-telemetry-stale",
+                      "text": "All machines show available while telemetry is stale",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "That one is about polling having stopped, and its dangerous symptom is the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "opposite: everything looks free.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "The visible consequence here is the reverse. A failed read marks the machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "offline, and an offline machine cannot be chosen on the kiosk, so customers see",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "it as busy. If that is the complaint you were given, read",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "guide_id": "machine-unavailable",
+                      "text": "Machine shows unavailable while it is idle",
+                      "type": "guide_link"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "alongside this guide.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "When to use this"
+            },
+            {
+              "anchor": "causes",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The device is not answering.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Every read is an HTTP request to the device at",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the address held on the machine's card. If the device is switched off, has moved",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "to a different address, or cannot be reached across the network, the read fails,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the value is blanked and the machine is marked offline. The backend keeps trying",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "on the machine's own poll interval, so ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " stays small and keeps",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "resetting: it is the time since the last ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "attempt",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "em"
+                    },
+                    {
+                      "text": ", not since the last successful",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "value.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The device answers too slowly.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " A read that has not finished within",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_http_timeout_sec"
+                    },
+                    {
+                      "text": " counts as a failed read, and produces exactly the",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "same symptom as a device that is switched off. On a busy or noisy network a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "device can be alive and still time out repeatedly.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The metric source does not match the device.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " The metric source decides how a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "reading is taken. ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "voltage",
+                      "type": "code"
+                    },
+                    {
+                      "text": ", ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "power",
+                      "type": "code"
+                    },
+                    {
+                      "text": " and ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "digital",
+                      "type": "code"
+                    },
+                    {
+                      "text": " each read the device in a",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "different way, and a device that does not expose the one selected returns",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "nothing, which is counted as a failed read. There is one value in the dropdown",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the backend has no reader for at all — ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "pulse",
+                      "type": "code"
+                    },
+                    {
+                      "text": ". A machine set to ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "pulse",
+                      "type": "code"
+                    },
+                    {
+                      "text": " never",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "produces a reading, no matter how healthy the device is.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "The machine is not being polled at all.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " Two configurations remove a machine",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "from the poll loop completely: a metric source of ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "none",
+                      "type": "code"
+                    },
+                    {
+                      "text": ", and a card that is not",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Active in kiosk",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": ". Neither is a fault; both look like a machine that simply",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "never gets a value. In that case ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " climbs instead of resetting,",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "because there is no attempt being made.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "inlines": [
+                        {
+                          "text": "Telemetry polling is off entirely.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " With ",
+                      "type": "text"
+                    },
+                    {
+                      "type": "setting_ref",
+                      "value": "telemetry_enabled"
+                    },
+                    {
+                      "text": " off, nothing is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "read. Diagnostics says so in a banner at the top of the tab, and the effect is",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "system-wide rather than limited to one machine.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "Possible causes"
+            },
+            {
+              "anchor": "steps",
+              "blocks": [
+                {
+                  "items": [
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "/dev/admin",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", go to Diagnostics and stay on ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Live readings",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ". Confirm",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the other machines have live values. If none of them do, switch guides.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "On the affected card, read ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Run state",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", the value, the band text and ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last",
+                                "type": "text"
+                              },
+                              {
+                                "text": " ",
+                                "type": "text"
+                              },
+                              {
+                                "text": "read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " together. ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "offline",
+                            "type": "code"
+                          },
+                          {
+                            "text": " with a dash and a small, resetting ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " is",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "a failing read. A climbing ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Last read",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " means the machine is not being polled",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "at all, which is a configuration question rather than a device fault.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Note the ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Device",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " address on that card and check whether any other card",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "shows the same address. If two machines share a device, they fail together and",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "the problem is one device, not two machines.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Check whether other devices are failing at the same time. Several at once is a",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "network problem; one alone is that device, its power, or its address.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Open Diagnostics, ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Change history",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ", and look for a recent change to this",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "machine or to a hardware timing setting. A machine that stopped reporting today",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "often stopped because something was changed today.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "Look at the machine's ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Metric source",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": " in ",
+                            "type": "text"
+                          },
+                          {
+                            "inlines": [
+                              {
+                                "text": "Advanced / Technical Mapping",
+                                "type": "text"
+                              }
+                            ],
+                            "type": "strong"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "If it reads ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "none",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", the machine is deliberately not polled. If it reads",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "pulse",
+                            "type": "code"
+                          },
+                          {
+                            "text": ", that is the cause on its own: no reading can be produced. Do not",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "change the field yourself unless you know which metric this device provides —",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "it is part of the machine's mapping, covered in",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "guide_id": "machine-technical-mapping",
+                            "text": "Machine technical mapping",
+                            "type": "guide_link"
+                          },
+                          {
+                            "text": ".",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "If reads fail only intermittently and the network is known to be slow,",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "type": "setting_ref",
+                            "value": "telemetry_http_timeout_sec"
+                          },
+                          {
+                            "text": " is the setting that decides how patient the",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "backend is. Raising it is a considered change, not an incident reflex, and it",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "makes every failing read take longer before it is given up on.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    [
+                      {
+                        "inlines": [
+                          {
+                            "text": "While the machine is offline, tell staff it cannot be chosen on the kiosk. It",
+                            "type": "text"
+                          },
+                          {
+                            "text": " ",
+                            "type": "text"
+                          },
+                          {
+                            "text": "is not stuck in a run; it simply cannot be offered until it answers again.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ]
+                  ],
+                  "type": "ordered_list"
+                }
+              ],
+              "heading": "Steps"
+            },
+            {
+              "anchor": "escalate",
+              "blocks": [
+                {
+                  "inlines": [
+                    {
+                      "text": "Escalate when the device does not answer at all, when its address appears to have",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "changed, when several devices fail together, or when the machine's metric source",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "does not match what the device provides. Those are network, hardware and mapping",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "changes rather than panel work.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "inlines": [
+                    {
+                      "text": "Use ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Copy support report",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " at the bottom of this guide and send it with: which",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "machine, its run state and ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Last read",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " as you saw them, the device address on",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "the card, whether any other machine is affected, and anything in ",
+                      "type": "text"
+                    },
+                    {
+                      "inlines": [
+                        {
+                          "text": "Change",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "history",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "strong"
+                    },
+                    {
+                      "text": " from around the time the readings stopped.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "heading": "If this did not fix it"
+            }
+          ],
+          "stub": false,
+          "summary": "One machine's live value is missing or its device stopped answering, while the other machines are read normally.",
+          "title": "No telemetry reading for one machine",
+          "translation_status": "published"
+        },
+        "is": {
+          "search_aliases": [
+            "engin mæling fyrir vél",
+            "gildið sýnir strik",
+            "lestur frá shelly mistekst",
+            "tækið svarar ekki",
+            "vélin hætti að senda mælingar"
+          ],
+          "stub": true,
+          "summary": "Ein vél sýnir enga lifandi mælingu eða tækið hennar svarar ekki, á meðan hinar vélarnar lesast eðlilega.",
+          "title": "Engin fjarmæling frá einni vél",
+          "translation_status": "published"
+        }
+      },
+      "related_guides": [
+        "all-machines-available-telemetry-stale",
+        "machine-technical-mapping",
+        "machine-unavailable"
+      ],
+      "related_settings": [
         "telemetry_enabled",
         "telemetry_http_timeout_sec"
       ],
@@ -9173,6 +10314,325 @@
           "shows",
           "unavailable",
           "while"
+        ]
+      }
+    },
+    "no-telemetry-reading": {
+      "en": {
+        "aliases": [
+          "dash",
+          "device",
+          "fails",
+          "machine",
+          "offline",
+          "read",
+          "reading",
+          "reporting",
+          "shows",
+          "stopped",
+          "telemetry",
+          "value"
+        ],
+        "body": [
+          "about",
+          "across",
+          "active",
+          "address",
+          "admin",
+          "advanced",
+          "affected",
+          "again",
+          "alive",
+          "alone",
+          "alongside",
+          "answer",
+          "answering",
+          "answers",
+          "anything",
+          "appears",
+          "around",
+          "attempt",
+          "available",
+          "backend",
+          "band",
+          "banner",
+          "because",
+          "before",
+          "being",
+          "blanked",
+          "both",
+          "bottom",
+          "busy",
+          "cannot",
+          "card",
+          "case",
+          "cause",
+          "change",
+          "changed",
+          "changes",
+          "check",
+          "chosen",
+          "climbing",
+          "climbs",
+          "complaint",
+          "completely",
+          "configuration",
+          "configurations",
+          "confirm",
+          "consequence",
+          "considered",
+          "copy",
+          "counted",
+          "counts",
+          "covered",
+          "customers",
+          "dangerous",
+          "dash",
+          "decides",
+          "deliberately",
+          "device",
+          "devices",
+          "diagnostics",
+          "different",
+          "digital",
+          "does",
+          "dropdown",
+          "each",
+          "effect",
+          "enabled",
+          "entirely",
+          "escalate",
+          "every",
+          "everything",
+          "exactly",
+          "expose",
+          "fail",
+          "failed",
+          "failing",
+          "fails",
+          "fault",
+          "field",
+          "finished",
+          "free",
+          "gets",
+          "given",
+          "gone",
+          "guide",
+          "guides",
+          "hardware",
+          "have",
+          "having",
+          "healthy",
+          "held",
+          "here",
+          "history",
+          "http",
+          "idle",
+          "incident",
+          "instead",
+          "intermittently",
+          "interval",
+          "keeps",
+          "kiosk",
+          "know",
+          "known",
+          "last",
+          "like",
+          "limited",
+          "live",
+          "longer",
+          "look",
+          "looks",
+          "loop",
+          "machine",
+          "machines",
+          "made",
+          "makes",
+          "mapping",
+          "marked",
+          "marks",
+          "match",
+          "matter",
+          "means",
+          "metric",
+          "moved",
+          "neither",
+          "network",
+          "never",
+          "noisy",
+          "none",
+          "normally",
+          "note",
+          "nothing",
+          "offered",
+          "offline",
+          "often",
+          "once",
+          "only",
+          "open",
+          "opposite",
+          "other",
+          "panel",
+          "part",
+          "patient",
+          "poll",
+          "polled",
+          "polling",
+          "power",
+          "problem",
+          "produced",
+          "produces",
+          "provides",
+          "pulse",
+          "question",
+          "raising",
+          "rather",
+          "reached",
+          "read",
+          "reader",
+          "reading",
+          "readings",
+          "reads",
+          "recent",
+          "reflex",
+          "remove",
+          "repeatedly",
+          "report",
+          "reporting",
+          "request",
+          "resetting",
+          "returns",
+          "reverse",
+          "same",
+          "says",
+          "selected",
+          "send",
+          "setting",
+          "several",
+          "share",
+          "show",
+          "shows",
+          "simply",
+          "since",
+          "slow",
+          "slowly",
+          "small",
+          "something",
+          "source",
+          "staff",
+          "stale",
+          "state",
+          "stay",
+          "stays",
+          "still",
+          "stopped",
+          "stuck",
+          "successful",
+          "support",
+          "switch",
+          "switched",
+          "symptom",
+          "system",
+          "take",
+          "taken",
+          "technical",
+          "telemetry",
+          "tell",
+          "text",
+          "than",
+          "them",
+          "there",
+          "they",
+          "those",
+          "time",
+          "timeout",
+          "timing",
+          "today",
+          "together",
+          "trying",
+          "unavailable",
+          "under",
+          "unless",
+          "until",
+          "updating",
+          "value",
+          "values",
+          "visible",
+          "voltage",
+          "were",
+          "what",
+          "whether",
+          "which",
+          "while",
+          "wide",
+          "within",
+          "work",
+          "wrong",
+          "yourself"
+        ],
+        "headings": [
+          "causes",
+          "possible",
+          "steps"
+        ],
+        "summary": [
+          "answering",
+          "device",
+          "live",
+          "machine",
+          "machines",
+          "missing",
+          "normally",
+          "other",
+          "read",
+          "stopped",
+          "value",
+          "while"
+        ],
+        "title": [
+          "machine",
+          "reading",
+          "telemetry"
+        ]
+      },
+      "is": {
+        "aliases": [
+          "engin",
+          "fyrir",
+          "gildid",
+          "haetti",
+          "lestur",
+          "maeling",
+          "maelingar",
+          "mistekst",
+          "senda",
+          "shelly",
+          "strik",
+          "svarar",
+          "synir",
+          "taekid",
+          "velin"
+        ],
+        "body": [],
+        "headings": [],
+        "summary": [
+          "edlilega",
+          "enga",
+          "hennar",
+          "hinar",
+          "lesast",
+          "lifandi",
+          "maelingu",
+          "medan",
+          "svarar",
+          "synir",
+          "taekid",
+          "velarnar"
+        ],
+        "title": [
+          "einni",
+          "engin",
+          "fjarmaeling"
         ]
       }
     },

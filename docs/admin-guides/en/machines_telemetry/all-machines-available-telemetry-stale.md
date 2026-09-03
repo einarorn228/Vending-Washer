@@ -13,6 +13,7 @@ common_problem_rank: 3
 related_guides:
   - machine-unavailable
   - machine-does-not-start
+  - no-telemetry-reading
 related_settings:
   - telemetry_enabled
 diagnostics:

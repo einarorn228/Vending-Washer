@@ -13,6 +13,7 @@ common_problem_rank: 1
 related_guides:
   - machine-does-not-start
   - all-machines-available-telemetry-stale
+  - no-telemetry-reading
 related_settings:
   - telemetry_enabled
   - machine_reservation_minutes
