@@ -16,6 +16,7 @@ from sqlalchemy.orm import joinedload
 
 from backend.controllers import machine_control
 from backend.controllers import qr_scanner
+from backend.controllers.telemetry import SELECTABLE_METRIC_SOURCES
 from backend.models.device_model import Device
 from backend.models.machine_model import Machine, MachineConfig
 from backend.models.setting_model import Settings, get_setting_value, parse_setting_bool
@@ -440,7 +441,10 @@ MACHINE_TECH_FIELDS = {
     "off_confirm_ms",
     "poll_interval_ms",
 }
-METRIC_SOURCES = {"none", "voltage", "power", "digital", "pulse"}
+# Single source of truth lives with the reader that has to serve these; see
+# backend/controllers/telemetry.py. Never hand-edit this to add a value -- an
+# offered source the reader cannot serve puts the machine permanently offline.
+METRIC_SOURCES = set(SELECTABLE_METRIC_SOURCES)
 _HOST_RE = re.compile(r"^[A-Za-z0-9.-]+$")
 
 

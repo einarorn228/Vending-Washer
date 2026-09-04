@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { saveDevAdminMachine } from '../api.js';
 import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
 
-const METRIC_SOURCES = ['none', 'voltage', 'power', 'digital', 'pulse'];
+// Must stay identical to SELECTABLE_METRIC_SOURCES in backend/controllers/telemetry.py.
+// backend/tests/test_telemetry_metric_contract.py fails if these drift apart.
+const METRIC_SOURCES = ['none', 'voltage', 'power', 'digital'];
 
 export default function MachineDetailDrawer({ apiKey, machine, onClose, onSaved }) {
   const [technical, setTechnical] = useState(() => ({ ...(machine?.technical || {}) }));

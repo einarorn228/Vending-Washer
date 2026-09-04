@@ -455,6 +455,24 @@ def _log_telemetry_read_failure(slug: str) -> None:
         )
 
 
+# Metric sources ``_read_metric`` below can actually serve. Anything outside this set
+# falls through to ``return None``, which ``_handle_poll`` records as a read failure on
+# every single poll -- the machine then never reports a value and stays permanently
+# offline. "voltmeter" is a legacy alias for "voltage".
+IMPLEMENTED_METRIC_SOURCES = frozenset({"power", "adc", "digital", "voltage", "voltmeter"})
+
+# Sources the dev-admin technical editor offers as one-click choices. Must always be a
+# subset of IMPLEMENTED_METRIC_SOURCES plus "none" (which disables polling entirely --
+# see MachineStateStore.get_poll_contexts). Offering anything else is the permanent-
+# offline bug described above; test_telemetry_metric_contract.py enforces the subset.
+#
+# "adc" is implemented and reachable but is deliberately NOT offered here: the
+# Adc.GetStatus RPC has never been confirmed against the Shelly UNI hardware in use, and
+# promoting an unverified endpoint to a click in a high-risk editor reintroduces exactly
+# the failure this constant exists to prevent. Setting it directly in the DB still works.
+SELECTABLE_METRIC_SOURCES = ("none", "voltage", "power", "digital")
+
+
 def _read_metric(device: DeviceInfo) -> Optional[float]:
     channel = device.relay_channel or 0
     metric = (device.metric_source or "").lower()
