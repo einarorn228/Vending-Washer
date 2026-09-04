@@ -84,7 +84,7 @@ All scan and start flows are routed through `backend/services/start_orchestrator
 ### Auth layers
 Three distinct auth mechanisms coexist:
 1. `/api/*` routes — `X-API-KEY` header (value from `settings.api_key`)
-2. `/admin/*` routes — HTTP Basic auth (credentials from `settings.admin_username` / `settings.admin_password_hash`)
+2. `/admin/*` routes — `X-API-KEY` header AND HTTP Basic auth (credentials from `settings.admin_username` / `settings.admin_password_hash`); `require_admin_auth` in `backend/flask_server.py` checks the API key first, then Basic auth
 3. `/api/dev_admin/*` routes — HTTP Basic auth (same admin credentials) + `dev_admin_enabled=true` kill switch
 
 ### Blueprint registration
