@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getDevAdminDiagnostics, getDevAdminTelemetry } from '../api.js';
 import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
+import { formatHistogramEntry } from '../metricsFormat.js';
 
 const TELEMETRY_POLL_MS = 1000;
 const DIAGNOSTICS_POLL_MS = 10000;
@@ -331,12 +332,7 @@ export default function DiagnosticsPanel({ apiKey }) {
                   <tr key={`histo-${entry.name}-${index}`}>
                     <td>{entry.name}</td>
                     <td>{Object.entries(entry.labels || {}).map(([k, v]) => `${k}=${v}`).join(', ') || '—'}</td>
-                    <td>
-                      {['count', 'avg', 'p50', 'p95', 'max']
-                        .filter((field) => entry[field] !== undefined)
-                        .map((field) => `${field}=${entry[field]}`)
-                        .join(' · ')}
-                    </td>
+                    <td>{formatHistogramEntry(entry)}</td>
                   </tr>
                 ))}
               </tbody>
