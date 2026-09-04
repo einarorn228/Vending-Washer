@@ -4037,6 +4037,49 @@ git add docs/admin-guides/ backend/help/generated/
 git commit -m "docs(help): add <guide-id> guide"
 ```
 
+> **Corrections applied during execution (Task 17 is complete; the committed
+> files at `cf26bfc` win over the text above):**
+>
+> - **Task 17 ran as two dispatches, not one** (controller ruling R17-1). 17a
+>   authored Tier 1 — six English canonical guides plus six full Icelandic
+>   drafts held at `translation_status: review` — and closed at `047f786`.
+>   17b authored Tier 2 — nine English guides, nine Icelandic stubs and the
+>   `admin-panel-orientation` rewrite — and closed at `cf26bfc`. Each got its
+>   own task review. The corpus is exactly 15 guide ids; no new ones were
+>   added to satisfy any map.
+> - **The six Icelandic Tier 1 translations ship withheld.** They are
+>   `review`, excluded from the manifest, and Icelandic search reaches those
+>   topics only through the English records until a maintainer publishes them.
+>   Nothing in execution may flip that value.
+> - **Per-check `diagnostics` is a scalar string, not the flow list** the spec
+>   sketches: the frontmatter parser cannot express a list inside a check
+>   mapping. The compiler now validates the field against `DIAGNOSTIC_GROUPS`
+>   in `_validate_checks`, with a unit test. Per-check `route` stays
+>   unvalidated — those are frontend-owned tab ids.
+> - **`SETTINGS_GROUP_GUIDES` was re-reviewed after the corpus landed**, under
+>   the maintainer's rule that a group with no semantically accurate guide gets
+>   no help icon at all. `runtime` moved off `settings-requiring-restart` (none
+>   of its three toggles is restart-required) onto `admin-panel-orientation`,
+>   which names them in its high-risk section; `logging` moved onto
+>   `settings-requiring-restart`, which names `log_level` and where the
+>   evidence of an applied restart appears. `hardware_timing` and
+>   `machine_timing` keep their partial-but-defensible targets.
+> - **Stale passages found while deriving content from code — for Task 18, and
+>   never copied into a guide:** `docs/architecture/ui-state-contract.md:34-38,
+>   :102, :119, :123` (the last two name a `selection_timeout_sec` that never
+>   existed, as `docs/reference/settings-catalog.md:326` already records);
+>   `docs/operations/runbooks/troubleshooting-matrix.md:33` and
+>   `docs/operations/maintenance-tasks.md:64` (same phantom setting); the
+>   scanner runbook's "no live telemetry endpoint" and "import time" wording;
+>   `docs/integrations/reisa/.../auth-and-admin-access.md:201`; and
+>   `docs/.../beta-dev-admin-panel.md:77, :196, :145-155`, which claim an
+>   API-key unlock and carry an inline recovery command that no longer matches
+>   the panel.
+> - **A code defect surfaced and is out of this task's scope:** `pulse` is
+>   selectable as a telemetry metric source but `_read_metric` has no branch
+>   for it, so a machine configured that way is permanently offline. The
+>   guides document around it rather than claiming it works.
+
 ---
 
 ### Task 18: Documentation and final verification
