@@ -98,7 +98,7 @@ first, and confirm the backend is running before assuming a credentials problem.
 **The panel was switched off.** `dev_admin_enabled` is the backend kill switch.
 When it is off, every request the panel makes is refused and the page shows a
 panel-disabled message. Turning it off is a one-way door from the browser: the
-Danger Zone requires the phrase `DISABLE DEV ADMIN` to be typed exactly, and once
+Danger zone requires the phrase `DISABLE DEV ADMIN` to be typed exactly, and once
 it is off there is no page left to turn it back on from.
 
 **The admin credentials do not match.** The panel is protected by HTTP Basic
@@ -162,6 +162,7 @@ once the work is finished.
 ### If the API key is what is missing
 
 ```bash
+source .venv/bin/activate
 python backend/scripts/get_api_key.py
 ```
 

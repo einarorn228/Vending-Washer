@@ -63,7 +63,6 @@ checks:
     question: "If the site uses the physical buttons, does each button select the machine printed next to it?"
     look_for: "Press each button and read the kiosk screen."
     expected: "The name on the screen matches the label on the button."
-
 ---
 
 ## When to use this {#when-to-use}

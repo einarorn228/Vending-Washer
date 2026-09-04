@@ -44,8 +44,8 @@ checks:
     diagnostics: machine.identity
   - id: last-read-behaviour
     question: "Is Last read still resetting to a small number?"
-    look_for: "Diagnostics, Live readings, Last read on that card."
-    expected: "Small and resetting means the backend is still trying and each attempt fails. Climbing means it is not being read at all."
+    look_for: "Diagnostics, Live readings, Last read on that card, watched for a few seconds."
+    expected: "Small and resetting means the backend is still trying and each attempt fails. A climbing number, or a dash, means it is not being read at all."
     route: diagnostics
     diagnostics: machine.telemetry
   - id: metric-source-set
@@ -111,8 +111,9 @@ produces a reading, no matter how healthy the device is.
 **The machine is not being polled at all.** Two configurations remove a machine
 from the poll loop completely: a metric source of `none`, and a card that is not
 **Active in kiosk**. Neither is a fault; both look like a machine that simply
-never gets a value. In that case **Last read** climbs instead of resetting,
-because there is no attempt being made.
+never gets a value. Here **Last read** stops resetting, because no attempt is
+being made: it climbs steadily on a machine that was polled earlier in this run
+of the backend, and shows a dash on one that has never been polled at all.
 
 **Telemetry polling is off entirely.** With `telemetry_enabled` off, nothing is
 read. Diagnostics says so in a banner at the top of the tab, and the effect is
@@ -124,8 +125,9 @@ system-wide rather than limited to one machine.
    the other machines have live values. If none of them do, switch guides.
 2. On the affected card, read **Run state**, the value, the band text and **Last
    read** together. `offline` with a dash and a small, resetting **Last read** is
-   a failing read. A climbing **Last read** means the machine is not being polled
-   at all, which is a configuration question rather than a device fault.
+   a failing read. A **Last read** that only climbs, or that shows a dash of its
+   own, means the machine is not being polled at all, which is a configuration
+   question rather than a device fault.
 3. Note the **Device** address on that card and check whether any other card
    shows the same address. If two machines share a device, they fail together and
    the problem is one device, not two machines.

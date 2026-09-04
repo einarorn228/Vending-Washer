@@ -60,7 +60,7 @@ disabled, or the login is refused, that is
 | **Overview** | The whole system's current state on one screen, plus **Export current config**. The first place to look for almost anything. |
 | **Remote Control** | The kiosk state machine: what the kiosk is showing, **Inject Scan**, **Select Machine**, and **Reset Kiosk**. Useful for reproducing a customer's report without standing at the kiosk. |
 | **Diagnostics** | **Live readings** per machine, **Scan log**, **Change history** and **Metrics**. The instrument panel for every telemetry question. |
-| **Settings** | The whitelisted settings editor, then **Sensitive Settings** for secret rotation, then the Danger Zone at the bottom. |
+| **Settings** | The whitelisted settings editor, then **Sensitive Settings** for secret rotation, then the Danger zone at the bottom. |
 | **Machine Cards** | How machines are named, labelled and ordered on the kiosk, and the way in to each machine's **Advanced / Technical Mapping**. |
 | **Hjálp** | This help hub: guides, search, checklists and the support report. |
 
@@ -112,7 +112,7 @@ a typed phrase — but not all of them do, so the judgement is still yours.
 - **Secret rotation.** **Generate New API Key** and **Update Reisa Token** in
   **Sensitive Settings**. Both require the current API key first, and a new API key
   is shown once and never again.
-- **The Danger Zone.** Turning `dev_admin_enabled` off locks every browser out of
+- **Danger zone.** Turning `dev_admin_enabled` off locks every browser out of
   this panel immediately, and it cannot be turned back on from here. It requires
   typing a confirmation phrase exactly, and the way back is on the kiosk host.
 - **`telemetry_enabled`.** With it off nothing reads the machines, so every

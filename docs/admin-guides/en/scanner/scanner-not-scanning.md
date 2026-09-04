@@ -13,6 +13,7 @@ common_problem_rank: 5
 related_guides:
   - code-rejected
   - admin-panel-orientation
+  - settings-requiring-restart
 related_settings:
   - serial_port
   - serial_baudrate
