@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { saveDevAdminMachine } from '../api.js';
 import ContextualHelpLink from '../help/ContextualHelpLink.jsx';
+import { validateThresholdPair } from '../machineThresholds.js';
 
 // Must stay identical to SELECTABLE_METRIC_SOURCES in backend/controllers/telemetry.py.
 // backend/tests/test_telemetry_metric_contract.py fails if these drift apart.
@@ -20,9 +21,17 @@ export default function MachineDetailDrawer({ apiKey, machine, onClose, onSaved 
   }
 
   async function handleSave() {
-    setSaving(true);
     setErrors({});
     setMessage('');
+    // The backend rejects a collapsed hysteresis band outright and writes nothing; this
+    // only saves the operator a round trip and puts the message on the field itself.
+    const thresholdErrors = validateThresholdPair(technical);
+    if (thresholdErrors) {
+      setErrors(thresholdErrors);
+      setMessage('Technical mapping not saved: fix the highlighted field.');
+      return;
+    }
+    setSaving(true);
     const result = await saveDevAdminMachine(apiKey, machine.machine_key, {
       technical,
       confirm_high_risk: confirmHighRisk,

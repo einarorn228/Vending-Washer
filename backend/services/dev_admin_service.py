@@ -1108,6 +1108,55 @@ def _validate_technical_update(db, machine: Machine, technical: Mapping[str, Any
             else:
                 changes["config_fields"][field] = parsed
 
+    _validate_threshold_hysteresis(machine, technical, errors, changes)
+
+
+def _validate_threshold_hysteresis(
+    machine: Machine, technical: Mapping[str, Any], errors: Dict[str, str], changes: Dict[str, Any]
+) -> None:
+    """Reject a threshold pair that silently destroys the hysteresis band.
+
+    telemetry._classify_band returns "high" for ``value >= on_threshold`` and "low" for
+    ``value <= off_threshold``, testing them in that order. The "mid" band between them
+    is what stops a machine flapping between started and stopped on noise. When
+    ``off_threshold >= on_threshold`` that band is empty and the high branch wins for
+    everything above off, so hysteresis collapses with no error anywhere -- the machine
+    just misbehaves. The invariant is therefore strict: off < on.
+
+    Validated against the RESULTING pair, not the submitted field, because a save that
+    touches only one of the two can break the invariant just as easily. Any error here
+    makes validate_machine_update return no changes at all, so a rejected pair writes
+    nothing -- neither threshold, nor the unrelated fields in the same payload.
+    """
+
+    submitted = [f for f in ("on_threshold", "off_threshold") if f in technical]
+    if not submitted:
+        return
+    # A field that already failed its range check has no trustworthy value to compare.
+    if any(f"technical.{f}" in errors for f in ("on_threshold", "off_threshold")):
+        return
+
+    config = machine.config
+    effective_on = changes["config_fields"].get(
+        "on_threshold", config.on_threshold if config else None
+    )
+    effective_off = changes["config_fields"].get(
+        "off_threshold", config.off_threshold if config else None
+    )
+    if effective_on is None or effective_off is None:
+        return
+    if effective_off < effective_on:
+        return
+
+    # Report against a field the operator actually touched so the drawer shows the
+    # message next to an input they can act on.
+    field = "off_threshold" if "off_threshold" in submitted else "on_threshold"
+    errors[f"technical.{field}"] = (
+        f"Off threshold must be below on threshold (this save would leave "
+        f"off={effective_off}, on={effective_on}). Equal or inverted thresholds "
+        f"collapse the hysteresis band and make run detection unreliable."
+    )
+
 
 def _has_technical_changes(changes: Mapping[str, Any]) -> bool:
     if changes.get("device_fields") or changes.get("config_fields"):

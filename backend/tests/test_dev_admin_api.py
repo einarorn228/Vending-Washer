@@ -201,6 +201,101 @@ class DevAdminApiTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn("technical.i4_button_index", resp.get_json()["errors"])
 
+    # ----- Telemetry threshold hysteresis invariant -----
+    #
+    # telemetry._classify_band tests ``value >= on_threshold`` before
+    # ``value <= off_threshold``, so the "mid" band that stops a machine flapping
+    # only exists while off < on. off >= on collapses it with no error at all, which
+    # is why this has to be blocked at the write path.
+
+    def _config(self, machine_name="washer1"):
+        session.expire_all()
+        machine = session.query(Machine).filter_by(name=machine_name).first()
+        return session.query(MachineConfig).filter_by(machine_id=machine.id).first()
+
+    def _patch_technical(self, technical, machine_name="washer1"):
+        return self.client.patch(
+            f"/api/dev_admin/machines/{machine_name}",
+            json={"technical": technical, "confirm_high_risk": True},
+            headers=self.headers,
+        )
+
+    def test_equal_thresholds_rejected(self):
+        resp = self._patch_technical({"on_threshold": 5, "off_threshold": 5})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("technical.off_threshold", resp.get_json()["errors"])
+
+    def test_inverted_thresholds_rejected(self):
+        resp = self._patch_technical({"on_threshold": 3, "off_threshold": 9})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("technical.off_threshold", resp.get_json()["errors"])
+
+    def test_rejected_threshold_pair_writes_nothing_at_all(self):
+        """A rejected pair must not partially land, including unrelated fields."""
+        resp = self._patch_technical(
+            {"on_threshold": 4, "off_threshold": 4, "poll_interval_ms": 5000}
+        )
+        self.assertEqual(resp.status_code, 400)
+        config = self._config()
+        self.assertEqual(config.on_threshold, 8)
+        self.assertEqual(config.off_threshold, 3)
+        self.assertEqual(config.poll_interval_ms, 1000)
+
+    def test_raising_only_off_threshold_past_the_stored_on_is_rejected(self):
+        """The check is on the resulting pair, not the submitted field alone."""
+        resp = self._patch_technical({"off_threshold": 8})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("technical.off_threshold", resp.get_json()["errors"])
+        self.assertEqual(self._config().off_threshold, 3)
+
+    def test_lowering_only_on_threshold_below_the_stored_off_is_rejected(self):
+        resp = self._patch_technical({"on_threshold": 2})
+        self.assertEqual(resp.status_code, 400)
+        # Reported against on_threshold: that is the field the operator touched.
+        self.assertIn("technical.on_threshold", resp.get_json()["errors"])
+        self.assertEqual(self._config().on_threshold, 8)
+
+    def test_valid_threshold_pair_still_saves(self):
+        resp = self._patch_technical({"on_threshold": 12, "off_threshold": 4})
+        self.assertEqual(resp.status_code, 200)
+        config = self._config()
+        self.assertEqual(config.on_threshold, 12)
+        self.assertEqual(config.off_threshold, 4)
+
+    def test_single_field_threshold_change_that_keeps_the_invariant_saves(self):
+        resp = self._patch_technical({"off_threshold": 7})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self._config().off_threshold, 7)
+
+    def test_out_of_range_threshold_reports_the_range_error_not_the_invariant(self):
+        resp = self._patch_technical({"on_threshold": -1})
+        self.assertEqual(resp.status_code, 400)
+        errors = resp.get_json()["errors"]
+        self.assertIn("integer from 0 to 100000", errors["technical.on_threshold"])
+
+    def test_batch_save_rejects_a_bad_threshold_pair_and_writes_no_row(self):
+        resp = self.client.patch(
+            "/api/dev_admin/machines",
+            json={
+                "updates": [
+                    {"machine_key": "washer1", "display_name": "Renamed One"},
+                    {
+                        "machine_key": "dryer1",
+                        "confirm_high_risk": True,
+                        "technical": {"on_threshold": 4, "off_threshold": 6},
+                    },
+                ]
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("technical.off_threshold", resp.get_json()["errors"]["dryer1"])
+        session.expire_all()
+        self.assertNotEqual(
+            session.query(Machine).filter_by(name="washer1").first().ui_name, "Renamed One"
+        )
+        self.assertEqual(self._config("dryer1").on_threshold, 8)
+
     def test_export_config_excludes_raw_secrets(self):
         resp = self.client.get("/api/dev_admin/export-config", headers=self.headers)
         self.assertEqual(resp.status_code, 200)
