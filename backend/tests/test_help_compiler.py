@@ -216,6 +216,19 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             self.compile()
 
+    def test_readme_is_not_treated_as_a_guide(self):
+        """Authoring docs live in the guide tree; they must not need frontmatter.
+
+        `docs/admin-guides/README.md` is prose for guide authors. Without the
+        reserved-filename skip the compiler would demand a frontmatter block from it
+        and no manifest would be written at all.
+        """
+        _write(self.tmp, "README.md", "# Authoring guides\n\nNo frontmatter here.\n")
+        _write(self.tmp, "en/README.md", "# Locale notes\n\nStill no frontmatter.\n")
+        manifest = self.compile()
+        self.assertEqual(sorted(manifest["guides"]), ["machine-unavailable"])
+        self.assertEqual(manifest["guide_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

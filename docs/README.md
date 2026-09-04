@@ -18,6 +18,10 @@ Provide one predictable structure for:
 - [`reference/`](./reference/settings-catalog.md) — canonical configuration/reference docs.
 - [`ai/`](./ai/README.md) — AI-oriented quick-orientation layer.
 - [`project/`](./project/README.md) — project-wide backlog and historical project notes.
+- [`CURRENT_STATE.md`](./CURRENT_STATE.md) — verified snapshot of what actually runs today, and what is not implemented.
+- [`admin-guides/`](./admin-guides/README.md) — **source** of the protected Help Hub in `/dev/admin`; the README is the authoring guide.
+- [`public-help/`](./public-help/) — source of the unauthenticated `/help` page, bundled into the frontend.
+- [`../AGENTS.md`](../AGENTS.md) — repository-wide operating rules for AI agents (tool-neutral).
 
 ## Phase 1 foundation docs (current canonical)
 - Operations:
@@ -72,9 +76,19 @@ Before implementing changes:
 3. Read subsystem `completed` summary, then `future` backlog.
 4. Open archive docs only when historical rationale is needed.
 
+## Help Hub content
+`docs/admin-guides/` and `docs/public-help/` are **compiled source**, not prose. They are
+built into JSON manifests by `python -m backend.help.cli`, and a defect in a guide fails
+the build rather than reaching an operator. Do not edit a guide without reading
+[`admin-guides/README.md`](./admin-guides/README.md), and do not treat a guide as a place
+to restate a runbook — the corpus is derived from the runbooks for a different reader
+(an operator at the kiosk with only the admin panel), not mirrored from them.
+
 ## Current source-of-truth rule
-- **Current behavior:** repo root `README.md` + domain summaries in `docs/`.
+- **Current behavior:** repo root `README.md` + [`CURRENT_STATE.md`](./CURRENT_STATE.md) +
+  domain summaries in `docs/`.
 - **Historical detail:** execution notes and archive docs.
+- When a doc and the code disagree, the code wins and the doc gets fixed in the same change.
 
 ## Documentation maintenance rules
 - When moving/renaming docs, update links in the same change.

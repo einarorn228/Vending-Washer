@@ -97,9 +97,18 @@ def _validate_checks(meta, path):
                 )
 
 
+# Authoring documentation lives beside the content it documents. `README.md` is the
+# one reserved filename in a guide tree: it is prose for whoever writes guides, not a
+# guide, so it is skipped rather than being required to carry frontmatter.
+RESERVED_FILENAMES = frozenset({"README.md"})
+
+
 def compile_help(root, trust_class, known_settings, build_id=None):
     root = Path(root)
-    files = sorted(root.rglob("*.md"), key=lambda p: str(p.relative_to(root)))
+    files = sorted(
+        (p for p in root.rglob("*.md") if p.name not in RESERVED_FILENAMES),
+        key=lambda p: str(p.relative_to(root)),
+    )
     by_id, canonical = {}, {}
 
     for path in files:

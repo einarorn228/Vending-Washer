@@ -76,7 +76,30 @@ Primary files:
 - `frontend/src/dev-admin/components/SettingsPanel.jsx` — whitelist editor, filter, diff review
 - `frontend/src/dev-admin/components/DiagnosticsPanel.jsx` — live telemetry readings vs thresholds, scan log, change history, metrics
 - `frontend/src/dev-admin/components/DangerZonePanel.jsx` — `dev_admin_enabled` lockout gate
+- `frontend/src/dev-admin/help/` — the Help tab, drawer, checklist and search (below)
 - Backend: `backend/controllers/dev_admin_api.py`, `backend/services/dev_admin_service.py`
+
+### Help Hub
+Two trust classes compiled from Markdown by one compiler.
+
+- Admin content (protected): `docs/admin-guides/<locale>/<category>/<id>.md` →
+  `backend/help/generated/admin-help-manifest.json`
+- Public content (bundled, works during an outage): `docs/public-help/<id>.md` →
+  `frontend/src/generated/public-help-manifest.json`
+- Authoring rules: `docs/admin-guides/README.md`
+- Compiler: `backend/help/` — `compiler.py` (inheritance, translation gating),
+  `blocks.py` (Markdown allowlist), `frontmatter.py`, `validator.py` (cross-guide refs),
+  `search_index.py` (Icelandic folding), `schema.py` (closed vocabularies)
+- Compile / verify: `python -m backend.help.cli` / `python -m backend.help.cli --check`
+- Runtime load behind a failure boundary: `backend/services/help_service.py`
+- API: `GET /api/dev_admin/help/status`, `GET /api/dev_admin/help/manifest`,
+  `POST /api/dev_admin/support_report` (`dev_admin_api.py:330-405`)
+- Escalation report assembly: `backend/services/support_service.py`
+- Frontend admin Help: `frontend/src/dev-admin/help/` — `HelpPanel.jsx` (tab),
+  `HelpDrawer.jsx` + `ContextualHelpLink.jsx` (in-context `?` links),
+  `ChecklistPanel.jsx` + `checklistState.js`, `helpSearch.js`, `helpRouting.js`
+  (`#help/<guide-id>[/<anchor>]`), `BlockRenderer.jsx` + `blockDescriptors.js`
+- Public Help page: `frontend/src/public-help/PublicHelpPage.jsx` at `/help`, no backend call
 
 ---
 
@@ -181,6 +204,13 @@ Model definitions: `backend/models/*.py`
 - Table: `settings_audit_logs` (`backend/models/settings_audit_model.py`)
 - Written from `dev_admin_service.apply_settings_changes` / `apply_machine_update`, in the same
   transaction as the change
+
+### Help content: writing or fixing a guide
+- Docs: `docs/admin-guides/README.md` (authoring rules), then the runbook that covers the
+  same subsystem — guides are derived from the runbooks, never copied from them
+- Code: `backend/help/compiler.py`, `backend/help/blocks.py`, `backend/help/validator.py`
+- After any edit: `python -m backend.help.cli`, then commit the regenerated manifest;
+  `python -m backend.help.cli --check` is the drift guard
 
 ### Test failures
 - Docs: install/update runbooks (validation sections)

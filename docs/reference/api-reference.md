@@ -574,14 +574,16 @@ Status: temporary beta/dev tooling, not production admin.
 
 All endpoints require:
 
-- `dev_admin_enabled=true`, otherwise `403`,
-- valid `X-API-KEY`, otherwise `401`.
+- `dev_admin_enabled=true`, otherwise `403` (with `"disabled": true` in the body),
+- valid HTTP Basic auth against `admin_username` / `admin_password_hash`, otherwise
+  `401`. This namespace does **not** use `X-API-KEY`; the kiosk API key is required
+  only as `current_api_key` when rotating a secret.
 
 Secrets are never returned raw. `api_key`, `admin_password_hash`, and `reisa_bearer_token` are read-only/masked metadata in the first beta panel.
 
 Endpoints:
 
-- `POST /api/dev_admin/unlock` — validate kill switch and API-key lock.
+- `POST /api/dev_admin/unlock` — validate the kill switch and the Basic-auth credentials; returns `{"success": true, "temporary": true}`.
 - `GET /api/dev_admin/status` — overview/status for the panel.
 - `GET /api/dev_admin/settings` — grouped whitelist settings metadata and values.
 - `PATCH /api/dev_admin/settings` — validate all provided whitelist changes before writing any setting.
@@ -590,5 +592,33 @@ Endpoints:
 - `PATCH /api/dev_admin/machines` — save several machine cards, and optionally the display order, in one transaction. Every update is validated first; if any is rejected nothing is written. Body: `{"updates": [{"machine_key": ..., ...}], "order": [...]}`.
 - `PATCH /api/dev_admin/machine-layout` — reorder machine cards by existing machine keys.
 - `GET /api/dev_admin/export-config` — export non-secret settings and machine/device/config data for rollback support.
+
+### Help Hub endpoints
+
+Backed by the compiled manifest `backend/help/generated/admin-help-manifest.json`,
+loaded once by `backend/services/help_service.py`. All three send
+`Cache-Control: no-store` so an operator never reads stale guidance from the browser
+cache. None of them writes to the database.
+
+- `GET /api/dev_admin/help/status` — `{"success": true, "status": {...}}`. Reports
+  whether the manifest loaded and, if not, a reason code only
+  (`manifest_missing`, `manifest_unreadable`, or a schema-version mismatch). Never
+  exception text and never a filesystem path.
+- `GET /api/dev_admin/help/manifest` — the whole compiled admin manifest: guides,
+  per-locale payloads, search index, and `excluded_translations`. Returns `503` with
+  `{"success": false, "reason": ...}` when the manifest is unavailable. Help
+  degrades alone; the kiosk is unaffected.
+- `POST /api/dev_admin/support_report` — assemble an escalation report. Body:
+  `{"guide_id": ..., "machine_id": ..., "locale": "is"|"en", "checks": [{"check_id": ..., "result": ...}]}`,
+  all optional. Returns `{"success": true, "report": {...}, "text": "..."}`.
+  An unknown `guide_id` is a `404`, not a silent generic report; a malformed body is
+  a `400`. Diagnostic scope is derived server-side from the named guide's manifest
+  entry — `groups`, `locale_shown` and any other scope- or provenance-shaping key in
+  the request body is ignored.
+
+The public tier has **no endpoint**. `docs/public-help/` compiles to
+`frontend/src/generated/public-help-manifest.json`, which is bundled into the
+frontend and served by `/help` with no backend call, so it still works during a
+backend outage.
 
 Machine preview cards in `/dev/admin` are non-operational and must not call kiosk selection/start endpoints.
