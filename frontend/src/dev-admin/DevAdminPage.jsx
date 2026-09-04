@@ -203,7 +203,7 @@ export default function DevAdminPage() {
     setDrawerGuide((current) => ({ guideId, anchor: anchor || null, machineId: current?.machineId || null }));
   }
 
-  const helpDrawerContextValue = useMemo(() => ({ openHelpDrawer }), []);
+  const helpDrawerContextValue = useMemo(() => ({ openHelpDrawer, locale: helpLocale }), [helpLocale]);
 
   function handleLockedOut() {
     setApiKey(null);

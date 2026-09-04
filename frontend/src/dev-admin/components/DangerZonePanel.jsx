@@ -82,7 +82,7 @@ export default function DangerZonePanel({ apiKey, onLockedOut }) {
 
       <p>
         Switching it back on is done on the kiosk host — see the protected Help guide.
-        <ContextualHelpLink guideId="admin-access-recovery" label="Help: how to switch it back on" />
+        <ContextualHelpLink guideId="admin-access-recovery" labelKey="helpSwitchBackOn" />
       </p>
     </section>
   );

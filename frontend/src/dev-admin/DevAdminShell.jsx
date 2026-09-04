@@ -53,7 +53,7 @@ export default function DevAdminShell({
           <div className="dev-admin-warning dev-admin-warning--restart" role="status">
             <div>
               <strong>Restart required to apply:</strong> {restartPending.join(', ')}.
-              <ContextualHelpLink guideId="settings-requiring-restart" label="Help: restart required" />
+              <ContextualHelpLink guideId="settings-requiring-restart" labelKey="helpRestartRequired" />
               <br />
               These values are saved, but the running backend is still using the old ones. On the
               kiosk host, from the repository root, stop the backend and start it again:

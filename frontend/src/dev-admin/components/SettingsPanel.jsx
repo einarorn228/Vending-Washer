@@ -198,7 +198,7 @@ export default function SettingsPanel({ apiKey, groups, secretMetadata, onReload
           <h3>
             {group.title}
             {SETTINGS_GROUP_GUIDES[group.id] ? (
-              <ContextualHelpLink guideId={SETTINGS_GROUP_GUIDES[group.id]} label={`Help: ${group.title}`} />
+              <ContextualHelpLink guideId={SETTINGS_GROUP_GUIDES[group.id]} labelSuffix={group.title} />
             ) : null}
           </h3>
           {group.settings.map((setting) => (

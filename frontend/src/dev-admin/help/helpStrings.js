@@ -30,6 +30,11 @@ export const STRINGS = {
     category_hardware_network: 'Vélbúnaður og net',
     category_admin_recovery: 'Endurheimt aðgangs',
     category_kiosk_display: 'Kjósk og skjár',
+    helpRestartRequired: 'Hjálp: endurræsing krafist',
+    helpSwitchBackOn: 'Hjálp: hvernig á að kveikja aftur á því',
+    helpReisaIntegration: 'Hjálp: Reisa-tenging',
+    helpTuneThresholds: 'Hjálp: stilla mörk',
+    helpTechnicalMapping: 'Hjálp: tæknileg tenging',
   },
   en: {
     help: 'Help',
@@ -55,6 +60,11 @@ export const STRINGS = {
     category_hardware_network: 'Hardware & network',
     category_admin_recovery: 'Admin recovery',
     category_kiosk_display: 'Kiosk display',
+    helpRestartRequired: 'Help: restart required',
+    helpSwitchBackOn: 'Help: how to switch it back on',
+    helpReisaIntegration: 'Help: Reisa provider integration',
+    helpTuneThresholds: 'Help: tune thresholds',
+    helpTechnicalMapping: 'Help: technical mapping',
   },
 };
 

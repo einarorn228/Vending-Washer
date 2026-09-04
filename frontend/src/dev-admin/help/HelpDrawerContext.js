@@ -5,6 +5,10 @@
 // without prop-drilling through SettingsPanel, MachineCardsPanel or
 // DevAdminShell. DevAdminPage is the only provider; outside it,
 // useHelpDrawer() returns null and ContextualHelpLink renders nothing.
+//
+// Also carries `locale` — the same Help-language preference HelpPanel and
+// HelpDrawer render with — so a ContextualHelpLink's accessible name can be
+// localized without every intermediate component threading a locale prop.
 
 import { createContext, useContext } from 'react';
 

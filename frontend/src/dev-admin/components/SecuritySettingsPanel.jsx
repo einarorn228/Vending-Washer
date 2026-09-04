@@ -108,7 +108,7 @@ export default function SecuritySettingsPanel({ authKey, reisaTokenIsSet }) {
           </div>
         </div>
 
-        <h3>Reisa Provider Integration<ContextualHelpLink guideId="reisa-configuration" label="Help: Reisa provider integration" /></h3>
+        <h3>Reisa Provider Integration<ContextualHelpLink guideId="reisa-configuration" labelKey="helpReisaIntegration" /></h3>
         <form onSubmit={handleUpdateReisaToken} className="dev-admin-setting">
           <div className="dev-admin-setting__meta">
             <label>Update Reisa Token</label>

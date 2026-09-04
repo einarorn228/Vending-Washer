@@ -60,7 +60,7 @@ export default function MachineDetailDrawer({ apiKey, machine, onClose, onSaved 
               {machine.display_name}
               <ContextualHelpLink
                 guideId="machine-technical-mapping"
-                label="Help: technical mapping"
+                labelKey="helpTechnicalMapping"
                 machineId={machine.machine_key}
               />
             </h2>

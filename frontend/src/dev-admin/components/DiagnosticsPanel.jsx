@@ -200,7 +200,7 @@ export default function DiagnosticsPanel({ apiKey }) {
 
       {view === 'live' ? (
         <section className="dev-admin-panel">
-          <h3>Live machine readings<ContextualHelpLink guideId="tune-thresholds" label="Help: tune thresholds" /></h3>
+          <h3>Live machine readings<ContextualHelpLink guideId="tune-thresholds" labelKey="helpTuneThresholds" /></h3>
           <p style={{ color: 'var(--kiosk-muted)', margin: '0 0 1rem' }}>
             Run a machine and watch the value. The ON threshold must sit below the running value,
             the OFF threshold above the idle value. “Above for” tells you whether the confirm window
