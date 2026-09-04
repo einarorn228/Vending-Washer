@@ -165,10 +165,11 @@ default, and toggling it applies without a restart.
 ## If this did not fix it {#escalate}
 
 Escalate rather than experimenting whenever the base URL, the token or an action
-identifier looks wrong. Rotating the token, editing the base URL and changing the
-action identifiers are all high-risk changes that require the current API key or
-an explicit acknowledgement, and getting one of them wrong takes every machine
-out of service for every customer.
+identifier looks wrong. Rotating the token requires the current API key. The base
+URL and the action identifiers are shown as high risk in the review dialog, but
+nothing blocks the save — one mistyped character is written as readily as a
+correct value, and getting any of the three wrong takes every machine out of
+service for every customer.
 
 Use **Copy support report** at the bottom of this guide and send it with: the
 exact wording the kiosk showed, whether the refusal was instant or delayed,

@@ -10365,7 +10365,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "identifier looks wrong. Rotating the token, editing the base URL and changing the",
+                      "text": "identifier looks wrong. Rotating the token requires the current API key. The base",
                       "type": "text"
                     },
                     {
@@ -10373,7 +10373,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "action identifiers are all high-risk changes that require the current API key or",
+                      "text": "URL and the action identifiers are shown as high risk in the review dialog, but",
                       "type": "text"
                     },
                     {
@@ -10381,7 +10381,7 @@
                       "type": "text"
                     },
                     {
-                      "text": "an explicit acknowledgement, and getting one of them wrong takes every machine",
+                      "text": "nothing blocks the save — one mistyped character is written as readily as a",
                       "type": "text"
                     },
                     {
@@ -10389,7 +10389,15 @@
                       "type": "text"
                     },
                     {
-                      "text": "out of service for every customer.",
+                      "text": "correct value, and getting any of the three wrong takes every machine out of",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "text": "service for every customer.",
                       "type": "text"
                     }
                   ],
@@ -18710,7 +18718,6 @@
         "body": [
           "about",
           "accepted",
-          "acknowledgement",
           "action",
           "actually",
           "address",
@@ -18741,6 +18748,7 @@
           "being",
           "below",
           "billing",
+          "blocks",
           "both",
           "bottom",
           "bulk",
@@ -18750,6 +18758,7 @@
           "change",
           "changes",
           "changing",
+          "character",
           "checked",
           "code",
           "codes",
@@ -18764,6 +18773,7 @@
           "connected",
           "connection",
           "copy",
+          "correct",
           "covers",
           "created",
           "credential",
@@ -18781,8 +18791,8 @@
           "details",
           "diagnose",
           "diagnostics",
+          "dialog",
           "does",
-          "editing",
           "either",
           "else",
           "empty",
@@ -18796,7 +18806,6 @@
           "exactly",
           "expect",
           "experimenting",
-          "explicit",
           "fail",
           "failed",
           "failing",
@@ -18857,6 +18866,7 @@
           "message",
           "middle",
           "missing",
+          "mistyped",
           "mode",
           "names",
           "need",
@@ -18900,6 +18910,7 @@
           "reached",
           "reaches",
           "read",
+          "readily",
           "reason",
           "recorded",
           "records",
@@ -18910,17 +18921,19 @@
           "rejected",
           "replaying",
           "report",
-          "require",
+          "requires",
           "restart",
           "result",
           "retried",
           "retry",
           "retryable",
           "retrying",
+          "review",
           "risk",
           "rotating",
           "rows",
           "runs",
+          "save",
           "saved",
           "saying",
           "says",
@@ -19006,6 +19019,7 @@
           "work",
           "worker",
           "working",
+          "written",
           "wrong"
         ],
         "headings": [
