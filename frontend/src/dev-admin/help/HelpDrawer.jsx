@@ -12,6 +12,7 @@ import React, { useEffect, useMemo } from 'react';
 import GuideView from './GuideView.jsx';
 import { useHelpManifest } from './useHelpManifest.js';
 import { t } from './helpStrings.js';
+import { makeTitleFor } from './guideTitle.js';
 
 export default function HelpDrawer({ guideId, anchor, machineId, apiKey, locale: preferredLocale, onClose, onNavigate }) {
   const { manifest, error, loading } = useHelpManifest(apiKey);
@@ -32,14 +33,7 @@ export default function HelpDrawer({ guideId, anchor, machineId, apiKey, locale:
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const titleFor = useMemo(() => {
-    return (id) => {
-      const guide = manifest?.guides?.[id];
-      if (!guide) return id;
-      const payload = guide.locales?.[locale] || guide.locales?.[guide.canonical_locale];
-      return payload?.title || id;
-    };
-  }, [manifest, locale]);
+  const titleFor = useMemo(() => makeTitleFor(manifest, locale), [manifest, locale]);
 
   const guide = manifest?.guides?.[guideId];
 

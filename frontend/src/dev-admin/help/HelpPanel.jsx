@@ -15,15 +15,7 @@ import { searchGuides } from './helpSearch.js';
 import { commonProblems } from './commonProblems.js';
 import { formatHelpHash } from './helpRouting.js';
 import { t } from './helpStrings.js';
-
-function makeTitleFor(manifest, locale) {
-  return (id) => {
-    const guide = manifest?.guides?.[id];
-    if (!guide) return id;
-    const payload = guide.locales?.[locale] || guide.locales?.[guide.canonical_locale];
-    return payload?.title || id;
-  };
-}
+import { makeTitleFor } from './guideTitle.js';
 
 function summaryFor(manifest, locale, guideId) {
   const guide = manifest?.guides?.[guideId];
