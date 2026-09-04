@@ -74,7 +74,7 @@ SETTING_SCHEMA: Dict[str, Dict[str, Any]] = {
         "editable": False,
         "restart_required": False,
         "risk": "high",
-        "description": "Used as the temporary dev/admin password. Raw value is never shown here.",
+        "description": "Shared secret kiosk clients send as the X-API-KEY header on /api/* requests; also required, alongside admin login, by /admin/* routes. It is NOT the dev/admin panel password - that is the admin username and password. Raw value is never shown here.",
     },
     "admin_username": {
         "group": "api_security",

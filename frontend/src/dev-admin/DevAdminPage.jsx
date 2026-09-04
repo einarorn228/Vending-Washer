@@ -85,7 +85,7 @@ export default function DevAdminPage() {
         clearDevAdminKey();
         setApiKey(null);
         setIsUnlocked(false);
-        setError(statusResult.payload?.message || 'Unlock expired or API key is invalid.');
+        setError(statusResult.payload?.message || 'Session expired, or the admin username or password is invalid.');
       }
       return;
     }

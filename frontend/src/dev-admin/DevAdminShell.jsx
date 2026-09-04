@@ -46,7 +46,7 @@ export default function DevAdminShell({
       </aside>
       <section className="dev-admin-main">
         <div className="dev-admin-warning dev-admin-warning--top">
-          Beta/dev admin panel. API-key lock is temporary and not production-grade security.
+          Beta/dev admin panel. The admin username and password lock is temporary and not production-grade security.
         </div>
 
         {restartPending?.length ? (

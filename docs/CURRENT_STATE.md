@@ -326,9 +326,15 @@ Found by reading source during Task 17/18 verification, left unfixed because the
 code changes outside a documentation task. Recorded so they are not rediscovered as
 novel:
 
-1. `backend/services/dev_admin_service.py:77` — the `api_key` schema description still
-   reads "Used as the temporary dev/admin password." That is false (see the HTTP surface
-   section) and it is **rendered to the operator** in the Settings panel.
+1. *(Fixed 2026-09-04.)* Three operator-visible strings asserted that the dev/admin panel
+   is unlocked with an API key. It is not: `require_dev_admin`
+   (`backend/controllers/dev_admin_api.py`) checks the `dev_admin_enabled` kill switch and
+   then HTTP Basic auth against `admin_username` / `admin_password_hash`, and no API key is
+   involved. The frontend variable holding the base64 credentials is merely *named*
+   `apiKey`, which is where the wording came from. Corrected in
+   `dev_admin_service.py:77` (the `api_key` schema description, rendered in Settings),
+   `DevAdminShell.jsx:49` (the panel's own banner) and `DevAdminPage.jsx:88` (the 401
+   message).
 2. `METRIC_SOURCES` in `dev_admin_service.py` offers `pulse`, but
    `telemetry.py:_read_metric` has no branch for it, so every read returns `None` and the
    machine is marked offline. Conversely `_read_metric` handles `adc`, which the drawer
