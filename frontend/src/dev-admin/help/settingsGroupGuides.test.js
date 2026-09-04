@@ -27,9 +27,8 @@ const EXPECTED_MAP = {
   dev_admin: 'admin-access-recovery',
   api_security: 'admin-access-recovery',
   scanner: 'scanner-not-scanning',
-  machine_timing: 'machine-does-not-start',
   screen_timing: 'admin-panel-orientation',
-  hardware_timing: 'machine-does-not-start',
+  hardware_timing: 'machine-technical-mapping',
   kiosk: 'admin-panel-orientation',
   runtime: 'admin-panel-orientation',
   codes: 'code-rejected',
@@ -71,4 +70,21 @@ test('the runtime group points at the guide that discusses its toggles', () => {
 
 test('the logging group points at the guide that names log_level', () => {
   assert.equal(SETTINGS_GROUP_GUIDES.logging, 'settings-requiring-restart');
+});
+
+test('the hardware_timing group points at the guide that names its two documented timeouts', () => {
+  // Retargeted away from machine-does-not-start: that guide names only
+  // shelly_http_timeout_sec of the group's three settings.
+  // machine-technical-mapping names both shelly_http_timeout_sec and
+  // telemetry_http_timeout_sec. No guide in the corpus names
+  // relay_pulse_duration_sec.
+  assert.equal(SETTINGS_GROUP_GUIDES.hardware_timing, 'machine-technical-mapping');
+});
+
+test('machine_timing has no entry: its guide would misrepresent half the group', () => {
+  // machine-does-not-start covers machine_reservation_minutes by name, but
+  // its own "When to use this" section presupposes a machine was already
+  // chosen — the opposite of the button_select_timeout_sec (armed-code
+  // timeout) scenario, which no corpus guide covers at all.
+  assert.equal(SETTINGS_GROUP_GUIDES.machine_timing, undefined);
 });
