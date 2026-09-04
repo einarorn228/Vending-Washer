@@ -32,6 +32,13 @@ class HelpServiceTests(unittest.TestCase):
             self.assertIsNone(help_service.get_manifest())
             self.assertEqual(help_service.get_status()["reason"], "manifest_unreadable")
 
+    def test_malformed_json_does_not_cache_a_digest_of_the_unparseable_file(self):
+        """A corrupt manifest must not leave behind a digest of content that was
+        never actually loaded -- the digest is only meaningful once cache is set."""
+        with patch.object(help_service, "_read_artifact", return_value="{not json"):
+            self.assertIsNone(help_service.get_manifest())
+            self.assertIsNone(help_service.get_provenance()["manifest_digest"])
+
     def test_incompatible_schema_version_degrades(self):
         payload = json.dumps({"schema_version": 999, "guides": {}, "guide_count": 0})
         with patch.object(help_service, "_read_artifact", return_value=payload):

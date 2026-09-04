@@ -6,29 +6,18 @@ Verify without writing:        python -m backend.help.cli --check
 """
 
 import json
-import subprocess
 import sys
-from pathlib import Path
 
+from backend.help.artifact_paths import (
+    ADMIN_ARTIFACT,
+    ADMIN_ROOT,
+    PUBLIC_ARTIFACT,
+    PUBLIC_ROOT,
+    REPO_ROOT,
+    git_build_id,
+)
 from backend.help.compiler import compile_help
 from backend.help.validator import validate_manifest
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-ADMIN_ROOT = REPO_ROOT / "docs" / "admin-guides"
-PUBLIC_ROOT = REPO_ROOT / "docs" / "public-help"
-ADMIN_ARTIFACT = REPO_ROOT / "backend" / "help" / "generated" / "admin-help-manifest.json"
-PUBLIC_ARTIFACT = REPO_ROOT / "frontend" / "src" / "generated" / "public-help-manifest.json"
-
-
-def git_build_id():
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=5,
-        )
-    except Exception:
-        return None
-    return result.stdout.strip() or None if result.returncode == 0 else None
 
 
 def known_setting_keys():

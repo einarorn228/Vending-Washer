@@ -10,7 +10,7 @@ import hashlib
 import json
 import logging
 
-from backend.help.cli import ADMIN_ARTIFACT, git_build_id
+from backend.help.artifact_paths import ADMIN_ARTIFACT, git_build_id
 from backend.help.schema import SCHEMA_VERSION
 
 logger = logging.getLogger(__name__)
@@ -28,8 +28,8 @@ def _load():
     global _cache, _status, _digest
     try:
         raw = _read_artifact()
-        _digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
         payload = json.loads(raw)
+        _digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
     except FileNotFoundError:
         _cache, _status = None, {"available": False, "reason": "manifest_missing"}
         logger.error("Help manifest missing at %s; Help disabled, backend unaffected", ADMIN_ARTIFACT)
