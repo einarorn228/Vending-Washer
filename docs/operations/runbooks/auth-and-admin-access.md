@@ -198,6 +198,8 @@ Recovery steps:
 
 ## Beta dev/admin panel auth
 
-The temporary `/dev/admin` panel uses the kiosk API key as a session-only password while `dev_admin_enabled=true`. This is a beta convenience only and is not production-grade authentication.
+The temporary `/dev/admin` panel is protected by the same HTTP Basic credentials as `/admin/*` — `admin_username` and `admin_password_hash` (`backend/controllers/dev_admin_api.py:77`, `_valid_admin_auth`) — behind the `dev_admin_enabled=true` kill switch. The lock screen asks for a username and a password, not the API key. This is a beta guard only and is not production-grade authentication: there are no users, roles, rate limits, or account lockout.
+
+The kiosk API key is *not* the panel password. It is required only as `current_api_key`, as proof of identity, when rotating a secret in Sensitive Settings.
 
 Keep `dev_admin_enabled=false` unless actively using the trusted-local beta panel. See `docs/operations/runbooks/beta-dev-admin-panel.md` for enable/disable commands, security limitations, and backup guidance.

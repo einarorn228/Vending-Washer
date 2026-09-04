@@ -45,6 +45,22 @@ throwaway file via `VENDING_WASHER_DATABASE_URL` (imported from both `conftest.p
 project database while under test. Test `setUp` methods delete `settings`/`machines`/`devices` rows,
 so that guard is what stands between a test run and the operator's runtime configuration.
 
+Frontend tests are pure-function only, under `node --test`; there is no component test
+harness (no jest, vitest, testing-library or jsdom), deliberately.
+```bash
+cd frontend && node --test src/dev-admin/help/
+```
+
+### Compile the Help Hub
+```bash
+python -m backend.help.cli            # rewrite both manifests
+python -m backend.help.cli --check    # verify the committed manifests are current (exit 1 if stale)
+```
+Run this after editing anything under `docs/admin-guides/` or `docs/public-help/`, and
+commit the regenerated `backend/help/generated/admin-help-manifest.json` and
+`frontend/src/generated/public-help-manifest.json` with the content change. Authoring
+rules: `docs/admin-guides/README.md`.
+
 ## Architecture
 
 ### Backend state machine
@@ -86,7 +102,7 @@ Admin/Reisa/code-management routes are defined inline in `flask_server.py`.
 Provider is selected per-scan via DB settings (`provider_default`, `provider_reisa_enabled`, Reisa credentials). The local provider is always available as fallback.
 
 ### Hardware integration
-- **QR scanner** — USB serial, consumed by `backend/controllers/qr_scanner.py`. Serial config is import-time; settings changes require restart.
+- **QR scanner** — USB serial, consumed by `backend/controllers/qr_scanner.py`. Serial config is read once, when the port is first opened at startup (`_ensure_serial_ready()`), and cached for the process lifetime; settings changes require a restart.
 - **Shelly relays** — `backend/utils/shelly_control.py`. Only fires if `backend_relay_enabled=true` in settings. When false, relay commands are skipped (bench/dry-run mode).
 - **Telemetry** — `backend/controllers/telemetry.py` polls UNI device metrics on per-machine intervals, applies thresholds/debounce, and emits `runstate_started`/`runstate_stopped` callbacks that drive start confirmation and completion in `machine_control.py`.
 
@@ -115,3 +131,6 @@ Route: `/dev/kiosk-preview?scenario=<name>` renders any kiosk screen without bac
 - `docs/architecture/runtime-lifecycle.md` — startup sequence, thread map, bootstrap side effects
 - `docs/reference/settings-catalog.md` — all configurable settings with defaults and risk levels
 - `docs/operations/runbooks/troubleshooting-matrix.md` — symptom → cause → fix index
+- `docs/admin-guides/README.md` — how the Help Hub corpus is authored and compiled
+- `docs/CURRENT_STATE.md` — verified snapshot of what actually runs, and what is not implemented
+- `AGENTS.md` — repository-wide operating rules for AI agents

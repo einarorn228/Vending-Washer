@@ -12,7 +12,7 @@ Touch-first washer vending prototype consisting of a Flask backend, a React touc
 - Route: `/dev/admin`
 - Purpose: temporary trusted-local beta panel for whitelisted settings and machine-card layout edits.
 - Backend kill switch: `dev_admin_enabled` must be `true`; default is `false`.
-- Temporary lock: uses the kiosk API key as the password; this is not production-grade security.
+- Temporary lock: HTTP Basic auth against `admin_username` / `admin_password_hash` (the same credentials as `/admin/*`), not the kiosk API key; this is not production-grade security.
 - Secrets are read-only/masked in the first beta panel.
 - See `docs/operations/runbooks/beta-dev-admin-panel.md`.
 

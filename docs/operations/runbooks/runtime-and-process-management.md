@@ -142,8 +142,8 @@ Both `backend/app.py` and `backend/flask_server.py` perform initialization/boots
 - `backend.flask_server`: excludes both.
 - On fresh settings DB, use `python -m backend.app` first to guarantee API key creation and expected relay-setting row insertion.
 
-## Scanner import-time behavior
-`backend/controllers/qr_scanner.py` reads serial settings and opens serial at import time. Scanner setting changes require backend restart.
+## Scanner serial-open behavior
+`backend/controllers/qr_scanner.py` reads `serial_port` / `serial_baudrate` / `scan_timeout` inside `_ensure_serial_ready()` (`qr_scanner.py:232`), which runs once, on the first open of the port at startup, and is then latched by `_serial_initialized`. The settings are not re-read afterwards, so scanner setting changes require a backend restart.
 
 ## Virtualenv mismatch
 `run-backend.sh` expects `backend/.venv`, while most docs and workflows use root `.venv`.

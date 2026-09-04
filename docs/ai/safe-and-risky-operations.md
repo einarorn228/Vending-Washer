@@ -55,7 +55,7 @@ Required before action:
 - explicit warning that Flask-only path does not launch full worker set
 
 ## Medium-risk operations
-- timeout tuning (`button_select_timeout_sec`, `selection_timeout_sec`)
+- timeout tuning (`button_select_timeout_sec`, `machine_reservation_minutes`)
 - telemetry thresholds in `machine_configs`
 - scanner serial settings
 

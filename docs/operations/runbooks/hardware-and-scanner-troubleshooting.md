@@ -35,7 +35,7 @@ sqlite3 codes.db "SELECT key,value FROM settings WHERE key IN ('serial_port','se
 ```
 
 High-risk gotcha:
-- scanner serial settings are loaded at import time in `qr_scanner.py`.
+- scanner serial settings are read once, when `_ensure_serial_ready()` first opens the port at startup, and are then cached for the life of the process (`qr_scanner.py:232`) — not re-read on change.
 - changing scanner settings requires backend restart.
 
 ## Symptom: scans ignored
@@ -134,5 +134,13 @@ Action:
 - Bulk changing device roles or button indexes without mapping validation.
 - Enabling backend relay before verifying each machine-device mapping.
 
-## Unknown / requires verification from code
-- No dedicated endpoint exists for live raw telemetry values per machine; diagnostics rely on logs and availability snapshot.
+## Live per-machine telemetry values
+Raw per-machine telemetry is exposed: `MachineStateStore.get_diagnostic_snapshot()`
+(`backend/controllers/telemetry.py:183`) is served by `GET /api/dev_admin/diagnostics`
+(`backend/controllers/dev_admin_api.py:426`) and rendered by the dev-admin
+Diagnostics tab under **Live readings** — per machine: `last_value`, the band
+relative to the configured thresholds, `seconds_since_read`, `seconds_above` /
+`seconds_below`, run state, the thresholds themselves, and the device IP.
+
+Use that surface first; fall back to logs and the availability snapshot only when
+the panel is unavailable (`dev_admin_enabled=false`, or an admin lockout).

@@ -31,11 +31,17 @@ Defined in backend:
 - `machine_in_use`
 - `error`
 
-Frontend handling in `App.jsx`:
-- `waiting_for_code` -> `ScanScreen`
-- `choose_machine` -> `MachineSelectScreen`
-- `machine_starting`, `machine_in_use`, `error` -> `ResultScreen`
-- unknown state -> `ResultScreen` fallback
+Frontend handling in `frontend/src/kiosk/KioskRouter.jsx` (`App.jsx` only picks the
+route: kiosk, `/dev/admin`, `/dev/kiosk-preview`, or `/help`):
+- `waiting_for_code` -> `HomeScreen`
+- `choose_machine` -> `SelectMachineScreen`
+- `machine_starting` -> `StartingScreen`
+- `machine_in_use` -> `InUseScreen`
+- `error` -> `ErrorScreen`
+- unknown state -> `ErrorScreen` fallback
+
+All five components live in `frontend/src/kiosk/screens/`, and every one of them is
+wrapped by `KioskAppShell`.
 
 ## Field semantics
 - `state`: machine flow stage
@@ -98,8 +104,15 @@ Effects:
 - optional usage session marked timed out
 
 ## Polling behavior
+Frontend polling lives in `frontend/src/kiosk/hooks/useUiStatePolling.js`, not in
+`App.jsx`.
+
 Frontend polling frequency:
-- every 1000ms (`setInterval` in `App.jsx`)
+- default 1000 ms (`DEFAULT_POLL_INTERVAL_MS`)
+- the backend owns the cadence: each `/api/ui_state` response may carry
+  `poll_interval_ms` (from the `kiosk_poll_interval_ms` setting), and the hook
+  re-arms its `setInterval` whenever that value changes
+- values outside 250–10000 ms are rejected and the default is used instead
 
 Frontend API function:
 - `pollState()` calls `/api/ui_state` with `X-API-KEY`
@@ -113,14 +126,24 @@ Failure behavior in frontend:
 Without it, frontend request fails and state stops updating.
 
 ## Timing and timeout settings
-State timers in backend logic:
-- result display hold windows are short (fixed constants)
+State timers in backend logic (all in `backend/controllers/machine_control.py`):
+- result display hold windows are settings, not fixed constants:
+  `selection_notice_seconds`, `started_notice_seconds`, `error_notice_seconds`
+  (`machine_control.py:625-634`). The module constants next to them
+  (`SELECTION_NOTICE_SECONDS` and friends, `:47-49`) are only fallbacks for a
+  missing or unparseable value, and each reader clamps to a sane range.
 - button-arm timeout is driven by `button_select_timeout_sec`
-- pending start timeout uses `selection_timeout_sec` with fallback default
+- the machine-selection/pending-start timeout is derived from
+  `machine_reservation_minutes` — `_selection_timeout_seconds()`
+  (`machine_control.py:589-600`) reads that setting and multiplies by 60,
+  falling back to `SELECTION_TIMEOUT_SECONDS` if it is missing or non-positive.
 
-Important mismatch:
-- `button_select_timeout_sec` is seeded in settings defaults.
-- `selection_timeout_sec` is read by code but not seeded by default.
+Note:
+- `button_select_timeout_sec` and `machine_reservation_minutes` are both seeded
+  in settings defaults.
+- There has never been a `selection_timeout_sec` setting. Earlier revisions of
+  this document named one; no code has ever read it. See
+  `docs/reference/settings-catalog.md`.
 
 ## Failure modes and symptoms
 

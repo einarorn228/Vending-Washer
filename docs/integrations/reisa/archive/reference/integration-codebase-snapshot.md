@@ -2,6 +2,13 @@
 
 > Scope: planning-only snapshot of the current codebase for integrating Reisa Service API. No runtime code changes applied.
 
+> **Correction (2026-09-04), archive text left as written.** The settings list in
+> section 8 names `selection_timeout_sec`. That setting has never existed in this
+> repository; the selection/reservation timeout is derived from
+> `machine_reservation_minutes` by `machine_control._selection_timeout_seconds()`.
+> See `docs/reference/settings-catalog.md`. The surrounding snapshot is preserved
+> verbatim as a historical record and must not be used as current reference.
+
 ## 1) Repository overview (integration-focused tree)
 
 ```text

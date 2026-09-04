@@ -61,7 +61,7 @@ sqlite3 codes.db "SELECT key,value FROM settings ORDER BY key;"
 
 Review specifically:
 - provider settings
-- timeout settings (`button_select_timeout_sec`, optional `selection_timeout_sec`)
+- timeout settings (`button_select_timeout_sec`, `machine_reservation_minutes`)
 - scanner settings
 - `backend_relay_enabled`
 
