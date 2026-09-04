@@ -1,6 +1,7 @@
 # backend/tests/test_support_service.py
 import re
 import unittest
+from unittest import mock
 
 from backend.controllers.telemetry import (
     RUNSTATE_AVAILABLE,
@@ -378,6 +379,129 @@ class SupportReportTests(unittest.TestCase):
                 report = support_service.build_support_report(self.db, guide_id=bad)
                 self.assertIsNone(report["guide_id"])
                 self.assertEqual(report["groups"], list(support_service.CORE_GROUPS))
+
+
+
+class MachineProjectionAllowlistTests(unittest.TestCase):
+    """The nested device/config dicts must be projected field by field.
+
+    _MACHINE_SECTIONS used to forward MachineStateStore.get_diagnostic_snapshot()'s
+    whole "device" and "config" dicts. Anything added to either upstream would then have
+    shipped in every escalation report with no review. These tests fail if that ever
+    comes back.
+    """
+
+    # A snapshot row shaped exactly like get_diagnostic_snapshot() produces, with two
+    # fields nobody allowlisted planted inside the nested dicts.
+    ROW = {
+        "id": "washer1",
+        "name": "Washer 1",
+        "is_enabled": True,
+        "available": True,
+        "run_state": "available",
+        "pending_start": False,
+        "last_value": 7.5,
+        "band": "mid",
+        "seconds_since_read": 1.0,
+        "seconds_above": None,
+        "seconds_below": None,
+        "device": {
+            "name": "Washer UNI",
+            "ip": "192.0.2.11",
+            "metric_source": "voltage",
+            "relay_channel": 0,
+            "auth_password": "shelly-device-password",
+            "future_field": "added upstream later",
+        },
+        "config": {
+            "on_threshold": 8,
+            "off_threshold": 3,
+            "on_confirm_ms": 1200,
+            "off_confirm_ms": 3000,
+            "poll_interval_ms": 1000,
+            "internal_note": "not reviewed for disclosure",
+        },
+        "secret_top_level": "must never appear",
+    }
+
+    def setUp(self):
+        init_db()
+        self.db = Session()
+        self._patch = mock.patch.object(support_service, "_snapshot", return_value=[self.ROW])
+        self._patch.start()
+
+    def tearDown(self):
+        self._patch.stop()
+        self.db.close()
+
+    def _report(self):
+        return support_service.build_support_report(
+            self.db, groups=("machine.identity", "machine.telemetry",
+                             "machine.thresholds", "machine.mapping")
+        )
+
+    def _machine(self):
+        return self._report()["data"]["machines"]["washer1"]
+
+    def test_unallowlisted_device_field_never_reaches_the_report(self):
+        blob = repr(self._report())
+        self.assertNotIn("shelly-device-password", blob)
+        self.assertNotIn("auth_password", blob)
+        self.assertNotIn("future_field", blob)
+
+    def test_unallowlisted_config_field_never_reaches_the_report(self):
+        blob = repr(self._report())
+        self.assertNotIn("internal_note", blob)
+        self.assertNotIn("not reviewed for disclosure", blob)
+
+    def test_unallowlisted_top_level_field_never_reaches_the_report(self):
+        self.assertNotIn("secret_top_level", repr(self._report()))
+
+    def test_the_named_device_fields_are_still_present(self):
+        """The allowlist must not have been tightened into uselessness."""
+        device = self._machine()["mapping"]["device"]
+        self.assertEqual(set(device), {"name", "ip", "metric_source", "relay_channel"})
+        # The LAN IP is intentionally reported; this pins that as a decision.
+        self.assertEqual(device["ip"], "192.0.2.11")
+
+    def test_the_named_config_fields_are_still_present(self):
+        config = self._machine()["thresholds"]["config"]
+        self.assertEqual(
+            set(config),
+            {"on_threshold", "off_threshold", "on_confirm_ms", "off_confirm_ms",
+             "poll_interval_ms"},
+        )
+        self.assertEqual(config["on_threshold"], 8)
+
+    def test_report_shape_is_unchanged_by_the_allowlist(self):
+        machine = self._machine()
+        self.assertEqual(set(machine), {"identity", "telemetry", "thresholds", "mapping"})
+        self.assertEqual(set(machine["identity"]),
+                         {"name", "is_enabled", "available", "run_state", "pending_start"})
+
+    def test_a_nested_value_that_is_not_a_dict_is_dropped_not_forwarded(self):
+        row = dict(self.ROW, device="192.0.2.11 leaked as a bare string")
+        with mock.patch.object(support_service, "_snapshot", return_value=[row]):
+            report = support_service.build_support_report(self.db, groups=("machine.mapping",))
+        self.assertNotIn("leaked as a bare string", repr(report))
+        self.assertEqual(report["data"]["machines"]["washer1"]["mapping"], {})
+
+    def test_allowlist_matches_the_dicts_the_store_actually_builds(self):
+        """Catches an upstream rename silently emptying a report section."""
+        _seed_two_machines()
+        rows = MachineStateStore.instance().get_diagnostic_snapshot()
+        row = next(r for r in rows if r["id"] == "washer1")
+        for section, key in (("machine.mapping", "device"), ("machine.thresholds", "config")):
+            with self.subTest(section=section):
+                _, fields = support_service._MACHINE_SECTIONS[section]
+                allowed = dict(f for f in fields if isinstance(f, tuple))[key]
+                missing = set(allowed) - set(row[key])
+                self.assertEqual(
+                    missing, set(),
+                    f"{section} allowlists {sorted(missing)}, which "
+                    f"get_diagnostic_snapshot() no longer puts in {key!r}.",
+                )
+        MachineStateStore.instance().update_definitions({}, {})
 
 
 if __name__ == "__main__":

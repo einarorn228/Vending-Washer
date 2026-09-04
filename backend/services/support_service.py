@@ -31,13 +31,49 @@ SAFE_SETTING_KEYS = (
 assert not (set(SAFE_SETTING_KEYS) & SECRET_KEYS), "secret key leaked into the safe allowlist"
 
 # Field names taken verbatim from MachineStateStore.get_diagnostic_snapshot().
+#
+# A plain string projects a top-level field. A ``(key, (subfield, ...))`` tuple projects
+# a nested dict, naming every subfield it is allowed to carry. The nested form exists
+# because "thresholds" and "mapping" used to forward get_diagnostic_snapshot()'s whole
+# "config" and "device" dicts. Nothing leaks from them today, but any field added to
+# those dicts later would have appeared in escalation reports automatically with nobody
+# reviewing it -- and this module's job is to decide what is safe, at every level.
 _MACHINE_SECTIONS = {
     "machine.identity": ("identity", ("name", "is_enabled", "available", "run_state", "pending_start")),
     "machine.telemetry": ("telemetry", ("last_value", "band", "seconds_since_read",
                                         "seconds_above", "seconds_below")),
-    "machine.thresholds": ("thresholds", ("config",)),
-    "machine.mapping": ("mapping", ("device",)),
+    "machine.thresholds": ("thresholds", (
+        ("config", ("on_threshold", "off_threshold", "on_confirm_ms",
+                    "off_confirm_ms", "poll_interval_ms")),
+    )),
+    # "ip" is a deliberate inclusion, not a passenger: the LAN address of the Shelly is
+    # what an operator needs in an authenticated troubleshooting report, and naming it
+    # here is what keeps that a decision rather than an accident.
+    "machine.mapping": ("mapping", (
+        ("device", ("name", "ip", "metric_source", "relay_channel")),
+    )),
 }
+
+
+def _project(row, fields):
+    """Copy allowlisted fields out of a snapshot row, one nesting level deep.
+
+    An unnamed field is dropped whether it sits at the top level or inside one of the
+    nested dicts. A nested value that is not a dict is dropped entirely rather than
+    forwarded, so an upstream shape change cannot smuggle a payload through.
+    """
+
+    projected = {}
+    for field in fields:
+        if isinstance(field, tuple):
+            key, subfields = field
+            nested = row.get(key)
+            if not isinstance(nested, dict):
+                continue
+            projected[key] = {s: nested.get(s) for s in subfields if s in nested}
+        elif field in row:
+            projected[field] = row.get(field)
+    return projected
 
 
 def _snapshot(machine_id):
@@ -101,7 +137,7 @@ def _machine_group(group):
         machines = data.setdefault("machines", {})
         for row in _snapshot(machine_id):
             entry = machines.setdefault(row["id"], {})
-            entry[subsection] = {f: row.get(f) for f in fields if f in row}
+            entry[subsection] = _project(row, fields)
 
     return handler
 
