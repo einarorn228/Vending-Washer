@@ -13,8 +13,14 @@ export const SETTINGS_GROUP_GUIDES = {
   screen_timing: 'admin-panel-orientation',
   hardware_timing: 'machine-does-not-start',
   kiosk: 'admin-panel-orientation',
-  runtime: 'settings-requiring-restart',
+  // Not settings-requiring-restart: none of this group's toggles is
+  // restart-required, and that guide says so explicitly. admin-panel-orientation
+  // discusses backend_relay_enabled and telemetry_enabled by name under
+  // "What is high risk".
+  runtime: 'admin-panel-orientation',
   codes: 'code-rejected',
   provider: 'reisa-configuration',
-  logging: 'using-diagnostics',
+  // log_level is named in settings-requiring-restart's table, with where the
+  // evidence of an applied restart appears; using-diagnostics never mentions it.
+  logging: 'settings-requiring-restart',
 };
