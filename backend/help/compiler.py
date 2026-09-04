@@ -100,13 +100,22 @@ def _validate_checks(meta, path):
 # Authoring documentation lives beside the content it documents. `README.md` is the
 # one reserved filename in a guide tree: it is prose for whoever writes guides, not a
 # guide, so it is skipped rather than being required to carry frontmatter.
+#
+# The skip is deliberately narrow -- only at the tree ROOT. A `README.md` deeper in the
+# tree sits where guides live, so silently dropping it would let a real guide disappear
+# from the manifest with no error at all; there it must still fail the build like any
+# other malformed file.
 RESERVED_FILENAMES = frozenset({"README.md"})
+
+
+def _is_reserved(path, root):
+    return path.parent == root and path.name in RESERVED_FILENAMES
 
 
 def compile_help(root, trust_class, known_settings, build_id=None):
     root = Path(root)
     files = sorted(
-        (p for p in root.rglob("*.md") if p.name not in RESERVED_FILENAMES),
+        (p for p in root.rglob("*.md") if not _is_reserved(p, root)),
         key=lambda p: str(p.relative_to(root)),
     )
     by_id, canonical = {}, {}

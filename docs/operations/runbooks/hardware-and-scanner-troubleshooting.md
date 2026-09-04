@@ -136,11 +136,18 @@ Action:
 
 ## Live per-machine telemetry values
 Raw per-machine telemetry is exposed: `MachineStateStore.get_diagnostic_snapshot()`
-(`backend/controllers/telemetry.py:183`) is served by `GET /api/dev_admin/diagnostics`
-(`backend/controllers/dev_admin_api.py:426`) and rendered by the dev-admin
-Diagnostics tab under **Live readings** — per machine: `last_value`, the band
-relative to the configured thresholds, `seconds_since_read`, `seconds_above` /
-`seconds_below`, run state, the thresholds themselves, and the device IP.
+(`backend/controllers/telemetry.py:183`) is served by **`GET /api/dev_admin/telemetry`**
+(`backend/controllers/dev_admin_api.py:414`), which the panel fetches for the
+Diagnostics tab's **Live readings** view (`frontend/src/dev-admin/api.js:131`).
+Per machine it carries `last_value`, the band relative to the configured
+thresholds, `seconds_since_read`, `seconds_above` / `seconds_below`, run state,
+the thresholds themselves, and the device IP, alongside a top-level
+`telemetry_enabled` flag.
+
+Do not confuse it with `GET /api/dev_admin/diagnostics`
+(`backend/controllers/dev_admin_api.py:430`), which despite its name returns
+recent scan logs, runtime metrics and the configuration audit trail, and never
+touches the machine state store. The Diagnostics **tab** draws on both routes.
 
 Use that surface first; fall back to logs and the availability snapshot only when
 the panel is unavailable (`dev_admin_enabled=false`, or an admin lockout).

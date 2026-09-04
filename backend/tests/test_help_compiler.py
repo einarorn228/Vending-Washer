@@ -216,18 +216,28 @@ class CompilerTests(unittest.TestCase):
         with self.assertRaises(CompileError):
             self.compile()
 
-    def test_readme_is_not_treated_as_a_guide(self):
-        """Authoring docs live in the guide tree; they must not need frontmatter.
+    def test_root_readme_is_not_treated_as_a_guide(self):
+        """Authoring docs live at the guide tree root; they must not need frontmatter.
 
         `docs/admin-guides/README.md` is prose for guide authors. Without the
         reserved-filename skip the compiler would demand a frontmatter block from it
         and no manifest would be written at all.
         """
         _write(self.tmp, "README.md", "# Authoring guides\n\nNo frontmatter here.\n")
-        _write(self.tmp, "en/README.md", "# Locale notes\n\nStill no frontmatter.\n")
         manifest = self.compile()
         self.assertEqual(sorted(manifest["guides"]), ["machine-unavailable"])
         self.assertEqual(manifest["guide_count"], 1)
+
+    def test_readme_below_the_root_still_fails_the_build(self):
+        """The skip is root-only on purpose.
+
+        Below the root a file sits where guides live, so skipping it by name would let
+        a real guide vanish from the manifest silently. It must fail like any other
+        file that carries no frontmatter.
+        """
+        _write(self.tmp, "en/machines_telemetry/README.md", "# Notes\n\nNo frontmatter.\n")
+        with self.assertRaises(CompileError):
+            self.compile()
 
 
 if __name__ == "__main__":

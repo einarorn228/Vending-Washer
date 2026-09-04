@@ -583,7 +583,7 @@ Secrets are never returned raw. `api_key`, `admin_password_hash`, and `reisa_bea
 
 Endpoints:
 
-- `POST /api/dev_admin/unlock` — validate the kill switch and the Basic-auth credentials; returns `{"success": true, "temporary": true}`.
+- `POST /api/dev_admin/unlock` — validate the kill switch and the Basic-auth credentials; returns `{"success": true, "message": "Unlocked", "temporary": true}` (`dev_admin_api.py:115`).
 - `GET /api/dev_admin/status` — overview/status for the panel.
 - `GET /api/dev_admin/settings` — grouped whitelist settings metadata and values.
 - `PATCH /api/dev_admin/settings` — validate all provided whitelist changes before writing any setting.

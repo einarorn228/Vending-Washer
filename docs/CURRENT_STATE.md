@@ -1,16 +1,27 @@
 # Current state
 
 **Date:** 2026-09-04
-**Commit described:** `d9f6958` (`d9f695895c3b63dd2724ea2609785103417e2946`) — *docs(help): record Task 17 corrections in the plan*
 **Branch:** `help-hub`
+**Measured against:** the working tree of the commit that adds this file — i.e. the tip
+of the Task 18 documentation work on `help-hub`, **not** an earlier commit.
+**Baseline for comparison:** `d9f6958`
+(`d9f695895c3b63dd2724ea2609785103417e2946`, *docs(help): record Task 17 corrections in
+the plan*) — the last commit before the Task 18 documentation work began.
 
 Every number below was produced by a command run against this repository and this
 machine on the date above. Each section names the command, so the next reader can
 re-run it and see whether the fact still holds. **Nothing here was copied from another
 document.** Where a document elsewhere disagrees, the command output wins.
 
+The distinction between the two commits above matters for exactly one section: the
+Task 18 commits added compiler tests, so the **test counts are HEAD counts, not
+`d9f6958` counts** — the [Tests](#tests) section gives both. Every other repository fact
+here (the route surface, the Help corpus, what is not implemented) is identical at both
+commits; the route count was re-checked at `d9f6958` in a detached worktree and is the
+same 44.
+
 Two kinds of fact are mixed here and are labelled: **repository** facts (true for
-anyone who checks out this commit) and **this machine** facts (the operator's live
+anyone who checks out this branch) and **this machine** facts (the operator's live
 `codes.db` on the kiosk host, which will differ on another install).
 
 > [!NOTE]
@@ -23,16 +34,23 @@ anyone who checks out this commit) and **this machine** facts (the operator's li
 git rev-parse HEAD; git rev-parse --abbrev-ref HEAD; git log -1 --format='%H %ad %s' --date=iso
 ```
 
+Run it: it prints the commit this file's measurements describe. The output recorded at
+the time of writing was the **baseline** commit, before the Task 18 documentation work
+was committed on top of it:
+
 ```
 d9f695895c3b63dd2724ea2609785103417e2946
 help-hub
 d9f695895c3b63dd2724ea2609785103417e2946 2026-09-04 10:48:46 +0000 docs(help): record Task 17 corrections in the plan
 ```
 
+That baseline is what the "at `d9f6958`" column below compares against. Everything else
+in this file describes the working tree as it stands at HEAD.
+
 Toolchain on this machine (`python --version`, `node --version`, `npm --version`):
 Python 3.11.2, Node v20.20.2, npm 10.8.2.
 
-## Tests — repository
+## Tests — repository {#tests}
 
 ```bash
 source .venv/bin/activate
@@ -41,11 +59,23 @@ python -m unittest discover -s backend/tests -t .
 cd frontend && node --test src/dev-admin/help/
 ```
 
-| Runner | Result |
-| --- | --- |
-| pytest | **229 passed, 50 subtests passed** in 10.49 s |
-| unittest discovery | **Ran 220 tests — OK** in 9.106 s |
-| `node --test` (frontend) | **52 pass, 0 fail** in 291 ms |
+**These are HEAD counts.** They include the compiler tests added alongside the Help
+authoring guide, so they are higher than the same commands give at the `d9f6958`
+baseline:
+
+| Runner | HEAD | at `d9f6958` |
+| --- | --- | --- |
+| pytest | **230 passed, 50 subtests passed** in 10.48 s | 228 passed, 50 subtests passed |
+| unittest discovery | **Ran 221 tests — OK** in 8.989 s | Ran 219 tests — OK |
+| `node --test` (frontend) | **52 pass, 0 fail** in 290 ms | 52 pass, 0 fail |
+
+The baseline column was measured, not inferred, by checking the commit out separately:
+
+```bash
+git worktree add --detach <scratch>/base-wt d9f6958
+cd <scratch>/base-wt && python -m pytest backend/tests/ -q
+cd <scratch>/base-wt && python -m unittest discover -s backend/tests -t .
+```
 
 There are 20 files matching `backend/tests/test_*.py` (`ls backend/tests/test_*.py | wc -l`).
 
@@ -235,7 +265,8 @@ rendered in English): `admin-access-recovery`, `admin-panel-orientation`,
 `settings-requiring-restart`, `tune-thresholds`, `using-diagnostics`,
 `wrong-machine-starts`.
 
-Authoring rules: [`admin-guides/README.md`](./admin-guides/README.md).
+Authoring rules: [`admin-guides/README.md`](./admin-guides/README.md) — added by the
+Task 18 documentation work, so it exists at HEAD but not at the `d9f6958` baseline.
 
 ## How the system is started — this machine
 
@@ -259,7 +290,7 @@ Full sequence: [`architecture/runtime-lifecycle.md`](./architecture/runtime-life
 
 ## Not implemented {#not-implemented}
 
-Verified absent at this commit, not merely undocumented:
+Verified absent at HEAD on this branch, not merely undocumented:
 
 - **No systemd unit.** `find . -name "*.service"` (excluding `node_modules`) returns
   nothing. The backend is started by hand or by `run-backend.sh` and dies with its

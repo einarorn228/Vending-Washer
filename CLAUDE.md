@@ -76,7 +76,7 @@ The authoritative state dict lives in `backend/controllers/machine_control.py:UI
 All scan and start flows are routed through `backend/services/start_orchestrator.py` (`ingest_scan`, `start_from_touch`, `start_from_button`, `start_from_code`). Do not call machine_control primitives directly from routes.
 
 ### Frontend polling contract
-`frontend/src/App.jsx` calls `GET /api/ui_state` every 1000 ms via `frontend/src/api/backend.js:pollState()`. All API calls attach `X-API-KEY` from `VITE_API_KEY` env or `localStorage.API_KEY`. The kiosk UI is structured as:
+`frontend/src/kiosk/hooks/useUiStatePolling.js` calls `GET /api/ui_state` via `frontend/src/api/backend.js:pollState()` — not `App.jsx`, which only picks the route (kiosk, `/dev/admin`, `/dev/kiosk-preview`, `/help`). The cadence is backend-owned: the default is 1000 ms, each response's `poll_interval_ms` (from the `kiosk_poll_interval_ms` setting) re-arms the interval, and values outside 250-10000 ms are rejected in favour of the default. All API calls attach `X-API-KEY` from `VITE_API_KEY` env or `localStorage.API_KEY`. The kiosk UI is structured as:
 - `KioskRouter.jsx` — maps `uiState.state` to screen components
 - `kiosk/screens/` — one component per state
 - `kiosk/dev/KioskPreviewPage.jsx` — hardware-free UI preview at `/dev/kiosk-preview`

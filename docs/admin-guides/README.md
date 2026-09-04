@@ -25,9 +25,11 @@ docs/public-help/<guide-id>.md
 ```
 
 The compiler walks the tree with `rglob("*.md")` and takes identity from the
-frontmatter, not the path. `README.md` is the one reserved filename
-(`compiler.RESERVED_FILENAMES`): it is skipped, so authoring documentation — this
-file — can live beside the content without pretending to be a guide. Directory names are therefore a convention for humans
+frontmatter, not the path. `README.md` **at the tree root** is the one reserved
+filename (`compiler.RESERVED_FILENAMES`): it is skipped, so authoring documentation —
+this file — can live beside the content without pretending to be a guide. The skip is
+root-only on purpose: a `README.md` deeper in the tree sits where guides live, so it
+still fails the build rather than vanishing silently. Directory names are therefore a convention for humans
 and should match the `category` field; the `<locale>` directory should match the
 `locale` field. Locales are `en` and `is`. The **default locale is `is`**
 (`schema.LOCALES[0]`) — that is what an operator sees unless they switch.
