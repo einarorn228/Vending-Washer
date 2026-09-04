@@ -5,8 +5,14 @@
 // PublicHelpPage.jsx). That invariant was previously enforced only by a code
 // comment. This test pins it from source: nothing under this directory may
 // import from api/, from the polling hook useHelpManifest.js, or reference
-// `fetch` at all -- and the lockout copy the invariant exists to protect
+// `fetch`, `navigator.sendBeacon`, `XMLHttpRequest`, `axios`, `WebSocket`, or
+// `EventSource` at all -- and the lockout copy the invariant exists to protect
 // must actually be present on the page.
+//
+// Known limitation: This is a source-text scan, so it cannot catch a dynamic
+// import() or a network call reached indirectly through a transitive
+// dependency. The directory is deliberately kept flat and dependency-light so
+// the scan stays sufficient.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -63,6 +69,28 @@ test('no file under public-help/ imports XMLHttpRequest, axios, or WebSocket', (
   for (const file of sourceFiles()) {
     const text = fs.readFileSync(file, 'utf8');
     assert.doesNotMatch(text, /XMLHttpRequest|axios|WebSocket/, `${path.basename(file)} must not reach the network`);
+  }
+});
+
+test('no file under public-help/ calls navigator.sendBeacon', () => {
+  for (const file of sourceFiles()) {
+    const text = fs.readFileSync(file, 'utf8');
+    assert.doesNotMatch(
+      text,
+      /\bnavigator\.sendBeacon\s*\(/,
+      `${path.basename(file)} must not call navigator.sendBeacon -- the public tier must work with the backend down`,
+    );
+  }
+});
+
+test('no file under public-help/ references EventSource', () => {
+  for (const file of sourceFiles()) {
+    const text = fs.readFileSync(file, 'utf8');
+    assert.doesNotMatch(
+      text,
+      /\bEventSource\b/,
+      `${path.basename(file)} must not use EventSource -- the public tier must work with the backend down`,
+    );
   }
 });
 
